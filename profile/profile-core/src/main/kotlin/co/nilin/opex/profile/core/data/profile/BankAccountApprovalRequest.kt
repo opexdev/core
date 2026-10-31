@@ -5,7 +5,6 @@ import java.time.LocalDateTime
 data class BankAccountApprovalRequest(
     var bankAccountId: Long,
     var userId: String,
-    var status: BankAccountApprovalRequestStatus? = BankAccountApprovalRequestStatus.PENDING,
     var createDate: LocalDateTime? = null,
     var updateDate: LocalDateTime? = null,
     var updater: String? = null,

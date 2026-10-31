@@ -7,7 +7,6 @@ import co.nilin.opex.profile.app.utils.toBankAccountResponse
 import co.nilin.opex.profile.core.data.inquiry.IbanInfo
 import co.nilin.opex.profile.core.data.profile.BankAccount
 import co.nilin.opex.profile.core.data.profile.BankAccountApprovalRequest
-import co.nilin.opex.profile.core.data.profile.BankAccountApprovalRequestStatus
 import co.nilin.opex.profile.core.data.profile.BankAccountStatus
 import co.nilin.opex.profile.core.data.profile.NationalityType
 import co.nilin.opex.profile.core.spi.BankAccountApprovalRequestPersister
@@ -86,7 +85,6 @@ class BankAccountManagement(
                 bankAccountId = bankAccount.id
                     ?: throw OpexError.BadRequest.exception("Saved bank account has no id"),
                 userId = bankAccount.uuid,
-                status = BankAccountApprovalRequestStatus.PENDING,
                 createDate = LocalDateTime.now()
             )
         )

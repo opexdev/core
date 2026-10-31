@@ -2,13 +2,13 @@ package co.nilin.opex.api.core.inout
 
 import java.time.LocalDateTime
 
-enum class BankAccountApprovalRequestStatus {
-    PENDING, APPROVED, REJECTED
-}
-
+/**
+ * A review has no state of its own: the bank account's [BankAccountStatus] is it. WAITING means the
+ * review is still open, VERIFIED and REJECTED are how it ended.
+ */
 data class BankAccountApprovalRequestFilter(
     val userId: String? = null,
-    val status: BankAccountApprovalRequestStatus? = null,
+    val status: BankAccountStatus? = null,
     val createDateFrom: Long? = null,
     val createDateTo: Long? = null,
     val limit: Int = 10,
@@ -20,7 +20,7 @@ data class BankAccountApprovalAdminResponse(
     var id: Long,
     var bankAccountId: Long,
     var userId: String,
-    var status: BankAccountApprovalRequestStatus,
+    var status: BankAccountStatus? = null,
     var createDate: LocalDateTime,
     var updateDate: LocalDateTime? = null,
     var updater: String? = null,
@@ -30,14 +30,13 @@ data class BankAccountApprovalAdminResponse(
     var iban: String? = null,
     var accountNumber: String? = null,
     var bank: String? = null,
-    var bankAccountStatus: BankAccountStatus? = null,
     var firstName: String? = null,
     var lastName: String? = null
 )
 
 data class BankAccountApprovalUserResponse(
     var bankAccountId: Long,
-    var status: BankAccountApprovalRequestStatus,
+    var status: BankAccountStatus,
     var createDate: LocalDateTime,
     var description: String? = null
 )
@@ -45,5 +44,5 @@ data class BankAccountApprovalUserResponse(
 data class UpdateBankAccountApprovalBody(
     val id: Long,
     val description: String? = null,
-    val status: BankAccountApprovalRequestStatus
+    val status: BankAccountStatus
 )

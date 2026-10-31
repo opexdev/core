@@ -1,8 +1,8 @@
 package co.nilin.opex.profile.ports.postgres.dao
 
 import co.nilin.opex.profile.core.data.profile.BankAccountApprovalAdminResponse
-import co.nilin.opex.profile.core.data.profile.BankAccountApprovalRequestStatus
 import co.nilin.opex.profile.core.data.profile.BankAccountApprovalUserResponse
+import co.nilin.opex.profile.core.data.profile.BankAccountStatus
 import co.nilin.opex.profile.ports.postgres.model.entity.BankAccountApprovalRequestModel
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
@@ -15,10 +15,7 @@ import java.time.LocalDateTime
 interface BankAccountApprovalRequestRepository :
     ReactiveCrudRepository<BankAccountApprovalRequestModel, Long> {
 
-    fun findByBankAccountIdAndStatus(
-        bankAccountId: Long,
-        status: BankAccountApprovalRequestStatus
-    ): Mono<BankAccountApprovalRequestModel>
+    fun findByBankAccountId(bankAccountId: Long): Mono<BankAccountApprovalRequestModel>
 
     @Query(
         """
@@ -26,7 +23,6 @@ interface BankAccountApprovalRequestRepository :
     r.id,
     r.bank_account_id,
     r.user_id,
-    r.status,
     r.create_date,
     r.update_date,
     r.updater,
@@ -36,14 +32,14 @@ interface BankAccountApprovalRequestRepository :
     b.iban,
     b.account_number,
     b.bank,
-    b.status AS bank_account_status,
+    b.status,
     u.first_name,
     u.last_name
     FROM bank_account_approval_request r
     LEFT JOIN bank_account b ON b.id = r.bank_account_id
     LEFT JOIN profile u ON u.user_id = r.user_id
     WHERE (:userId IS NULL OR r.user_id = :userId)
-      AND (:status IS NULL OR r.status = :status)
+      AND (:status IS NULL OR b.status = :status)
       AND (:createDateFrom IS NULL OR r.create_date >= :createDateFrom)
       AND (:createDateTo IS NULL OR r.create_date <= :createDateTo)
     ORDER BY r.create_date
@@ -52,7 +48,7 @@ interface BankAccountApprovalRequestRepository :
     )
     fun findByCriteriaAsc(
         userId: String?,
-        status: BankAccountApprovalRequestStatus?,
+        status: BankAccountStatus?,
         createDateFrom: LocalDateTime?,
         createDateTo: LocalDateTime?,
         limit: Int,
@@ -65,7 +61,6 @@ interface BankAccountApprovalRequestRepository :
     r.id,
     r.bank_account_id,
     r.user_id,
-    r.status,
     r.create_date,
     r.update_date,
     r.updater,
@@ -75,14 +70,14 @@ interface BankAccountApprovalRequestRepository :
     b.iban,
     b.account_number,
     b.bank,
-    b.status AS bank_account_status,
+    b.status,
     u.first_name,
     u.last_name
     FROM bank_account_approval_request r
     LEFT JOIN bank_account b ON b.id = r.bank_account_id
     LEFT JOIN profile u ON u.user_id = r.user_id
     WHERE (:userId IS NULL OR r.user_id = :userId)
-      AND (:status IS NULL OR r.status = :status)
+      AND (:status IS NULL OR b.status = :status)
       AND (:createDateFrom IS NULL OR r.create_date >= :createDateFrom)
       AND (:createDateTo IS NULL OR r.create_date <= :createDateTo)
     ORDER BY r.create_date desc
@@ -91,7 +86,7 @@ interface BankAccountApprovalRequestRepository :
     )
     fun findByCriteriaDesc(
         userId: String?,
-        status: BankAccountApprovalRequestStatus?,
+        status: BankAccountStatus?,
         createDateFrom: LocalDateTime?,
         createDateTo: LocalDateTime?,
         limit: Int,
@@ -104,7 +99,6 @@ interface BankAccountApprovalRequestRepository :
     r.id,
     r.bank_account_id,
     r.user_id,
-    r.status,
     r.create_date,
     r.update_date,
     r.updater,
@@ -114,7 +108,7 @@ interface BankAccountApprovalRequestRepository :
     b.iban,
     b.account_number,
     b.bank,
-    b.status AS bank_account_status,
+    b.status,
     u.first_name,
     u.last_name
     FROM bank_account_approval_request r
@@ -127,12 +121,13 @@ interface BankAccountApprovalRequestRepository :
 
     @Query(
         """
-    select r.bank_account_id, r.status, r.create_date, r.description
+    select r.bank_account_id, b.status, r.create_date, r.description
     from bank_account_approval_request r
+    left join bank_account b on b.id = r.bank_account_id
     where r.bank_account_id = :bankAccountId
     order by r.create_date desc
     limit 1
 """
     )
-    fun findByBankAccountId(bankAccountId: Long): Mono<BankAccountApprovalUserResponse>
+    fun findUserResponseByBankAccountId(bankAccountId: Long): Mono<BankAccountApprovalUserResponse>
 }

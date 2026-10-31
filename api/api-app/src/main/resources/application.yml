@@ -129,6 +129,10 @@ app:
     url: ${BC_GATEWAY_URL:http://opex-bc-gateway}
   storage:
     url: ${STORAGE_URL:http://opex-storage}
+  fiat-scanner:
+    url: ${FIAT_SCANNER_URL:}
+    api-key: ${FIAT_SCANNER_API_KEY:}
+    secret-key: ${FIAT_SCANNER_SECRET_KEY:}
   config:
     url: ${CONFIG_URL:http://opex-config}
   auth-gateway:

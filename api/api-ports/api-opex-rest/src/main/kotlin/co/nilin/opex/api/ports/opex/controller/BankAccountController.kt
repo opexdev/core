@@ -98,7 +98,7 @@ Allowed values:
 Security: Bearer user-token required. Requires authenticated user JWT.
 Behavior: Returns the admin review of the caller's own bank account, including the admin's note once a decision is made. A bank account only has one when its identity inquiry could not be completed. Reading another user's bank account is forbidden.
 Allowed values:
-- status: PENDING, APPROVED, REJECTED.""",
+- status: WAITING, VERIFIED, REJECTED. This is the bank account's own status, so WAITING means the review is still open.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(
