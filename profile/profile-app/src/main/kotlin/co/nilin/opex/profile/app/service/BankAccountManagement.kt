@@ -171,6 +171,7 @@ class BankAccountManagement(
             logger.warn("Inquiry provider did not answer: ${e.javaClass.simpleName} ${e.message}")
             throw InquiryUnavailableException(e)
         }
+
     }
 
     private suspend fun verifyCardOwnership(
