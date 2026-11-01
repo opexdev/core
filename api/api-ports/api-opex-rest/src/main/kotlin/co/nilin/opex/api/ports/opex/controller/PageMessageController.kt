@@ -55,7 +55,7 @@ Allowed values:
             required = false
         )
         @RequestParam(required = false) page: UiPage?
-    ): List<LocalizedPageMessage> {
+    ): List<LocalizedPageMessage?> {
         val messages = configProxy.getLocalizedPageMessages(
             page,
             UserLanguage.safeValueOf(getUserLanguage().awaitSingleOrNull()).toString()

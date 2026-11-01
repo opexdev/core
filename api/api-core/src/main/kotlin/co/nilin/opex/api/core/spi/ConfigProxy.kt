@@ -16,7 +16,7 @@ interface ConfigProxy {
     suspend fun removeUserFavoritePair(token: String, pair: String): Set<String>
 
     // Page messages
-    suspend fun getLocalizedPageMessages(page: UiPage? = null, language: String): List<LocalizedPageMessage>
+    suspend fun getLocalizedPageMessages(page: UiPage? = null, language: String): List<LocalizedPageMessage?>
     suspend fun getAllPageMessages(token: String): List<PageMessage>
     suspend fun getPageMessage(token: String, page: UiPage): PageMessage?
     suspend fun createOrUpdatePageMessage(token: String, request: UpdatePageMessageRequest): PageMessage

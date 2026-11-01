@@ -164,7 +164,7 @@ class ConfigProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClien
             .awaitFirstOrElse { throw OpexError.BadRequest.exception() }
     }
 
-    override suspend fun getLocalizedPageMessages(page: UiPage?,language: String): List<LocalizedPageMessage> {
+    override suspend fun getLocalizedPageMessages(page: UiPage?,language: String): List<LocalizedPageMessage?> {
         return webClient.get()
             .uri("$baseUrl/v1/page-messages") {
                 if (page != null) it.queryParam("page", page)
@@ -174,7 +174,7 @@ class ConfigProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClien
             .accept(MediaType.APPLICATION_JSON)
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToMono<List<LocalizedPageMessage>>()
+            .bodyToMono<List<LocalizedPageMessage?>>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get page message") }
     }
 
