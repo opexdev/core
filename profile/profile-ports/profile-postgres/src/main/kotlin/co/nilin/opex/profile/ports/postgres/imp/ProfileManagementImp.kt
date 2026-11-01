@@ -54,7 +54,7 @@ class ProfileManagementImp(
         val latestProfileByIdentifier = profileRepository.findLatestByIdentifier(data.identifier).awaitFirstOrNull()
         if (latestProfileByIdentifier != null && (latestProfileByIdentifier.status !=
                     ProfileStatus.PROFILE_COMPLETED && latestProfileByIdentifier.status !=
-                    ProfileStatus.ADMIN_REJECTED)
+                    ProfileStatus.ADMIN_REJECTED) && latestProfileByIdentifier.userId != id
         ) throw OpexError.InvalidProfileData.exception()
 
         val newProfileModel = data.toProfileModel(
