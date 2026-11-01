@@ -103,7 +103,7 @@ class KeycloakProxy(
                     val password = password
                 }
             ).retrieve()
-            .onStatus({ it == HttpStatus.valueOf(401) }) { throw OpexError.InvalidUserCredentials.exception() }
+            .onStatus({ it == HttpStatus.valueOf(401) }) { throw OpexError.UsernameOrPasswordIsIncorrect.exception() }
             .awaitBodilessEntity()
     }
 
@@ -569,7 +569,7 @@ class KeycloakProxy(
             )
             .retrieve()
             .onStatus({ it == HttpStatus.valueOf(401) }) {
-                throw OpexError.InvalidUserCredentials.exception()
+                throw OpexError.UsernameOrPasswordIsIncorrect.exception()
             }
             .awaitBody<Token>()
 

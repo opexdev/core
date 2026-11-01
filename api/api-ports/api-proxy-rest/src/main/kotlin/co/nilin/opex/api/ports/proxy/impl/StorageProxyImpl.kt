@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springframework.http.MediaTypeFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Component
@@ -16,6 +17,7 @@ import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBodilessEntity
 import reactor.core.publisher.Mono
+import java.nio.charset.StandardCharsets
 
 @Component
 class StorageProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : StorageProxy {
@@ -100,8 +102,7 @@ class StorageProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClie
         bucket: String,
         key: String
     ): ResponseEntity<ByteArray> {
-
-        return webClient.get()
+        val response = webClient.get()
             .uri("$baseUrl/v2/public") {
                 it.queryParam("bucket", bucket)
                 it.queryParam("key", key)
@@ -112,41 +113,43 @@ class StorageProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClie
                 MediaType.APPLICATION_JSON
             )
             .exchangeToMono { response ->
-
                 if (response.statusCode().isError) {
-                    response.createException()
-                        .flatMap { Mono.error(it) }
+                    response.createException().flatMap { Mono.error(it) }
                 } else {
                     response.toEntity(ByteArray::class.java)
-                        .map { entity ->
-
-                            val filename = key.substringAfterLast("/")
-
-                            val headers = HttpHeaders()
-                            headers.putAll(entity.headers)
-
-                            // Preserve the original filename and extension.
-                            headers.contentDisposition =
-                                ContentDisposition.attachment()
-                                    .filename(filename)
-                                    .build()
-
-                            // Preserve Content-Type if provided by storage.
-                            if (headers.contentType == null) {
-                                headers.contentType =
-                                    MediaType.APPLICATION_OCTET_STREAM
-                            }
-
-                            ResponseEntity(
-                                entity.body,
-                                headers,
-                                entity.statusCode
-                            )
-                        }
                 }
             }
             .awaitSingle()
+        if (!response.statusCode.is2xxSuccessful) {
+            return response
+        }
+
+        val filename = key.substringAfterLast('/').ifBlank { "download" }
+        val upstreamContentType = response.headers.contentType
+        val resolvedContentType = if (upstreamContentType == null ||
+            MediaType.APPLICATION_OCTET_STREAM.includes(upstreamContentType)
+        ) {
+            MediaTypeFactory.getMediaType(filename).orElse(MediaType.APPLICATION_OCTET_STREAM)
+        } else {
+            upstreamContentType
+        }
+        val disposition = if (resolvedContentType.type == "image") {
+            ContentDisposition.inline()
+        } else {
+            ContentDisposition.attachment()
+        }
+        val headers = HttpHeaders().apply {
+            putAll(response.headers)
+            contentType = resolvedContentType
+            contentDisposition = if (filename.all { it.code in 32..126 }) {
+                disposition.filename(filename).build()
+            } else {
+                disposition.filename(filename, StandardCharsets.UTF_8).build()
+            }
+        }
+        return ResponseEntity(response.body, headers, response.statusCode)
     }
+
     override suspend fun ownerDownload(
         token: String,
         bucket: String,

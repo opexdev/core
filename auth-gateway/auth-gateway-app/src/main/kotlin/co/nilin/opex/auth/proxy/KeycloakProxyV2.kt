@@ -22,7 +22,7 @@ class KeycloakProxyV2(
 ) {
 
     suspend fun getUserToken(username: Username, password: String, clientId: String, clientSecret: String): Token {
-        val user = findByUsername(username) ?: throw OpexError.InvalidUserCredentials.exception()
+        val user = findByUsername(username) ?: throw OpexError.UsernameOrPasswordIsIncorrect.exception()
         return getUserToken(user.username, password, clientId, clientSecret)
     }
 
@@ -46,7 +46,7 @@ class KeycloakProxyV2(
             .bodyValue("client_id=${clientId}&client_secret=${clientSecret}&grant_type=password&username=${username}&password=${password}")
             .retrieve()
             .onStatus({ it == HttpStatus.valueOf(401) }) {
-                throw OpexError.InvalidUserCredentials.exception()
+                throw OpexError.UsernameOrPasswordIsIncorrect.exception()
             }
             .awaitBody<Token>()
     }
@@ -63,7 +63,7 @@ class KeycloakProxyV2(
             .bodyValue("client_id=${clientId}&client_secret=${clientSecret}&grant_type=refresh_token&refresh_token=${refreshToken}")
             .retrieve()
             .onStatus({ it == HttpStatus.valueOf(401) }) {
-                throw OpexError.InvalidUserCredentials.exception()
+                throw OpexError.UsernameOrPasswordIsIncorrect.exception()
             }
             .awaitBody<Token>()
     }
