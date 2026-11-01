@@ -417,7 +417,7 @@ class ProfileProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClie
         token: String,
         request: ContactUpdateConfirmRequest
     ) {
-        webClient.patch()
+        webClient.post()
             .uri("$baseUrl/contact/update/otp-verification")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
