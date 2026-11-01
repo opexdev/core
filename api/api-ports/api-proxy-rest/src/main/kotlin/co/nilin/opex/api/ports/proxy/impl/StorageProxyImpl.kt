@@ -5,6 +5,7 @@ import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -99,6 +100,7 @@ class StorageProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClie
         bucket: String,
         key: String
     ): ResponseEntity<ByteArray> {
+
         return webClient.get()
             .uri("$baseUrl/v2/public") {
                 it.queryParam("bucket", bucket)
@@ -110,15 +112,41 @@ class StorageProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClie
                 MediaType.APPLICATION_JSON
             )
             .exchangeToMono { response ->
+
                 if (response.statusCode().isError) {
-                    response.createException().flatMap { Mono.error(it) }
+                    response.createException()
+                        .flatMap { Mono.error(it) }
                 } else {
                     response.toEntity(ByteArray::class.java)
+                        .map { entity ->
+
+                            val filename = key.substringAfterLast("/")
+
+                            val headers = HttpHeaders()
+                            headers.putAll(entity.headers)
+
+                            // Preserve the original filename and extension.
+                            headers.contentDisposition =
+                                ContentDisposition.attachment()
+                                    .filename(filename)
+                                    .build()
+
+                            // Preserve Content-Type if provided by storage.
+                            if (headers.contentType == null) {
+                                headers.contentType =
+                                    MediaType.APPLICATION_OCTET_STREAM
+                            }
+
+                            ResponseEntity(
+                                entity.body,
+                                headers,
+                                entity.statusCode
+                            )
+                        }
                 }
             }
             .awaitSingle()
     }
-
     override suspend fun ownerDownload(
         token: String,
         bucket: String,

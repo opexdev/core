@@ -7,11 +7,14 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.http.ContentDisposition
+import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.nio.charset.StandardCharsets
 
 @RestController
 @RequestMapping("/opex/v1/storage")
@@ -43,7 +46,20 @@ Security: Public endpoint. No Bearer token is required.
         @Parameter(name = "key", description = "Storage object key.", required = true)
         @RequestParam("key") key: String
     ): ResponseEntity<ByteArray> {
-        return storageProxy.publicDownload(bucket, key)
+
+        val response = storageProxy.publicDownload(bucket, key)
+        if (!response.statusCode.is2xxSuccessful) {
+            return response
+        }
+
+        val filename = key.substringAfterLast('/').ifBlank { "download" }
+        val headers = HttpHeaders().apply {
+            putAll(response.headers)
+            contentDisposition = ContentDisposition.attachment()
+                .filename(filename, StandardCharsets.UTF_8)
+                .build()
+        }
+        return ResponseEntity(response.body, headers, response.statusCode)
     }
 
 }
