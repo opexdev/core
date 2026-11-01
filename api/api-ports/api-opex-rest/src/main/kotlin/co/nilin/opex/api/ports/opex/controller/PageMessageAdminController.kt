@@ -89,7 +89,7 @@ Allowed values:
         @CurrentSecurityContext securityContext: SecurityContext,
         @Parameter(
             name = "page",
-            description = "UI page. Allowed values: MAIN, DASHBOARD, WALLET, LOGIN, REGISTER, SWAP, ADVANCE_MARKET.",
+            description = "UI page. Allowed values: MAIN, DASHBOARD, WALLET, LOGIN, REGISTER, SWAP, ADVANCE_MARKET, DEPOSIT, WITHDRAW",
             required = true
         )
         @PathVariable page: UiPage
