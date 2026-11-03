@@ -4,6 +4,8 @@ import java.time.LocalDateTime
 
 data class CompanyResponse(
     val id: Long,
+    /** Null only for companies registered before the name was collected. */
+    val name: String?,
     val registrationNumber: String,
     val nationalId: String,
     val createDate: LocalDateTime?,
@@ -13,6 +15,7 @@ data class CompanyResponse(
 // Document keys are admin-only and must never reach the representative
 data class CompanyAdminResponse(
     val id: Long,
+    val name: String?,
     val registrationNumber: String,
     val nationalId: String,
     val representativeNationalCardKey: String?,

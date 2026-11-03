@@ -52,6 +52,7 @@ class CompanyManagement(
                 nationalCode = request.nationalCode,
                 email = request.email,
                 mobile = request.mobile,
+                companyName = request.companyName,
                 companyRegistrationNumber = request.companyRegistrationNumber,
                 companyNationalId = request.companyNationalId,
                 representativeNationalCardKey = request.representativeNationalCardKey,
@@ -88,10 +89,12 @@ class CompanyManagement(
             ?: throw OpexError.NotFound.exception("Company not found")
     }
 
-    private fun Company.toResponse() = CompanyResponse(id!!, registrationNumber, nationalId, createDate, updateDate)
+    private fun Company.toResponse() =
+        CompanyResponse(id!!, name, registrationNumber, nationalId, createDate, updateDate)
 
     private fun Company.toAdminResponse() = CompanyAdminResponse(
         id!!,
+        name,
         registrationNumber,
         nationalId,
         representativeNationalCardKey,

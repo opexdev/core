@@ -3,6 +3,7 @@ package co.nilin.opex.profile.ports.postgres.model.base
 import java.time.LocalDateTime
 
 open class Company {
+    var name: String? = null
     lateinit var registrationNumber: String
     lateinit var nationalId: String
     var representativeNationalCardKey: String? = null

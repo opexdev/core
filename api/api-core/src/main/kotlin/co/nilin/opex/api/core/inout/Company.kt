@@ -4,6 +4,8 @@ import java.time.LocalDateTime
 
 data class CompanyResponse(
     val id: Long,
+    /** Null only for companies registered before the name was collected. */
+    val name: String?,
     val registrationNumber: String,
     val nationalId: String,
     val createDate: LocalDateTime?,
@@ -12,6 +14,7 @@ data class CompanyResponse(
 
 data class CompanyAdminResponse(
     val id: Long,
+    val name: String?,
     val registrationNumber: String,
     val nationalId: String,
     val representativeNationalCardKey: String?,
@@ -38,6 +41,7 @@ data class RegisterLegalAccountRequest(
     val nationalCode: String,
     val email: String,
     val mobile: String,
+    val companyName: String,
     val companyRegistrationNumber: String,
     val companyNationalId: String,
     val representativeNationalCardKey: String? = null,
