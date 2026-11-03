@@ -40,6 +40,7 @@ class LegalAccountRegistrationService(
         val nationalCode: String,
         val email: String,
         val mobile: String,
+        val companyName: String,
         val companyRegistrationNumber: String,
         val companyNationalId: String
     )
@@ -111,6 +112,7 @@ class LegalAccountRegistrationService(
                     nationalCode = details.nationalCode,
                     email = details.email,
                     mobile = details.mobile,
+                    companyName = details.companyName,
                     companyRegistrationNumber = details.companyRegistrationNumber,
                     companyNationalId = details.companyNationalId,
                     representativeNationalCardKey = keyByName[REPRESENTATIVE_NATIONAL_CARD],
@@ -138,6 +140,7 @@ class LegalAccountRegistrationService(
             if (details.nationalCode.isBlank()) add("nationalCode")
             if (details.email.isBlank()) add("email")
             if (details.mobile.isBlank()) add("mobile")
+            if (details.companyName.isBlank()) add("companyName")
             if (details.companyRegistrationNumber.isBlank()) add("companyRegistrationNumber")
             if (details.companyNationalId.isBlank()) add("companyNationalId")
         }

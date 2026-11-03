@@ -4,6 +4,8 @@ import java.time.LocalDateTime
 
 data class Company(
     var id: Long? = null,
+    /** Null only for companies registered before the name was collected. */
+    var name: String? = null,
     var registrationNumber: String,
     var nationalId: String,
     var representativeNationalCardKey: String? = null,

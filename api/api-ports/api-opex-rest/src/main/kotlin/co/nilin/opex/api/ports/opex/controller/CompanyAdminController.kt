@@ -50,7 +50,7 @@ class CompanyAdminController(
         summary = "Register legal account",
         description = """POST /opex/v1/admin/company/legal-account.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
-Validation: `firstName`, `lastName`, `nationalCode`, `email`, `mobile`, `companyRegistrationNumber` and `companyNationalId` are required. Every document part is optional. Allowed document formats: jpg, jpeg, png, webp, svg. Each file is capped at 5MB by the storage service.
+Validation: `firstName`, `lastName`, `nationalCode`, `email`, `mobile`, `companyName`, `companyRegistrationNumber` and `companyNationalId` are required. Every document part is optional. Allowed document formats: jpg, jpeg, png, webp, svg. Each file is capped at 5MB by the storage service.
 Behavior: Multipart registration of a whole corporate account. Uploads the documents under `company/{companyNationalId}/`, creates the representative's Keycloak user, persists the profile and the company in one transaction, raises the user to level 2, then emails a generated password to the representative.
 Response: The representative `uuid`, the company with its document keys, and `passwordEmailSent`. A false `passwordEmailSent` means the account is usable but the password was not delivered — resend the credentials rather than retrying the registration.
 Rollback: A failure before the password email removes the Keycloak user and the uploaded documents, and leaves no database rows behind.""",
@@ -96,6 +96,8 @@ Rollback: A failure before the password email removes the Keycloak user and the 
         @RequestPart("email") email: String,
         @Parameter(name = "mobile", description = "Representative mobile number.", required = true)
         @RequestPart("mobile") mobile: String,
+        @Parameter(name = "companyName", description = "Company name.", required = true)
+        @RequestPart("companyName") companyName: String,
         @Parameter(name = "companyRegistrationNumber", description = "Company registration number.", required = true)
         @RequestPart("companyRegistrationNumber") companyRegistrationNumber: String,
         @Parameter(name = "companyNationalId", description = "Company national id. Used as the document folder name.", required = true)
@@ -119,6 +121,7 @@ Rollback: A failure before the password email removes the Keycloak user and the 
                 nationalCode = nationalCode,
                 email = email,
                 mobile = mobile,
+                companyName = companyName,
                 companyRegistrationNumber = companyRegistrationNumber,
                 companyNationalId = companyNationalId
             ),

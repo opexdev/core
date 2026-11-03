@@ -60,6 +60,7 @@ class CompanyManagementImp(
 
         val saved = saveCompanyAndLink(
             Company(
+                name = registration.companyName,
                 registrationNumber = registration.companyRegistrationNumber,
                 nationalId = registration.companyNationalId,
                 representativeNationalCardKey = registration.representativeNationalCardKey,
@@ -117,6 +118,7 @@ class CompanyManagementImp(
 
         val saved = companyRepository.save(
             CompanyModel().apply {
+                name = company.name
                 registrationNumber = company.registrationNumber
                 nationalId = company.nationalId
                 representativeNationalCardKey = company.representativeNationalCardKey
@@ -157,6 +159,7 @@ class CompanyManagementImp(
 
     private fun CompanyModel.toCompany(boardMemberKeys: List<String>) = Company(
         id = id,
+        name = name,
         registrationNumber = registrationNumber,
         nationalId = nationalId,
         representativeNationalCardKey = representativeNationalCardKey,

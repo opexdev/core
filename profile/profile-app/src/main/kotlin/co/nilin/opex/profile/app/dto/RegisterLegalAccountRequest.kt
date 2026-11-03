@@ -7,6 +7,7 @@ data class RegisterLegalAccountRequest(
     val nationalCode: String,
     val email: String,
     val mobile: String,
+    val companyName: String,
     val companyRegistrationNumber: String,
     val companyNationalId: String,
     val representativeNationalCardKey: String? = null,
