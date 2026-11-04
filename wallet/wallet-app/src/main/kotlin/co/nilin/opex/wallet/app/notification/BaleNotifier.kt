@@ -18,16 +18,16 @@ class BaleNotifier(
     private val logger = LoggerFactory.getLogger(BaleNotifier::class.java)
     private val webClient = WebClient.create(baseUrl)
 
-    override suspend fun notify(message: String) {
+    override suspend fun notify(message: String): Boolean {
         if (!enabled) {
             logger.debug("Bale notifier is disabled; skipping alert: {}", message)
-            return
+            return true
         }
         if (botToken.isBlank() || chatId.isBlank()) {
             logger.warn("Bale notifier is not configured; skipping alert")
-            return
+            return true
         }
-        runCatching {
+        return runCatching {
             webClient.post()
                 .uri("/bot{token}/sendMessage", botToken)
                 .bodyValue(mapOf("chat_id" to chatId, "text" to message))
@@ -35,5 +35,6 @@ class BaleNotifier(
                 .toBodilessEntity()
                 .awaitFirstOrNull()
         }.onFailure { logger.error("Failed to send Bale alert ({})", it.javaClass.simpleName) }
+            .isSuccess
     }
 }

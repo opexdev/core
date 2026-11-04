@@ -17,6 +17,7 @@ class RateSyncMonitor(
 ) {
 
     private val logger = LoggerFactory.getLogger(RateSyncMonitor::class.java)
+
     private val stalePairs = ConcurrentHashMap.newKeySet<String>()
 
     suspend fun checkFreshness() {
@@ -26,16 +27,20 @@ class RateSyncMonitor(
         val stalePairKeys = stale.map { it.pairKey() }.toSet()
 
         stalePairs.filterNot { it in stalePairKeys }.forEach { pair ->
-            if (stalePairs.remove(pair)) {
-                notifier.notify("✅ Rate alert cleared\nRate for $pair is being updated again.")
+            if (notifier.notify("✅ Rate alert cleared\nRate for $pair is being updated again.")) {
+                stalePairs.remove(pair)
             }
         }
 
         stale.forEach { rate ->
-            if (stalePairs.add(rate.pairKey())) {
-                val age = Duration.between(rate.lastUpdateDate, now)
-                logger.warn("Rate {} is stale (age={})", rate.pairKey(), age)
-                notifier.notify(staleMessage(rate, age, maxAge))
+            val pair = rate.pairKey()
+            if (pair in stalePairs) return@forEach
+
+            val age = Duration.between(rate.lastUpdateDate, now)
+            logger.warn("Rate {} is stale (age={})", pair, age)
+
+            if (notifier.notify(staleMessage(rate, age, maxAge))) {
+                stalePairs.add(pair)
             }
         }
     }
