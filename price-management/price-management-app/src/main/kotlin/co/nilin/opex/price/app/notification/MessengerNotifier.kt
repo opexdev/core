@@ -7,24 +7,25 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 
+
 @Component
-class BaleNotifier(
-    @Value("\${app.bale.enabled:true}") private val enabled: Boolean,
-    @Value("\${app.bale.base-url:https://tapi.bale.ai}") baseUrl: String,
-    @Value("\${app.bale.bot-token:}") private val botToken: String,
-    @Value("\${app.bale.chat-id:}") private val chatId: String,
+class MessengerNotifier(
+    @Value("\${app.notifier.enabled:false}") private val enabled: Boolean,
+    @Value("\${app.notifier.base-url:}") private val baseUrl: String,
+    @Value("\${app.notifier.bot-token:}") private val botToken: String,
+    @Value("\${app.notifier.chat-id:}") private val chatId: String,
 ) : Notifier {
 
-    private val logger = LoggerFactory.getLogger(BaleNotifier::class.java)
+    private val logger = LoggerFactory.getLogger(MessengerNotifier::class.java)
     private val webClient = WebClient.create(baseUrl)
 
     override suspend fun notify(message: String) {
         if (!enabled) {
-            logger.debug("Bale notifier is disabled; skipping alert: {}", message)
+            logger.debug("Notifier is disabled; skipping alert: {}", message)
             return
         }
-        if (botToken.isBlank() || chatId.isBlank()) {
-            logger.warn("Bale notifier is not configured; skipping alert")
+        if (baseUrl.isBlank() || botToken.isBlank() || chatId.isBlank()) {
+            logger.warn("Notifier is not configured; skipping alert")
             return
         }
         runCatching {
@@ -34,6 +35,6 @@ class BaleNotifier(
                 .retrieve()
                 .toBodilessEntity()
                 .awaitFirstOrNull()
-        }.onFailure { logger.error("Failed to send Bale alert: ${it.message}", it) }
+        }.onFailure { logger.error("Failed to send alert ({})", it.javaClass.simpleName) }
     }
 }
