@@ -34,6 +34,6 @@ class BaleNotifier(
                 .retrieve()
                 .toBodilessEntity()
                 .awaitFirstOrNull()
-        }.onFailure { logger.error("Failed to send Bale alert: ${it.message}", it) }
+        }.onFailure { logger.error("Failed to send Bale alert ({})", it.javaClass.simpleName) }
     }
 }
