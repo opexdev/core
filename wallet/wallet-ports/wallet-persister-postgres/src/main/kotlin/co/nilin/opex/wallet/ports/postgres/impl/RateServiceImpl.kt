@@ -215,6 +215,13 @@ class RateServiceImpl(
         )
     }
 
+    override suspend fun findStaleRates(updatedBefore: LocalDateTime): List<StaleRate> {
+        return ratesRepository.findStaleRates(updatedBefore)
+            .collect(Collectors.toList())
+            .awaitFirstOrNull()
+            ?: emptyList()
+    }
+
     private fun Rate.toModel(): RateModel {
         return RateModel(
             null,

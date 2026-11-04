@@ -152,6 +152,14 @@ app:
     url: ${STORAGE_URL:lb://storage}
   config:
     url: ${CONFIG_URL:http://opex-config}
+  notifier:
+    enabled: ${WALLET_NOTIFIER_ENABLED:false}
+    base-url: ${WALLET_NOTIFIER_BASE_URL:}
+    bot-token: ${WALLET_NOTIFIER_BOT_TOKEN:}
+    chat-id: ${WALLET_NOTIFIER_CHAT_ID:}
+  rate-monitor:
+    stale-alert-age-seconds: ${WALLET_RATE_STALE_ALERT_AGE_SECONDS:1800}
+    freshness-check-interval: ${WALLET_RATE_FRESHNESS_CHECK_INTERVAL:60000}
   reserved-transfer:
     life-time: 15 #minutes
   symbols: ${SYMBOLS}

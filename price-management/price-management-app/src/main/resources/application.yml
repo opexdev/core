@@ -119,11 +119,11 @@ app:
     secret-key: ${PRICE_PROXY_SECRET_KEY}
   wallet:
     url: ${WALLET_URL:http://opex-wallet}
-  bale:
-    enabled: ${BALE_NOTIFICATIONS_ENABLED:false}
-    base-url: ${BALE_API_URL:https://tapi.bale.ai}
-    bot-token: ${BALE_BOT_TOKEN:}
-    chat-id: ${BALE_CHAT_ID:}
+  notifier:
+    enabled: ${PRICE_MANAGEMENT_NOTIFIER_ENABLED:false}
+    base-url: ${PRICE_MANAGEMENT_NOTIFIER_BASE_URL:}
+    bot-token: ${PRICE_MANAGEMENT_NOTIFIER_BOT_TOKEN:}
+    chat-id: ${PRICE_MANAGEMENT_NOTIFIER_CHAT_ID:}
   price-management:
     update-interval: ${PRICE_UPDATE_INTERVAL:10000}
     max-price-age-seconds: ${MAX_PRICE_AGE_SECONDS:300}
