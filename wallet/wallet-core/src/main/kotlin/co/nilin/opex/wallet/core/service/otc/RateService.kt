@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.core.service.otc
 
 import co.nilin.opex.wallet.core.model.otc.*
+import java.time.LocalDateTime
 
 interface RateService {
 
@@ -33,5 +34,7 @@ interface RateService {
     suspend fun deleteTransitiveSymbols(symbols: Symbols): Symbols
 
     suspend fun getTransitiveSymbols(): Symbols
+
+    suspend fun findStaleRates(updatedBefore: LocalDateTime): List<StaleRate>
 
 }

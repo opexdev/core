@@ -152,6 +152,14 @@ app:
     url: ${STORAGE_URL:lb://storage}
   config:
     url: ${CONFIG_URL:http://opex-config}
+  bale:
+    enabled: ${WALLET_BALE_NOTIFICATIONS_ENABLED:false}
+    base-url: ${WALLET_BALE_API_URL:https://tapi.bale.ai}
+    bot-token: ${WALLET_BALE_BOT_TOKEN:}
+    chat-id: ${WALLET_BALE_CHAT_ID:}
+  rate-monitor:
+    stale-alert-age-seconds: ${WALLET_RATE_STALE_ALERT_AGE_SECONDS:1800}
+    freshness-check-interval: ${WALLET_RATE_FRESHNESS_CHECK_INTERVAL:60000}
   reserved-transfer:
     life-time: 15 #minutes
   symbols: ${SYMBOLS}
