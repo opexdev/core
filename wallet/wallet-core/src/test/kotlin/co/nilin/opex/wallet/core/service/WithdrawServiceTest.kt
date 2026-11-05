@@ -513,7 +513,7 @@ class WithdrawServiceTest {
 
             Assertions.assertEquals(WITHDRAW_UUID, result.withdrawId)
             Assertions.assertEquals(WithdrawStatus.REQUESTED, result.status)
-            Assertions.assertEquals(WithdrawNextAction.OTP_EMAIL, result.nextAction)
+            Assertions.assertEquals(WithdrawNextAction.OTP_MOBILE, result.nextAction)
         }
     }
 

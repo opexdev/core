@@ -12,8 +12,8 @@ class WithdrawActionResult(
 }
 
 enum class WithdrawNextAction(val order: Int) {
-    OTP_EMAIL(1),
-    OTP_MOBILE(2),
+    OTP_MOBILE(1),
+    OTP_EMAIL(2),
     WAITING_FOR_ADMIN(3);
 
     companion object {

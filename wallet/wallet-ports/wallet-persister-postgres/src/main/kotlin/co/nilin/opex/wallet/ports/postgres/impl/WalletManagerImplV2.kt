@@ -35,6 +35,7 @@ class WalletManagerImplV2(
 
 
     override suspend fun isDepositAllowed(wallet: Wallet, amount: BigDecimal): Boolean {
+        if (wallet.owner.isLegal) return true
         var limit = walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
             wallet.owner.id!!, wallet.currency.symbol!!, wallet.id!!, WalletLimitAction.DEPOSIT
         ).awaitFirstOrNull()
@@ -84,6 +85,7 @@ class WalletManagerImplV2(
         require(amount >= BigDecimal.ZERO)
         var evaluate = wallet.balance.amount >= amount
         if (!evaluate) return false
+        if (wallet.owner.isLegal) return true
         if (evaluate) {
             var limit = walletLimitsRepository.findByOwnerAndCurrencyAndWalletAndAction(
                 wallet.owner.id!!, wallet.currency.symbol!!, wallet.id!!, WalletLimitAction.WITHDRAW

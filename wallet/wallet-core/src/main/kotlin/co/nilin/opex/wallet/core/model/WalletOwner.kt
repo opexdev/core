@@ -8,4 +8,6 @@ data class WalletOwner(
     val isTradeAllowed: Boolean,
     val isWithdrawAllowed: Boolean,
     val isDepositAllowed: Boolean
-)
+) {
+    val isLegal: Boolean get() = level.equals(PersonType.LEGAL.name, ignoreCase = true)
+}

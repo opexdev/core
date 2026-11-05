@@ -35,6 +35,7 @@ class WalletOwnerManagerImpl(
 
     override suspend fun isDepositAllowed(owner: WalletOwner, amount: Amount): Boolean {
         require(amount.amount >= BigDecimal.ZERO)
+        if (owner.isLegal) return true
         var evaluate = limitsRepository.findByOwnerAndAction(owner.id!!, WalletLimitAction.DEPOSIT)
             .map { limit -> evaluateLimit(amount.amount, limit, owner, true) }
             .onEmpty { emit(true) }
@@ -53,6 +54,7 @@ class WalletOwnerManagerImpl(
 
     override suspend fun isWithdrawAllowed(owner: WalletOwner, amount: Amount): Boolean {
         require(amount.amount >= BigDecimal.ZERO)
+        if (owner.isLegal) return true
         var evaluate = limitsRepository.findByOwnerAndAction(owner.id!!, WalletLimitAction.WITHDRAW)
             .map { limit -> evaluateLimit(amount.amount, limit, owner, false) }
             .onEmpty { emit(true) }

@@ -9,6 +9,7 @@ import co.nilin.opex.profile.core.data.profile.BankAccount
 import co.nilin.opex.profile.core.data.profile.BankAccountApprovalRequest
 import co.nilin.opex.profile.core.data.profile.BankAccountStatus
 import co.nilin.opex.profile.core.data.profile.NationalityType
+import co.nilin.opex.profile.core.data.profile.PersonType
 import co.nilin.opex.profile.core.spi.BankAccountApprovalRequestPersister
 import co.nilin.opex.profile.core.spi.BankAccountPersister
 import co.nilin.opex.profile.core.spi.InquiryProxy
@@ -51,6 +52,9 @@ class BankAccountManagement(
             profile.nationality == NationalityType.IRANIAN && !identifier.isNullOrBlank() && birthDate != null
 
         val verified = when {
+            profile.personType == PersonType.LEGAL ->
+                VerificationResult.NEEDS_REVIEW
+
             !isAutomaticVerificationEnabled ->
                 VerificationResult.NEEDS_REVIEW
 

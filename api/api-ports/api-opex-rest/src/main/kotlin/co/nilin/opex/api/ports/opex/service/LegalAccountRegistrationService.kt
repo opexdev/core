@@ -178,6 +178,6 @@ class LegalAccountRegistrationService(
         const val INTRODUCTION_LETTER = "introduction-letter"
         const val ARTICLES_OF_ASSOCIATION = "articles-of-association"
         const val OFFICIAL_NEWSPAPER = "official-newspaper"
-        val ALLOWED_EXTENSIONS = setOf("jpg", "jpeg", "png", "webp", "svg")
+        val ALLOWED_EXTENSIONS = setOf("jpg", "jpeg", "png", "webp", "svg", "pdf")
     }
 }

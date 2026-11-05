@@ -56,7 +56,11 @@ class WithdrawService(
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency))
             ?: throw OpexError.CurrencyNotFound.exception()
 
-        if (withdrawLimitEnabled) {
+        // Loaded before the limit checks so a legal account can be exempted from them
+        val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid)
+            ?: throw OpexError.WalletOwnerNotFound.exception()
+
+        if (withdrawLimitEnabled && !owner.isLegal) {
             val userRole =
                 UserRole.getHighestRoleKeycloakName(JwtUtils.extractRoles(token)) ?: UserRole.USER_1.keycloakName
             val canWithdraw = accountantProxy.canRequestWithdraw(
@@ -68,9 +72,6 @@ class WithdrawService(
             if (!canWithdraw) throw OpexError.WithdrawAmountExceeds.exception()
         }
 
-        val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid)
-            ?: throw OpexError.WalletOwnerNotFound.exception()
-
         val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.MAIN, currency)
             ?: throw OpexError.WalletNotFound.exception()
 
@@ -81,13 +82,15 @@ class WithdrawService(
         val realAmount = withdrawCommand.amount - withdrawFee
 
         when {
+            // Balance is not a limit, it binds every account
             withdrawCommand.amount > sourceWallet.balance.amount + withdrawFee ->
                 throw OpexError.WithdrawAmountExceedsWalletBalance.exception()
 
+            // The gateway minimum is a dust floor, not a cap, so it stays for everyone
             withdrawCommand.amount < withdrawData.minimum ->
                 throw OpexError.WithdrawAmountLessThanMinimum.exception()
 
-            withdrawCommand.amount > withdrawData.maximum ->
+            !owner.isLegal && withdrawCommand.amount > withdrawData.maximum ->
                 throw OpexError.WithdrawAmountGreaterThanMaximum.exception()
         }
 
@@ -172,11 +175,11 @@ class WithdrawService(
     private suspend fun createWithdraw(token: String, withdrawUuid: String) {
         val withdraw =
             withdrawPersister.findByWithdrawUuid(withdrawUuid) ?: throw OpexError.WithdrawNotFound.exception()
-        validateUserWithdrawLimit(token, withdraw.ownerUuid, withdraw.currency, withdraw.amount)
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdraw.currency))
             ?: throw OpexError.CurrencyNotFound.exception()
         val owner =
             walletOwnerManager.findWalletOwner(withdraw.ownerUuid) ?: throw OpexError.WalletOwnerNotFound.exception()
+        validateUserWithdrawLimit(token, owner, withdraw.currency, withdraw.amount)
         val sourceWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.MAIN, currency)
             ?: throw OpexError.WalletNotFound.exception()
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(
@@ -539,13 +542,19 @@ class WithdrawService(
         }
     }
 
-    private suspend fun validateUserWithdrawLimit(token: String, uuid: String, currency: String, amount: BigDecimal) {
+    private suspend fun validateUserWithdrawLimit(
+        token: String,
+        owner: WalletOwner,
+        currency: String,
+        amount: BigDecimal
+    ) {
         if (!withdrawLimitEnabled) return
+        if (owner.isLegal) return
 
         val roles = JwtUtils.extractRoles(token)
         val userRole = UserRole.getHighestRoleKeycloakName(roles) ?: UserRole.USER_1.keycloakName
 
-        val canWithdraw = accountantProxy.canRequestWithdraw(uuid, userRole, currency, amount)
+        val canWithdraw = accountantProxy.canRequestWithdraw(owner.uuid, userRole, currency, amount)
         if (!canWithdraw) throw OpexError.WithdrawAmountExceeds.exception()
     }
 

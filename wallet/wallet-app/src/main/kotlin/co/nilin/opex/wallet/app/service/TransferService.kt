@@ -100,7 +100,7 @@ class TransferService(
         val scaledDestAmount = precisionService.calculatePrecision(destAmount, destSymbol)
 
         validateMinimumAmount(sourceSymbol, sourceAmount, scaledDestAmount, destSymbol, rate.rate)
-        validateMaximumAmount(sourceSymbol, sourceAmount, destSymbol, scaledDestAmount)
+        validateMaximumAmount(senderUuid, sourceSymbol, sourceAmount, destSymbol, scaledDestAmount)
         precisionService.validatePrecision(scaledDestAmount, destSymbol)
 
         checkIfSystemHasEnoughBalance(destSymbol, receiverWalletType, scaledDestAmount)
@@ -172,7 +172,7 @@ class TransferService(
         val scaledDestAmount = precisionService.calculatePrecision(rawDestAmount, destSymbol)
 
         validateMinimumAmount(sourceSymbol, sourceAmount, scaledDestAmount, destSymbol, finalRate)
-        validateMaximumAmount(sourceSymbol, sourceAmount, destSymbol, scaledDestAmount)
+        validateMaximumAmount(senderUuid, sourceSymbol, sourceAmount, destSymbol, scaledDestAmount)
         precisionService.validatePrecision(scaledDestAmount, destSymbol)
         checkIfSystemHasEnoughBalance(destSymbol, receiverWalletType, scaledDestAmount)
         val reserveNumber = UUID.randomUUID().toString()
@@ -442,11 +442,14 @@ class TransferService(
     }
 
     private suspend fun validateMaximumAmount(
+        senderUuid: String,
         sourceSymbol: String,
         sourceAmount: BigDecimal,
         destSymbol: String,
         destAmount: BigDecimal,
     ) {
+        if (walletOwnerManager.findWalletOwner(senderUuid)?.isLegal == true) return
+
         suspend fun getMaxOrder(symbol: String): BigDecimal {
             return currencyManager.fetchCurrencyMaxOrder(symbol) ?: BigDecimal.ZERO
         }
