@@ -56,7 +56,6 @@ class WithdrawService(
         val currency = currencyService.fetchCurrency(FetchCurrency(symbol = withdrawCommand.currency))
             ?: throw OpexError.CurrencyNotFound.exception()
 
-        // Loaded before the limit checks so a legal account can be exempted from them
         val owner = walletOwnerManager.findWalletOwner(withdrawCommand.uuid)
             ?: throw OpexError.WalletOwnerNotFound.exception()
 
@@ -82,11 +81,9 @@ class WithdrawService(
         val realAmount = withdrawCommand.amount - withdrawFee
 
         when {
-            // Balance is not a limit, it binds every account
             withdrawCommand.amount > sourceWallet.balance.amount + withdrawFee ->
                 throw OpexError.WithdrawAmountExceedsWalletBalance.exception()
 
-            // The gateway minimum is a dust floor, not a cap, so it stays for everyone
             withdrawCommand.amount < withdrawData.minimum ->
                 throw OpexError.WithdrawAmountLessThanMinimum.exception()
 
