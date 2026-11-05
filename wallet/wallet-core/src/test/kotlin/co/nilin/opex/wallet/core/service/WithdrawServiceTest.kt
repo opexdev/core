@@ -513,7 +513,7 @@ class WithdrawServiceTest {
 
             Assertions.assertEquals(WITHDRAW_UUID, result.withdrawId)
             Assertions.assertEquals(WithdrawStatus.REQUESTED, result.status)
-            Assertions.assertEquals(WithdrawNextAction.OTP_EMAIL, result.nextAction)
+            Assertions.assertEquals(WithdrawNextAction.OTP_MOBILE, result.nextAction)
         }
     }
 
@@ -1302,6 +1302,9 @@ class WithdrawServiceTest {
             val currency = createCurrency()
 
             coEvery { precisionService.validatePrecision(any(), any()) } returns Unit
+            coEvery {
+                walletOwnerManager.findWalletOwner(USER_UUID)
+            } returns createOwner()
             coEvery { gatewayService.fetchGateway(any(), any()) } returns OnChainGatewayCommand(
                 currencySymbol = CURRENCY,
                 implementationSymbol = DEST_SYMBOL,

@@ -5,7 +5,7 @@ class WithdrawActionResult(
 )
 
 enum class WithdrawNextAction() {
-    OTP_EMAIL,
     OTP_MOBILE,
+    OTP_EMAIL,
     WAITING_FOR_ADMIN;
 }
