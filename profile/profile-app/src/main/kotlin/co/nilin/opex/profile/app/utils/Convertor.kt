@@ -1,6 +1,7 @@
 package co.nilin.opex.profile.app.utils
 
 import co.nilin.opex.profile.app.dto.AddressBookResponse
+import co.nilin.opex.profile.app.dto.BankAccountAdminResponse
 import co.nilin.opex.profile.app.dto.BankAccountResponse
 import co.nilin.opex.profile.core.data.profile.AddressBook
 import co.nilin.opex.profile.core.data.profile.BankAccount
@@ -13,6 +14,20 @@ fun BankAccount.toBankAccountResponse() = BankAccountResponse(
     accountNumber = this.accountNumber,
     bank = this.bank,
     status = this.status
+)
+
+fun BankAccount.toBankAccountAdminResponse() = BankAccountAdminResponse(
+    id = this.id!!,
+    uuid = this.uuid,
+    name = this.name,
+    cardNumber = this.cardNumber,
+    iban = this.iban,
+    accountNumber = this.accountNumber,
+    bank = this.bank,
+    status = this.status,
+    createDate = this.createDate,
+    updateDate = this.updateDate,
+    creator = this.creator
 )
 
 fun AddressBook.toAddressBookResponse() = AddressBookResponse(

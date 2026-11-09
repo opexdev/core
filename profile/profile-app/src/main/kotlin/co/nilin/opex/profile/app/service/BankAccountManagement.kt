@@ -1,8 +1,11 @@
 package co.nilin.opex.profile.app.service
 
 import co.nilin.opex.common.OpexError
+import co.nilin.opex.profile.app.dto.AddBankAccountAdminRequest
 import co.nilin.opex.profile.app.dto.AddBankAccountRequest
+import co.nilin.opex.profile.app.dto.BankAccountAdminResponse
 import co.nilin.opex.profile.app.dto.BankAccountResponse
+import co.nilin.opex.profile.app.utils.toBankAccountAdminResponse
 import co.nilin.opex.profile.app.utils.toBankAccountResponse
 import co.nilin.opex.profile.core.data.inquiry.IbanInfo
 import co.nilin.opex.profile.core.data.profile.BankAccount
@@ -100,6 +103,41 @@ class BankAccountManagement(
     }
 
     suspend fun deleteBankAccount(id: Long, uuid: String) {
+        bankAccountPersister.delete(id, uuid)
+    }
+
+    suspend fun getBankAccountsForAdmin(uuid: String): List<BankAccountAdminResponse> {
+        return bankAccountPersister.findAll(uuid)
+            .map { it.toBankAccountAdminResponse() }
+    }
+
+    suspend fun addBankAccountByAdmin(
+        uuid: String,
+        request: AddBankAccountAdminRequest,
+        adminUuid: String
+    ): BankAccountAdminResponse {
+        if (request.cardNumber.isNullOrBlank() && request.iban.isNullOrBlank())
+            throw OpexError.InvalidRequestBody.exception("Either Card Number or IBAN must be provided")
+        profilePersister.getProfile(uuid)
+
+        val saved = bankAccountPersister.save(
+            BankAccount(
+                uuid = uuid,
+                name = request.name,
+                cardNumber = request.cardNumber,
+                iban = request.iban,
+                accountNumber = request.accountNumber,
+                bank = request.bank,
+                status = BankAccountStatus.VERIFIED,
+                createDate = LocalDateTime.now(),
+                creator = adminUuid
+            )
+        )
+        return saved.toBankAccountAdminResponse()
+    }
+
+    suspend fun deleteBankAccountByAdmin(uuid: String, id: Long, adminId: String) {
+        logger.info("Admin $adminId is deleting bank account $id of $uuid")
         bankAccountPersister.delete(id, uuid)
     }
 
