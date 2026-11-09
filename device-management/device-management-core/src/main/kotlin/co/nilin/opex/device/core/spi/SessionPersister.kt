@@ -1,5 +1,6 @@
 package co.nilin.opex.device.core.spi
 
+import co.nilin.opex.device.core.data.DailyLoginStat
 import co.nilin.opex.device.core.data.Session
 import co.nilin.opex.device.core.data.SessionStatus
 import co.nilin.opex.device.core.data.SessionsRequest
@@ -25,5 +26,7 @@ interface SessionPersister {
 
     suspend fun logoutOtherSessions(userId: String, currentSessionState: String)
     suspend fun markExpiredSessions(): Int
+
+    suspend fun countDailyLogins(from: LocalDateTime, to: LocalDateTime): List<DailyLoginStat>
 
 }

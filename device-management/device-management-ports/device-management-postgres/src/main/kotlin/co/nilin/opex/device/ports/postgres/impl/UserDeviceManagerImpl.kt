@@ -61,6 +61,10 @@ class UserDeviceManagerImpl(
         }
     }
 
+    override suspend fun countActiveUsers(from: LocalDateTime, to: LocalDateTime): Long {
+        return userDeviceRepository.countActiveUsers(from, to).awaitFirstOrNull() ?: 0
+    }
+
     override suspend fun unlinkDeviceFromUser(userId: String, deviceId: Long): Boolean {
         return try {
             userDeviceRepository.findByUserIdAndDeviceId(userId, deviceId)

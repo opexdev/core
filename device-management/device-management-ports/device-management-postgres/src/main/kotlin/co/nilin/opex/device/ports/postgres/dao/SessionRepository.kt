@@ -1,6 +1,7 @@
 package co.nilin.opex.device.ports.postgres.dao
 
 
+import co.nilin.opex.device.core.data.DailyLoginStat
 import co.nilin.opex.device.core.data.SessionStatus
 import co.nilin.opex.device.core.data.UserSessionDevice
 import co.nilin.opex.device.ports.postgres.model.SessionModel
@@ -30,7 +31,22 @@ interface SessionRepository : R2dbcRepository<SessionModel, Long> {
 
     @Query(
         """
-           SELECT 
+    SELECT COUNT(DISTINCT s.uuid)      AS user_count
+    FROM sessions s
+    WHERE s.create_date >= :from
+      AND s.create_date <= :to
+    GROUP BY CAST(s.create_date AS DATE)
+    ORDER BY CAST(s.create_date AS DATE)
+"""
+    )
+    fun countDailyLogins(
+        @Param("from") from: LocalDateTime,
+        @Param("to") to: LocalDateTime
+    ): Flux<DailyLoginStat>
+
+    @Query(
+        """
+           SELECT
         d.device_uuid,
         d.os,
         d.os_version,

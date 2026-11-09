@@ -21,4 +21,6 @@ interface UserDevicePersister {
     ): Boolean
 
     suspend fun unlinkDeviceFromUser(userId: String, deviceId: Long): Boolean
+
+    suspend fun countActiveUsers(from: LocalDateTime, to: LocalDateTime): Long
 }
