@@ -238,6 +238,43 @@ class ProfileProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClie
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get bank account approval request of $bankAccountId") }
     }
 
+    override suspend fun getBankAccountsOfUser(token: String, uuid: String): List<BankAccountAdminResponse> {
+        return webClient.get()
+            .uri("$baseUrl/admin/bank-account/user/$uuid")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<List<BankAccountAdminResponse>>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get bank accounts of $uuid") }
+    }
+
+    override suspend fun addBankAccountForUser(
+        token: String,
+        uuid: String,
+        request: AddBankAccountAdminRequest
+    ): BankAccountAdminResponse {
+        return webClient.post()
+            .uri("$baseUrl/admin/bank-account/user/$uuid")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<BankAccountAdminResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to add a bank account for $uuid") }
+    }
+
+    override suspend fun deleteBankAccountOfUser(token: String, uuid: String, id: Long) {
+        webClient.delete()
+            .uri("$baseUrl/admin/bank-account/user/$uuid/$id")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ it.isError }) { response -> response.createException() }
+            .awaitBodilessEntity()
+    }
+
     override suspend fun getBankAccountApprovalRequests(
         token: String,
         request: BankAccountApprovalRequestFilter

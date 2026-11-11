@@ -1,5 +1,7 @@
 package co.nilin.opex.api.ports.opex.controller
 
+import co.nilin.opex.api.core.inout.AddBankAccountAdminRequest
+import co.nilin.opex.api.core.inout.BankAccountAdminResponse
 import co.nilin.opex.api.core.inout.BankAccountApprovalAdminResponse
 import co.nilin.opex.api.core.inout.BankAccountApprovalRequestFilter
 import co.nilin.opex.api.core.inout.UpdateBankAccountApprovalBody
@@ -17,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -29,11 +32,135 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/opex/v1/admin/bank-account")
 @Tag(
     name = "Bank Account Admin",
-    description = "Admin review of bank accounts whose identity inquiry could not be completed."
+    description = "Admin management of users' bank accounts and review of the ones whose identity inquiry could not be completed."
 )
 class BankAccountAdminController(
     private val profileProxy: ProfileProxy
 ) {
+
+    @GetMapping("/user/{uuid}", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @Operation(
+        summary = "Get a user's bank accounts",
+        description = """GET /opex/v1/admin/bank-account/user/{uuid}.
+Security: Bearer admin-token required. Required authority: ROLE_admin.
+Behavior: Every bank account of that user, whatever its status. Unlike the user-facing list this also carries the owner, the dates and `creator`, which tells an account an admin added apart from one the user submitted.
+Allowed values:
+- status: WAITING, VERIFIED, REJECTED.""",
+        security = [SecurityRequirement(name = "bearerAuth")],
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response. Empty when the user has no bank account.",
+                content = [Content(
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = BankAccountAdminResponse::class))
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Forbidden. Required authority is missing: ROLE_admin. No response body.",
+                content = [Content()]
+            )
+        ]
+    )
+    suspend fun getUserBankAccounts(
+        @Parameter(name = "uuid", description = "The user's uuid.", required = true)
+        @PathVariable("uuid") uuid: String,
+        @Parameter(hidden = true)
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): List<BankAccountAdminResponse> {
+        return profileProxy.getBankAccountsOfUser(securityContext.jwtAuthentication().tokenValue(), uuid)
+    }
+
+    @PostMapping("/user/{uuid}", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @Operation(
+        summary = "Add a bank account for a user",
+        description = """POST /opex/v1/admin/bank-account/user/{uuid}.
+Security: Bearer admin-token required. Required authority: ROLE_admin.
+Validation: At least one of `cardNumber` or `iban` is required, and the uuid must belong to an existing profile.
+Behavior: Stores the account as VERIFIED with the acting admin as `creator`. The admin adding it is itself the verification, so no identity inquiry runs and no review request is created. The duplicate check still applies: a card or iban already VERIFIED for another user is refused, since handing one account to two users is a data problem rather than a verification one.
+Note: `accountNumber` and `bank` are worth supplying. No inquiry fills them here, and deposit routing finds an owner by `accountNumber` alone.
+Allowed values:
+- status: WAITING, VERIFIED, REJECTED.""",
+        security = [SecurityRequirement(name = "bearerAuth")],
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = BankAccountAdminResponse::class)
+                )]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Neither card number nor iban was given, or the user already has this account.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Forbidden. Either the caller is missing ROLE_admin, or the card or iban is already verified for another user.",
+                content = [Content()]
+            ),
+            ApiResponse(responseCode = "404", description = "No profile with this uuid.", content = [Content()])
+        ]
+    )
+    suspend fun addBankAccountForUser(
+        @Parameter(name = "uuid", description = "The user's uuid.", required = true)
+        @PathVariable("uuid") uuid: String,
+        @RequestBody request: AddBankAccountAdminRequest,
+        @Parameter(hidden = true)
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): BankAccountAdminResponse {
+        return profileProxy.addBankAccountForUser(
+            securityContext.jwtAuthentication().tokenValue(),
+            uuid,
+            request
+        )
+    }
+
+    @DeleteMapping("/user/{uuid}/{id}")
+    @Operation(
+        summary = "Delete a bank account of a user",
+        description = """DELETE /opex/v1/admin/bank-account/user/{uuid}/{id}.
+Security: Bearer admin-token required. Required authority: ROLE_admin.
+Behavior: Removes the account for good, along with its review request. Both the uuid and the id are checked, so a wrong pairing is refused rather than deleting somebody else's account.""",
+        security = [SecurityRequirement(name = "bearerAuth")],
+        responses = [
+            ApiResponse(responseCode = "200", description = "No response body.", content = [Content()]),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Forbidden. Either the caller is missing ROLE_admin, or the account does not belong to this uuid.",
+                content = [Content()]
+            ),
+            ApiResponse(responseCode = "404", description = "No bank account with this id.", content = [Content()])
+        ]
+    )
+    suspend fun deleteBankAccountOfUser(
+        @Parameter(name = "uuid", description = "The user's uuid.", required = true)
+        @PathVariable("uuid") uuid: String,
+        @Parameter(name = "id", description = "Bank account id.", required = true)
+        @PathVariable("id") id: Long,
+        @Parameter(hidden = true)
+        @CurrentSecurityContext securityContext: SecurityContext
+    ) {
+        profileProxy.deleteBankAccountOfUser(securityContext.jwtAuthentication().tokenValue(), uuid, id)
+    }
 
     @PostMapping("/approval-requests", produces = [MediaType.APPLICATION_JSON_VALUE])
     @Operation(

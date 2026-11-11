@@ -50,6 +50,17 @@ interface ProfileProxy {
 
     suspend fun getUserBankAccountApprovalRequest(token: String, bankAccountId: Long): BankAccountApprovalUserResponse
 
+    //Bank Account admin management
+    suspend fun getBankAccountsOfUser(token: String, uuid: String): List<BankAccountAdminResponse>
+
+    suspend fun addBankAccountForUser(
+        token: String,
+        uuid: String,
+        request: AddBankAccountAdminRequest
+    ): BankAccountAdminResponse
+
+    suspend fun deleteBankAccountOfUser(token: String, uuid: String, id: Long)
+
     //Bank Account approval requests
     suspend fun getBankAccountApprovalRequests(
         token: String,
