@@ -156,7 +156,6 @@ class DepositService(
                 depositType = DepositType.OFF_CHAIN,
                 gatewayUuid = null,
                 transferMethod = TransferMethod.BANK_DEPOSIT,
-                persistInvalidDeposit = false
             )
         }
         return DepositWebhookResponse(request.referenceNumber, DepositStatus.DONE.name, false)
