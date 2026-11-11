@@ -181,7 +181,6 @@ class DepositService(
         depositType: DepositType,
         gatewayUuid: String?,
         transferMethod: TransferMethod?,
-        persistInvalidDeposit: Boolean = true,
     ): TransferResult? {
 
         logger.info(
@@ -222,10 +221,7 @@ class DepositService(
         }
 
         if (!isValid) {
-            if (persistInvalidDeposit)
                 traceDepositService.saveDepositInNewTransaction(depositCommand)
-            else
-                depositPersister.persist(depositCommand)
             return null
         }
         depositPersister.persist(depositCommand)
