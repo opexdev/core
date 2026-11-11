@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.security.SecurityRequirements
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.CurrentSecurityContext
@@ -131,6 +132,43 @@ Behavior: Verifies the OTP and changes the user's password.""",
         val auth = securityContext.jwtAuthentication()
         manualRateLimiterService.check(auth.name, ManualRateLimitGroupType.VERIFY_OTP, exchange)
         authProxy.confirmChangePassword(request, auth.tokenValue())
+        return ResponseEntity.ok().build()
+    }
+
+    @PostMapping("/force-change")
+    @SecurityRequirements
+    @Operation(
+        summary = "Change the password of a must-change-password account",
+        description = """POST /opex/v1/user/password/force-change.
+Security: Public endpoint. No Bearer token is required: the account has no access token yet, the
+`token.access_token` the login flow returned is the proof.
+
+Validation: `newPassword` and `token` are required. `token` is the `token.access_token` returned by
+the token endpoint (when no second factor is configured) or by the token confirm endpoint (after the
+OTP was verified). It is single use, bound to one account, and expires in two minutes.
+Behavior: Replaces the password and clears the `mustChangePassword` attribute. No session is created
+and no token is returned: the user logs in again from the start with the new password.
+Response body: No response body.""",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Password changed successfully. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "The password is blank, or the token is invalid, expired, or already used.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "The account is no longer required to change its password.",
+                content = [Content()]
+            )
+        ]
+    )
+    suspend fun forceChangePassword(@RequestBody request: ForceChangePasswordRequest): ResponseEntity<Nothing> {
+        authProxy.forceChangePassword(request)
         return ResponseEntity.ok().build()
     }
 }

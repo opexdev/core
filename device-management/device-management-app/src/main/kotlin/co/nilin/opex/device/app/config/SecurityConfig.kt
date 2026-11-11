@@ -22,6 +22,7 @@ class SecurityConfig {
         return http.csrf { it.disable() }
             .authorizeExchange {
                 it.pathMatchers("/actuator/**").permitAll()
+                    .pathMatchers("/admin/**").hasAuthority("ROLE_admin")
                     .anyExchange().permitAll()
             }
             .oauth2ResourceServer { it.jwt(Customizer.withDefaults()) }

@@ -396,7 +396,7 @@ class WithdrawService(
                 receiverWallet,
                 Amount(sourceWallet.currency, withdraw.amount + withdraw.appliedFee),
                 null,
-                "wallet:withdraw:${sourceWallet.owner.uuid}:${WithdrawStatus.ACCEPTED}:${withdraw.destTransactionRef}",
+                "wallet:withdraw:${sourceWallet.owner.uuid}:${WithdrawStatus.ACCEPTED}:${doneCommand.destTransactionRef}",
                 TransferCategory.WITHDRAW_ACCEPT
             )
         )

@@ -22,6 +22,7 @@ class LoginService(
     private val googleProxy: GoogleProxy,
     private val captchaProxy: CaptchaProxy,
     private val authEventProducer: AuthEventProducer,
+    private val tempTokenService: TempTokenService,
     @Value("\${app.pre-auth-client-secret}")
     private val preAuthClientSecretKey: String,
 ) {
@@ -43,8 +44,15 @@ class LoginService(
             ?.let { runCatching { OTPType.valueOf(it) }.getOrNull() }
             ?: OTPType.NONE
 
-        if (user.mustChangePassword)
-            return TokenResponse(preAuthToken(username, request.password), null, null, mustChangePassword = true)
+        if (user.mustChangePassword && otpType == OTPType.NONE) {
+            keycloakProxy.checkUserCredentials(user, request.password)
+            return TokenResponse(
+                token = changePasswordToken(user.id),
+                otp = null,
+                otpCode = null,
+                mustChangePassword = true
+            )
+        }
 
         if (otpType == OTPType.NONE) {
             val token = keycloakProxy.getUserToken(
@@ -76,7 +84,8 @@ class LoginService(
                 TokenResponse(
                     token = token,
                     otp = RequiredOTP(otpType, destination),
-                    otpCode = res.otp
+                    otpCode = res.otp,
+                    mustChangePassword = user.mustChangePassword
                 )
             }
 
@@ -84,7 +93,8 @@ class LoginService(
                 TokenResponse(
                     token = token,
                     otp = RequiredOTP(OTPType.TOTP, user.id),
-                    otpCode = null
+                    otpCode = null,
+                    mustChangePassword = user.mustChangePassword
                 )
             }
 
@@ -132,8 +142,6 @@ class LoginService(
         val user = keycloakProxy.findUserByUsername(username)
             ?: throw OpexError.UserNotFound.exception()
 
-        if (user.mustChangePassword) throw OpexError.PasswordChangeRequired.exception()
-
         when (val otpType = user.currentOtpMethod) {
             OTPType.EMAIL, OTPType.SMS -> {
                 val destination = when (otpType) {
@@ -166,6 +174,14 @@ class LoginService(
             OTPType.NONE -> throw OpexError.InvalidOTPType.exception()
         }
 
+        if (user.mustChangePassword)
+            return TokenResponse(
+                token = changePasswordToken(user.id),
+                otp = null,
+                otpCode = null,
+                mustChangePassword = true
+            )
+
         val token = keycloakProxy.getClientBTokenWithBootstrap(
             bootstrapToken = request.token,
             clientId = request.clientId,
@@ -177,6 +193,17 @@ class LoginService(
 
         return TokenResponse(token, null, null)
     }
+
+    private fun changePasswordToken(userId: String) = Token(
+        accessToken = tempTokenService.generateToken(userId, OTPAction.FORCE_CHANGE_PASSWORD),
+        expiresIn = TempTokenService.ACTION_TOKEN_LIFETIME_SECONDS.toInt(),
+        refreshExpiresIn = 0,
+        refreshToken = null,
+        tokenType = "Bearer",
+        notBeforePolicy = null,
+        sessionState = null,
+        scope = null
+    )
 
     private suspend fun preAuthToken(username: Username, password: String): Token {
         return keycloakProxy.getUserToken(

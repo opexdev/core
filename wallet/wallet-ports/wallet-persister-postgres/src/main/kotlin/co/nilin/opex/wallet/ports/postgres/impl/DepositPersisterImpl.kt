@@ -23,6 +23,10 @@ class DepositPersisterImpl(private val depositRepository: DepositRepository) : D
         return dm.toDto()
     }
 
+    override suspend fun existsByTransactionRef(transactionRef: String): Boolean {
+        return (depositRepository.countByTransactionRef(transactionRef).awaitFirstOrElse { 0 }) > 0
+    }
+
     override suspend fun findDepositHistory(
         uuid: String,
         currency: String?,

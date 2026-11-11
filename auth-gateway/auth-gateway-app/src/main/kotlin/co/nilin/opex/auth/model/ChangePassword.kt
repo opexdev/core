@@ -5,6 +5,11 @@ data class ChangePasswordRequest(
     val newPassword: String,
 )
 
+data class ForceChangePasswordRequest(
+    val token: String,
+    val newPassword: String,
+)
+
 data class ChangePasswordResponse(
     val token: String,
     val otp: RequiredOTP,

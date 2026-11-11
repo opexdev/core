@@ -10,6 +10,8 @@ interface DepositPersister {
 
     suspend fun persist(deposit: Deposit): Deposit
 
+    suspend fun existsByTransactionRef(transactionRef: String): Boolean
+
     suspend fun findDepositHistory(
         uuid: String,
         currency: String?,

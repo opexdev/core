@@ -1,6 +1,5 @@
 package co.nilin.opex.wallet.app.service
 
-import co.nilin.opex.wallet.ports.kafka.listener.model.PersonType
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.app.dto.ManualTransferRequest
@@ -9,6 +8,7 @@ import co.nilin.opex.wallet.app.dto.PaymentDepositResponse
 import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.*
+import co.nilin.opex.wallet.ports.kafka.listener.model.PersonType
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -76,6 +76,9 @@ class DepositService(
         logger.info(
             "deposit manually: $senderUuid to $receiverUuid on $symbol at ${LocalDateTime.now()}"
         )
+
+        if (depositPersister.existsByTransactionRef(request.ref))
+            throw OpexError.DuplicateDepositRef.exception()
 
         val gateway = currencyServiceV2
             .fetchCurrencyGateway(request.gatewayUuid, symbol)
@@ -153,7 +156,6 @@ class DepositService(
                 depositType = DepositType.OFF_CHAIN,
                 gatewayUuid = null,
                 transferMethod = TransferMethod.BANK_DEPOSIT,
-                persistInvalidDeposit = false
             )
         }
         return DepositWebhookResponse(request.referenceNumber, DepositStatus.DONE.name, false)
@@ -178,7 +180,6 @@ class DepositService(
         depositType: DepositType,
         gatewayUuid: String?,
         transferMethod: TransferMethod?,
-        persistInvalidDeposit: Boolean = true,
     ): TransferResult? {
 
         logger.info(
@@ -218,14 +219,11 @@ class DepositService(
             depositCommand.status = DepositStatus.INVALID
         }
 
-        if (persistInvalidDeposit)
-            traceDepositService.saveDepositInNewTransaction(depositCommand)
-        else
-            depositPersister.persist(depositCommand)
-
         if (!isValid) {
+                traceDepositService.saveDepositInNewTransaction(depositCommand)
             return null
         }
+        depositPersister.persist(depositCommand)
 
         logger.info(
             "Going to charge wallet on a ${depositType.name} deposit event :" +
@@ -235,7 +233,7 @@ class DepositService(
         val (actualSenderUuid, transferCategory) =
             if (
                 senderUuid != null &&
-                depositType == co.nilin.opex.wallet.core.model.DepositType.OFF_CHAIN &&
+                depositType == DepositType.OFF_CHAIN &&
                 transferMethod == TransferMethod.MANUALLY
             ) {
                 senderUuid to TransferCategory.DEPOSIT_MANUALLY
@@ -287,7 +285,7 @@ class DepositService(
         return when (gateway) {
 
             is OnChainGatewayCommand -> {
-                depositCommand.depositType = co.nilin.opex.wallet.core.model.DepositType.ON_CHAIN
+                depositCommand.depositType = DepositType.ON_CHAIN
                 depositCommand.currency = gateway.currencySymbol!!
                 depositCommand.network = gateway.chain
 
@@ -300,7 +298,7 @@ class DepositService(
             }
 
             is OffChainGatewayCommand -> {
-                depositCommand.depositType = co.nilin.opex.wallet.core.model.DepositType.OFF_CHAIN
+                depositCommand.depositType = DepositType.OFF_CHAIN
                 depositCommand.currency = gateway.currencySymbol!!
                 depositCommand.network = null
                 depositCommand.transferMethod = gateway.transferMethod

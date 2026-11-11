@@ -1,6 +1,7 @@
 package co.nilin.opex.device.ports.postgres.impl
 
 
+import co.nilin.opex.device.core.data.DailyLoginStat
 import co.nilin.opex.device.core.data.Session
 import co.nilin.opex.device.core.data.SessionStatus
 import co.nilin.opex.device.core.data.SessionsRequest
@@ -109,5 +110,12 @@ class SessionManagerImpl(
 
         logger.info("Expired ${expiredSessions.size} sessions")
         return expiredSessions.size
+    }
+
+    override suspend fun countDailyLogins(from: LocalDateTime, to: LocalDateTime): List<DailyLoginStat> {
+        return sessionRepository.countDailyLogins(from, to)
+            .collectList()
+            .awaitFirstOrNull()
+            ?: emptyList()
     }
 }

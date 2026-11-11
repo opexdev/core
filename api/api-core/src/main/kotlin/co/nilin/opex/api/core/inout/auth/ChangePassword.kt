@@ -19,3 +19,8 @@ data class ConfirmChangePasswordRequest(
 data class ResendChangePasswordOtpRequest(
     val token: String,
 )
+
+data class ForceChangePasswordRequest(
+    val token: String,
+    val newPassword: String,
+)

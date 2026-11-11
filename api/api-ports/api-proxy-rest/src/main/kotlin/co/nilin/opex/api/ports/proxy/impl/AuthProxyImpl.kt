@@ -368,6 +368,18 @@ class AuthProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient)
             .awaitBodilessEntity()
     }
 
+    override suspend fun forceChangePassword(request: ForceChangePasswordRequest) {
+        webClient.post()
+            .uri("$baseUrl/v1/user/password/force-change")
+            .accept(MediaType.APPLICATION_JSON)
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                response.createException()
+            }
+            .awaitBodilessEntity()
+    }
+
     override suspend fun createLegalRepresentative(
         request: CreateLegalRepresentativeRequest,
         token: String

@@ -62,6 +62,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
     UsernameOrPasswordIsIncorrect(5021, "Username or password is incorrect", HttpStatus.BAD_REQUEST),
     UserAlreadyExists(5022, "User is already registered", HttpStatus.BAD_REQUEST),
     PasswordChangeRequired(5023, "Password must be changed before continuing", HttpStatus.FORBIDDEN),
+    PasswordChangeNotRequired(5024, "This user is not required to change their password", HttpStatus.FORBIDDEN),
 
     // code 6000: wallet
     WalletOwnerNotFound(6001, null, HttpStatus.NOT_FOUND),
@@ -124,6 +125,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
         "Destination address does not match the expected format for this network",
         HttpStatus.BAD_REQUEST
     ),
+    DuplicateDepositRef(6057, "A deposit with this reference already exists", HttpStatus.BAD_REQUEST),
 
 
     // code 7000: api
