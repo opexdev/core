@@ -14,6 +14,9 @@ import java.time.LocalDateTime
 @Repository
 interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
 
+    @Query("select count(1) from deposits where transaction_ref = :transactionRef")
+    fun countByTransactionRef(transactionRef: String): Mono<Long>
+
     @Query(
         """
         select * from deposits 

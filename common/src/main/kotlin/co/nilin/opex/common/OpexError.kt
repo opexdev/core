@@ -125,6 +125,7 @@ enum class OpexError(val code: Int, val message: String?, val status: HttpStatus
         "Destination address does not match the expected format for this network",
         HttpStatus.BAD_REQUEST
     ),
+    DuplicateDepositRef(6057, "A deposit with this reference already exists", HttpStatus.BAD_REQUEST),
 
 
     // code 7000: api
