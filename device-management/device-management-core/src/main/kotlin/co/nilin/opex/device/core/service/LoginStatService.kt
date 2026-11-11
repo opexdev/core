@@ -5,9 +5,7 @@ import co.nilin.opex.device.core.data.ActiveUserStat
 import co.nilin.opex.device.core.data.DailyLoginStat
 import co.nilin.opex.device.core.spi.SessionPersister
 import co.nilin.opex.device.core.spi.UserDevicePersister
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -27,6 +25,8 @@ class LoginStatService(
         val (from, to) = validatedRange(fromMillis, toMillis)
         val count = userDevicePersister.countActiveUsers(from, to)
         return ActiveUserStat(
+            from = from.toLocalDate(),
+            to = to.toLocalDate(),
             userCount = count,
         )
     }

@@ -31,7 +31,8 @@ interface SessionRepository : R2dbcRepository<SessionModel, Long> {
 
     @Query(
         """
-    SELECT COUNT(DISTINCT s.uuid)      AS user_count
+    SELECT CAST(s.create_date AS DATE) AS date,
+           COUNT(DISTINCT s.uuid)      AS user_count
     FROM sessions s
     WHERE s.create_date >= :from
       AND s.create_date <= :to
