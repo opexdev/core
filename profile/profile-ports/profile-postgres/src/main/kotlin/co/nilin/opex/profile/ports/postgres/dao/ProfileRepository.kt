@@ -40,6 +40,13 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
       AND (:status IS NULL OR p.status = :status)
       AND (:kycLevel IS NULL OR p.kyc_level = :kycLevel)
       AND (:personType IS NULL OR p.person_type = :personType)
+      AND (:companyName IS NULL OR EXISTS (
+          SELECT 1
+          FROM company_representative cr
+                   JOIN company c ON c.id = cr.company_id
+          WHERE cr.uuid = p.user_id
+            AND c.name ILIKE CONCAT('%', :companyName, '%')
+      ))
       AND (:createDateFrom IS NULL OR p.create_date >= :createDateFrom)
       AND (:createDateTo IS NULL OR p.create_date <= :createDateTo)
     ORDER BY p.create_date DESC
@@ -58,6 +65,7 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
         status: ProfileStatus?,
         kycLevel: KycLevel?,
         personType: PersonType?,
+        companyName: String?,
         createDateFrom: LocalDateTime?,
         createDateTo: LocalDateTime?,
         limit: Int,
@@ -79,6 +87,13 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
       AND (:status IS NULL OR p.status = :status)
       AND (:kycLevel IS NULL OR p.kyc_level = :kycLevel)
       AND (:personType IS NULL OR p.person_type = :personType)
+      AND (:companyName IS NULL OR EXISTS (
+          SELECT 1
+          FROM company_representative cr
+                   JOIN company c ON c.id = cr.company_id
+          WHERE cr.uuid = p.user_id
+            AND c.name ILIKE CONCAT('%', :companyName, '%')
+      ))
       AND (:createDateFrom IS NULL OR p.create_date >= :createDateFrom)
       AND (:createDateTo IS NULL OR p.create_date <= :createDateTo)
     ORDER BY p.create_date
@@ -97,6 +112,7 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
         status: ProfileStatus?,
         kycLevel: KycLevel?,
         personType: PersonType?,
+        companyName: String?,
         createDateFrom: LocalDateTime?,
         createDateTo: LocalDateTime?,
         limit: Int,

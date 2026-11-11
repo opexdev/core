@@ -94,6 +94,7 @@ class SecurityConfig(
                     .pathMatchers("/v1/oauth/protocol/openid-connect/**").permitAll()
                     .pathMatchers("/v1/oauth.***").permitAll()
                     .pathMatchers("/v1/user/public/**").permitAll()
+                    .pathMatchers(HttpMethod.POST, "/v1/user/password/force-change").permitAll()
                     .pathMatchers("/v1/user/update/**").permitAll()
                     .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .pathMatchers("/v1/admin/**").hasAuthority("ROLE_admin")

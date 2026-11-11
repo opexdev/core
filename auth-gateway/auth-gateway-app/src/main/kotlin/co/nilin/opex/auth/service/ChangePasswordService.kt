@@ -29,6 +29,22 @@ class ChangePasswordService(
         return ChangePasswordResponse(token, otp, otpCode)
     }
 
+    suspend fun forceChangePassword(request: ForceChangePasswordRequest) {
+        if (request.newPassword.isBlank())
+            throw OpexError.InvalidPassword.exception()
+
+        val data = tempTokenService.verifyToken(request.token)
+        if (!data.isValid || data.action != OTPAction.FORCE_CHANGE_PASSWORD)
+            throw OpexError.InvalidToken.exception()
+
+        val user = getUserByUuid(data.userId)
+        if (!user.mustChangePassword)
+            throw OpexError.PasswordChangeNotRequired.exception()
+
+        keycloakProxy.resetPassword(user.id, request.newPassword)
+        keycloakProxy.setMustChangePassword(user.id, false)
+    }
+
     suspend fun resendChangePasswordOtp(request: ResendChangePasswordOtpRequest, uuid: String): ResendOtpResponse {
         val data = verifyToken(request.token, uuid)
         val user = getUserByUuid(uuid)

@@ -26,6 +26,10 @@ class ProfileAdminController(private val profileProxy: ProfileProxy) {
         summary = "Get profiles",
         description = """POST /opex/v1/admin/profile.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
+Filtering: every field is optional and omitted fields are ignored. `firstName`, `lastName`, `mobile`,
+`email` and `companyName` match on a case insensitive substring; the rest match exactly.
+`companyName` keeps only profiles that represent a company whose name matches, so a natural person is
+never returned by it.
 Allowed values:
 - nationality: IRANIAN, NON_IRANIAN.
 - gender: FEMALE, MALE.

@@ -369,9 +369,7 @@ class KeycloakProxy(
                     "attributes" to mapOf(
                         "kycLevel" to "0",
                         Attributes.MOBILE to mobile,
-                        Attributes.OTP to OTPType.NONE.name,
-                        // Set before any password exists, so the account can never be used
-                        // with the generated password without replacing it first
+                        Attributes.OTP to OTPType.SMS.name,
                         Attributes.MUST_CHANGE_PASSWORD to "true"
                     )
                 )

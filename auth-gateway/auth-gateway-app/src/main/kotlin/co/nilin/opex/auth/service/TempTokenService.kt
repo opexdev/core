@@ -33,7 +33,12 @@ class TempTokenService(
 
     fun generateToken(userId: String, action: OTPAction): String {
         val issuedAt = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant())
-        val exp = Date.from(LocalDateTime.now().plusMinutes(2).atZone(ZoneId.systemDefault()).toInstant())
+        val exp = Date.from(
+            LocalDateTime.now()
+                .plusSeconds(ACTION_TOKEN_LIFETIME_SECONDS)
+                .atZone(ZoneId.systemDefault())
+                .toInstant()
+        )
         return Jwts.builder()
             .issuer(ISSUER)
             .claim("userId", userId)
@@ -95,8 +100,9 @@ class TempTokenService(
         }
     }
 
-    private companion object {
-        const val ISSUER = "opex-auth"
-        const val CHANGE_PASSWORD_KEY_LABEL = "opex-auth:change-password-token"
+    companion object {
+        const val ACTION_TOKEN_LIFETIME_SECONDS = 120L
+        private const val ISSUER = "opex-auth"
+        private const val CHANGE_PASSWORD_KEY_LABEL = "opex-auth:change-password-token"
     }
 }
