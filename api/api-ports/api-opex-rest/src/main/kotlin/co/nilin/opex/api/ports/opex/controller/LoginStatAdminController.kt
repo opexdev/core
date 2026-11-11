@@ -48,11 +48,6 @@ Days with no login are absent from the response rather than present with a zero.
                 )]
             ),
             ApiResponse(
-                responseCode = "400",
-                description = "`to` is before `from`, or the range is longer than 366 days.",
-                content = [Content()]
-            ),
-            ApiResponse(
                 responseCode = "401",
                 description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
                 content = [Content()]
@@ -84,7 +79,7 @@ Days with no login are absent from the response rather than present with a zero.
         summary = "Active user count",
         description = """GET /opex/v1/admin/stats/active-users.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
-Validation: `from` and `to` are epoch millis, both inclusive. `to` must not be before `from`, and the range must not exceed 366 days.
+Validation: `from` and `to` are epoch millis, both inclusive. `to` must not be before `from`.
 Behavior: One number, `userCount`, counting distinct people who used the system in the window. Unlike daily-logins this includes people who did not log in during the window but arrived with a session they already had, so it answers "how many people actually showed up".
 How it is measured: the auth gateway emits a login event on token refresh as well as on login, and each event rewrites the user's last-activity timestamp. An active client refreshes within the access token lifespan, so a user browsing the site keeps that timestamp moving.
 Accuracy: `exact` is true only while the window still reaches the present moment, which is the normal case of asking about today. The stored timestamp keeps only each user's latest activity, so for a window that has already closed the count is the number of people whose last activity ever fell inside it and anyone who returned afterwards is missing; `exact` is false there. For a historical series per day use daily-logins, which is backed by immutable rows.""",
@@ -97,11 +92,6 @@ Accuracy: `exact` is true only while the window still reaches the present moment
                     mediaType = "application/json",
                     schema = Schema(implementation = ActiveUserStat::class)
                 )]
-            ),
-            ApiResponse(
-                responseCode = "400",
-                description = "`to` is before `from`, or the range is longer than 366 days.",
-                content = [Content()]
             ),
             ApiResponse(
                 responseCode = "401",
