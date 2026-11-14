@@ -11,6 +11,7 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
+import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
 
 @Component
@@ -52,9 +53,17 @@ class ProfileProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClie
             .awaitFirst()
     }
 
-    override suspend fun findAccountOwner(accountNumber: String): String? {
+    override suspend fun findAccountOwner(accountNumber: String?, iban: String?): String? {
+        val uri = UriComponentsBuilder.fromUriString("$baseUrl/bank-account/owner")
+            .apply {
+                accountNumber?.takeIf { it.isNotBlank() }?.let { queryParam("accountNumber", it) }
+                iban?.takeIf { it.isNotBlank() }?.let { queryParam("iban", it) }
+            }
+            .build()
+            .encode()
+            .toUri()
         return webClient.get()
-            .uri("$baseUrl/bank-account/owner?accountNumber=$accountNumber")
+            .uri(uri)
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .retrieve()
             .onStatus({ it.isError }, { it.createException() })

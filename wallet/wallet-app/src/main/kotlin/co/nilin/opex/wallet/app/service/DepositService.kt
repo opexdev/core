@@ -120,17 +120,28 @@ class DepositService(
         request: DepositWebhookRequest
     ): DepositWebhookResponse {
 
+        val sourceDescription = when {
+            !request.sourceIban.isNullOrBlank() -> "iban: ${request.sourceIban}"
+            !request.sourceDepositNumber.isNullOrBlank() -> "source: ${request.sourceDepositNumber}"
+            !request.externalIdentifier.isNullOrBlank() -> "payId: ${request.externalIdentifier}"
+            else -> null
+        }
         logger.info(
-            "New incoming deposit request : $ to ${
-                request.sourceDepositNumber?.let { "source: $it" } ?: request.externalIdentifier?.let { "payId: $it" }
-            } on ${request.symbol} at ${LocalDateTime.now()}")
+            "New incoming deposit request : $ to $sourceDescription on ${request.symbol} at ${LocalDateTime.now()}"
+        )
         val receiverUuid = when {
-            !request.sourceDepositNumber.isNullOrEmpty() -> profileProxy.findAccountOwner(request.sourceDepositNumber!!)
+
+            !request.sourceIban.isNullOrBlank() -> profileProxy.findAccountOwner(iban = request.sourceIban)
+                ?: throw OpexError.IdentifierNotFound.exception(
+                    "Deposit IBAN ${request.sourceIban} not found"
+                )
+
+            !request.sourceDepositNumber.isNullOrBlank() -> profileProxy.findAccountOwner(request.sourceDepositNumber!!)
                 ?: throw OpexError.IdentifierNotFound.exception(
                     "Deposit account ${request.sourceDepositNumber} not found"
                 )
 
-            !request.externalIdentifier.isNullOrEmpty() -> walletOwnerManager.findWalletOwnerByExternalIdentifier(
+            !request.externalIdentifier.isNullOrBlank() -> walletOwnerManager.findWalletOwnerByExternalIdentifier(
                 request.externalIdentifier!!
             )?.uuid ?: throw OpexError.IdentifierNotFound.exception(
                 "Identifier ${request.externalIdentifier} not found"
@@ -146,10 +157,7 @@ class DepositService(
                 receiverWalletType = WalletType.MAIN,
                 senderUuid = walletOwnerManager.systemUuid,
                 amount = amount,
-                description = "Transfer to $destDepositNumber at $date, ${
-                    sourceDepositNumber?.let { "source: $it" }
-                        ?: externalIdentifier?.let { "payId: $it" }
-                }",
+                description = "Transfer to $destDepositNumber at $date, $sourceDescription",
                 transferRef = referenceNumber,
                 chain = null,
                 attachment = null,
@@ -220,7 +228,7 @@ class DepositService(
         }
 
         if (!isValid) {
-                traceDepositService.saveDepositInNewTransaction(depositCommand)
+            traceDepositService.saveDepositInNewTransaction(depositCommand)
             return null
         }
         depositPersister.persist(depositCommand)

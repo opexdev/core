@@ -71,7 +71,10 @@ class BankAccountController(
     }
 
     @GetMapping("/owner")
-    suspend fun getBankAccountOwner(@RequestParam accountNumber: String): String? {
-        return bankAccountManagement.findAccountOwner(accountNumber)
+    suspend fun getBankAccountOwner(
+        @RequestParam(required = false) accountNumber: String? = null,
+        @RequestParam(required = false) iban: String? = null
+    ): String? {
+        return bankAccountManagement.findAccountOwner(accountNumber, iban)
     }
 }

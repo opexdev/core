@@ -145,10 +145,14 @@ class BankAccountManagement(
         return bankAccountPersister.findAll(uuid, cardNumber, iban).isNotEmpty()
     }
 
-    suspend fun findAccountOwner(accountNumber: String): String? {
-        val accounts = bankAccountPersister.findByAccountNumber(accountNumber)
-        return accounts.firstOrNull { it.status == BankAccountStatus.VERIFIED }?.uuid
-            ?: accounts.firstOrNull()?.uuid
+    suspend fun findAccountOwner(accountNumber: String? = null, iban: String? = null): String? {
+        val sourceAccountNumber = accountNumber?.takeIf { it.isNotBlank() }
+        val sourceIban = iban?.takeIf { sourceAccountNumber == null && it.isNotBlank() }
+        if (sourceAccountNumber == null && sourceIban == null) {
+            throw OpexError.InvalidRequestBody.exception("Account number or IBAN must be provided")
+        }
+        val accounts = bankAccountPersister.findVerifiedByAccountNumberOrIban(sourceAccountNumber, sourceIban)
+        return accounts.firstOrNull()?.uuid
     }
 
     /** Either the data the inquiries resolved, or the fact that an admin has to take over. */
