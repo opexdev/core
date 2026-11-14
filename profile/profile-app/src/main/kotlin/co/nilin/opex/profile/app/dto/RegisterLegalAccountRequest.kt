@@ -1,6 +1,9 @@
 package co.nilin.opex.profile.app.dto
 
+import java.util.UUID
+
 data class RegisterLegalAccountRequest(
+    val companyUuid: UUID,
     val uuid: String,
     val firstName: String,
     val lastName: String,

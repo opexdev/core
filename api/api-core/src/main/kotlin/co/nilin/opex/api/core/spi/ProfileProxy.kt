@@ -6,6 +6,8 @@ import co.nilin.opex.api.core.inout.ContactUpdateRequest
 import co.nilin.opex.api.core.inout.ProfileApprovalRequestUser
 import co.nilin.opex.api.core.inout.*
 
+import java.util.UUID
+
 interface ProfileProxy {
     suspend fun getProfile(token: String): Profile
     suspend fun completeProfile(token: String, request: CompleteProfileRequest): Profile?
@@ -41,7 +43,9 @@ interface ProfileProxy {
     suspend fun ensureLegalAccountAvailable(token: String, request: LegalAccountAvailabilityRequest)
     suspend fun registerLegalAccount(token: String, request: RegisterLegalAccountRequest): CompanyAdminResponse
     suspend fun getCompanyAdmin(token: String, uuid: String): CompanyAdminResponse
+    suspend fun getCompanyByUuid(token: String, companyUuid: UUID): CompanyAdminResponse
     suspend fun getCompanyByNationalId(token: String, nationalId: String): CompanyAdminResponse
+    suspend fun updateCompany(token: String, companyUuid: UUID, request: UpdateCompanyRequest): CompanyAdminResponse
 
     //Bank Account
     suspend fun addBankAccount(token: String, request: AddBankAccountRequest): BankAccountResponse

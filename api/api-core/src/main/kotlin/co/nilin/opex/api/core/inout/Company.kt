@@ -1,6 +1,7 @@
 package co.nilin.opex.api.core.inout
 
 import java.time.LocalDateTime
+import java.util.UUID
 
 data class CompanyResponse(
     val id: Long,
@@ -8,7 +9,8 @@ data class CompanyResponse(
     val registrationNumber: String,
     val nationalId: String,
     val createDate: LocalDateTime?,
-    val updateDate: LocalDateTime?
+    val updateDate: LocalDateTime?,
+    val companyUuid: UUID
 )
 
 data class CompanyAdminResponse(
@@ -22,7 +24,8 @@ data class CompanyAdminResponse(
     val officialNewspaperKey: String?,
     val boardMemberDocumentKeys: List<String>,
     val createDate: LocalDateTime?,
-    val updateDate: LocalDateTime?
+    val updateDate: LocalDateTime?,
+    val companyUuid: UUID
 )
 
 data class LegalAccountAvailabilityRequest(
@@ -34,6 +37,7 @@ data class LegalAccountAvailabilityRequest(
 )
 
 data class RegisterLegalAccountRequest(
+    val companyUuid: UUID,
     val uuid: String,
     val firstName: String,
     val lastName: String,
@@ -55,3 +59,15 @@ data class LegalAccountRegistrationResponse(
     val company: CompanyAdminResponse,
     val passwordEmailSent: Boolean
 )
+
+data class UpdateCompanyRequest(
+    val name: String? = null,
+    val registrationNumber: String? = null,
+    val nationalId: String? = null,
+    val representativeNationalCardKey: String? = null,
+    val introductionLetterKey: String? = null,
+    val articlesOfAssociationKey: String? = null,
+    val officialNewspaperKey: String? = null,
+    val boardMemberDocumentKeys: List<String>? = null
+)
+
