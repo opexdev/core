@@ -151,9 +151,8 @@ class BankAccountManagement(
         if (sourceAccountNumber == null && sourceIban == null) {
             throw OpexError.InvalidRequestBody.exception("Account number or IBAN must be provided")
         }
-        val accounts = bankAccountPersister.findByAccountNumberOrIban(sourceAccountNumber, sourceIban)
-        return accounts.firstOrNull { it.status == BankAccountStatus.VERIFIED }?.uuid
-            ?: accounts.firstOrNull()?.uuid
+        val accounts = bankAccountPersister.findVerifiedByAccountNumberOrIban(sourceAccountNumber, sourceIban)
+        return accounts.firstOrNull()?.uuid
     }
 
     /** Either the data the inquiries resolved, or the fact that an admin has to take over. */

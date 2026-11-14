@@ -7,7 +7,7 @@ interface BankAccountPersister {
     suspend fun findAll(uuid: String): List<BankAccount>
     suspend fun findAll(cardNumber: String?, iban: String?): List<BankAccount>
     suspend fun findAll(uuid: String, cardNumber: String?, iban: String?): List<BankAccount>
-    suspend fun findByAccountNumberOrIban(accountNumber: String?, iban: String?): List<BankAccount>
+    suspend fun findVerifiedByAccountNumberOrIban(accountNumber: String?, iban: String?): List<BankAccount>
     suspend fun delete(id: Long, uuid: String)
     suspend fun findById(id: Long): BankAccount
     suspend fun update(bankAccount: BankAccount): BankAccount

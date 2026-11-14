@@ -121,8 +121,8 @@ class DepositService(
     ): DepositWebhookResponse {
 
         val sourceDescription = when {
-            !request.sourceDepositNumber.isNullOrBlank() -> "source: ${request.sourceDepositNumber}"
             !request.sourceIban.isNullOrBlank() -> "iban: ${request.sourceIban}"
+            !request.sourceDepositNumber.isNullOrBlank() -> "source: ${request.sourceDepositNumber}"
             !request.externalIdentifier.isNullOrBlank() -> "payId: ${request.externalIdentifier}"
             else -> null
         }
@@ -131,7 +131,7 @@ class DepositService(
         )
         val receiverUuid = when {
 
-            !request.sourceIban.isNullOrBlank() -> profileProxy.findIbanOwner(request.sourceIban!!)
+            !request.sourceIban.isNullOrBlank() -> profileProxy.findAccountOwner(iban = request.sourceIban)
                 ?: throw OpexError.IdentifierNotFound.exception(
                     "Deposit IBAN ${request.sourceIban} not found"
                 )

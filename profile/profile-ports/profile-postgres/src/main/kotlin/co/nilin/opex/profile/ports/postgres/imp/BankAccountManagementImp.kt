@@ -43,8 +43,8 @@ class BankAccountManagementImp(
             .awaitFirstOrElse { emptyList() }
     }
 
-    override suspend fun findByAccountNumberOrIban(accountNumber: String?, iban: String?): List<BankAccount> {
-        return bankAccountRepository.findByAccountNumberOrIban(accountNumber, iban)
+    override suspend fun findVerifiedByAccountNumberOrIban(accountNumber: String?, iban: String?): List<BankAccount> {
+        return bankAccountRepository.findVerifiedByAccountNumberOrIban(accountNumber, iban)
             .collectList().awaitFirstOrElse { emptyList() }
     }
 

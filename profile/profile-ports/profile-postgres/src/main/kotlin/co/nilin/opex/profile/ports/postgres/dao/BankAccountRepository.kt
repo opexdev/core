@@ -48,10 +48,11 @@ interface BankAccountRepository : ReactiveCrudRepository<BankAccountModel, Long>
     @Query(
         """
         SELECT * FROM bank_account
-        WHERE (:accountNumber IS NOT NULL AND account_number = :accountNumber)
-           OR (:iban IS NOT NULL AND iban = :iban)
+        WHERE ((:accountNumber IS NOT NULL AND account_number = :accountNumber)
+           OR (:iban IS NOT NULL AND iban = :iban))
+          AND status = 'VERIFIED'
         """
     )
-    suspend fun findByAccountNumberOrIban(accountNumber: String?, iban: String?): Flux<BankAccount>
+    suspend fun findVerifiedByAccountNumberOrIban(accountNumber: String?, iban: String?): Flux<BankAccount>
 
 }
