@@ -52,6 +52,16 @@ class ProfileProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClie
             .awaitFirst()
     }
 
+    override suspend fun findIbanOwner(iban: String): String? {
+        return webClient.get()
+            .uri("$baseUrl/bank-account/owner?iban={iban}", iban)
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .retrieve()
+            .onStatus({ it.isError }, { it.createException() })
+            .bodyToMono(String::class.java)
+            .awaitFirstOrNull()
+    }
+
     override suspend fun findAccountOwner(accountNumber: String): String? {
         return webClient.get()
             .uri("$baseUrl/bank-account/owner?accountNumber=$accountNumber")
