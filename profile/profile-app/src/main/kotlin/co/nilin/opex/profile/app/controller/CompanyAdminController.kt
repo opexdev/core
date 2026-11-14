@@ -3,15 +3,18 @@ package co.nilin.opex.profile.app.controller
 import co.nilin.opex.profile.app.dto.CompanyAdminResponse
 import co.nilin.opex.profile.app.dto.LegalAccountAvailabilityRequest
 import co.nilin.opex.profile.app.dto.RegisterLegalAccountRequest
+import co.nilin.opex.profile.app.dto.UpdateCompanyRequest
 import co.nilin.opex.profile.app.service.CompanyManagement
 import org.springframework.security.core.annotation.CurrentSecurityContext
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 @RequestMapping("/admin/company")
@@ -38,5 +41,18 @@ class CompanyAdminController(val companyManagement: CompanyManagement) {
     @GetMapping("/{uuid}")
     suspend fun getCompany(@PathVariable("uuid") uuid: String): CompanyAdminResponse {
         return companyManagement.getCompanyForAdmin(uuid)
+    }
+
+    @GetMapping("/uuid/{companyUuid}")
+    suspend fun getCompanyByUuid(@PathVariable("companyUuid") companyUuid: UUID): CompanyAdminResponse {
+        return companyManagement.getCompanyByUuid(companyUuid)
+    }
+
+    @PutMapping("/{companyUuid}")
+    suspend fun updateCompany(
+        @PathVariable("companyUuid") companyUuid: UUID,
+        @RequestBody request: UpdateCompanyRequest
+    ): CompanyAdminResponse {
+        return companyManagement.updateCompany(companyUuid, request)
     }
 }

@@ -1,8 +1,10 @@
 package co.nilin.opex.profile.ports.postgres.model.base
 
 import java.time.LocalDateTime
+import java.util.UUID
 
 open class Company {
+    lateinit var companyUuid: UUID
     var name: String? = null
     lateinit var registrationNumber: String
     lateinit var nationalId: String

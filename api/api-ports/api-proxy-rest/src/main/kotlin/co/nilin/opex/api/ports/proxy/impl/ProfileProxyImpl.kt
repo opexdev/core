@@ -19,6 +19,7 @@ import org.springframework.web.reactive.function.client.awaitBodilessEntity
 import org.springframework.web.reactive.function.client.body
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
+import java.util.UUID
 
 @Component
 class ProfileProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient) : ProfileProxy {
@@ -535,5 +536,32 @@ class ProfileProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClie
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<CompanyAdminResponse>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get company of $uuid") }
+    }
+
+    override suspend fun getCompanyByUuid(token: String, companyUuid: UUID): CompanyAdminResponse {
+        return webClient.get()
+            .uri("$baseUrl/admin/company/uuid/$companyUuid")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CompanyAdminResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get company $companyUuid") }
+    }
+
+    override suspend fun updateCompany(
+        token: String,
+        companyUuid: UUID,
+        request: UpdateCompanyRequest
+    ): CompanyAdminResponse {
+        return webClient.put()
+            .uri("$baseUrl/admin/company/$companyUuid")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<CompanyAdminResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to update company $companyUuid") }
     }
 }

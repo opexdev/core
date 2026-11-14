@@ -1,6 +1,9 @@
 package co.nilin.opex.profile.core.data.profile
 
+import java.util.UUID
+
 data class LegalAccountRegistration(
+    val companyUuid: UUID,
     val uuid: String,
     val firstName: String,
     val lastName: String,

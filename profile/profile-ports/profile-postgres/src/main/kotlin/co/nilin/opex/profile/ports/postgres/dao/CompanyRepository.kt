@@ -5,6 +5,7 @@ import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
+import java.util.UUID
 
 @Repository
 interface CompanyRepository : ReactiveCrudRepository<CompanyModel, Long> {
@@ -12,7 +13,11 @@ interface CompanyRepository : ReactiveCrudRepository<CompanyModel, Long> {
     @Query("select * from company where registration_number = :registrationNumber or national_id = :nationalId limit 1")
     fun findByRegistrationNumberOrNationalId(registrationNumber: String, nationalId: String): Mono<CompanyModel>
 
+    fun findByCompanyUuid(companyUuid: UUID): Mono<CompanyModel>
+
     fun findByNationalId(nationalId: String): Mono<CompanyModel>
+
+    fun findByRegistrationNumber(registrationNumber: String): Mono<CompanyModel>
 
     @Query(
         """
@@ -24,3 +29,4 @@ interface CompanyRepository : ReactiveCrudRepository<CompanyModel, Long> {
     )
     fun findByRepresentativeUuid(uuid: String): Mono<CompanyModel>
 }
+

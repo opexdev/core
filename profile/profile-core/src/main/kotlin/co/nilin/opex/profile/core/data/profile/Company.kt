@@ -1,9 +1,11 @@
 package co.nilin.opex.profile.core.data.profile
 
 import java.time.LocalDateTime
+import java.util.UUID
 
 data class Company(
     var id: Long? = null,
+    var companyUuid: UUID,
     var name: String? = null,
     var registrationNumber: String,
     var nationalId: String,
