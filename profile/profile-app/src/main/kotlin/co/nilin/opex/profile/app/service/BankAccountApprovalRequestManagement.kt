@@ -39,7 +39,7 @@ class BankAccountApprovalRequestManagement(
 
     /**
      * Closes a review and moves the bank account with it. Approving verifies the account, rejecting
-     * rejects it. The account's own data is never touched here.
+     * rejects it. Both records store the admin performing the action.
      */
     suspend fun changeRequestStatus(
         body: UpdateBankAccountApprovalBody,
@@ -59,10 +59,11 @@ class BankAccountApprovalRequestManagement(
 
         bankAccount.status = body.status
         bankAccount.updateDate = LocalDateTime.now()
+        bankAccount.applicator = adminId
         bankAccountPersister.update(bankAccount)
 
         approvalRequest.updateDate = LocalDateTime.now()
-        approvalRequest.updater = adminId
+        approvalRequest.applicator = adminId
         approvalRequest.description = body.description
         bankAccountApprovalRequestPersister.update(approvalRequest)
 

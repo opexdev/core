@@ -46,7 +46,7 @@ class CompanyManagement(
         )
     }
 
-    suspend fun registerLegalAccount(request: RegisterLegalAccountRequest, creator: String): CompanyAdminResponse {
+    suspend fun registerLegalAccount(request: RegisterLegalAccountRequest, applicator: String): CompanyAdminResponse {
         val company = companyPersister.registerLegalAccount(
             LegalAccountRegistration(
                 companyUuid = request.companyUuid,
@@ -65,7 +65,7 @@ class CompanyManagement(
                 officialNewspaperKey = request.officialNewspaperKey,
                 boardMemberDocumentKeys = request.boardMemberDocumentKeys
             ),
-            creator
+            applicator
         )
 
         kycLevelUpdatedPublisher.publish(
@@ -93,7 +93,11 @@ class CompanyManagement(
             ?: throw OpexError.NotFound.exception("Company not found" )).toAdminResponse()
     }
 
-    suspend fun updateCompany(companyUuid: UUID, request: UpdateCompanyRequest): CompanyAdminResponse {
+    suspend fun updateCompany(
+        companyUuid: UUID,
+        request: UpdateCompanyRequest,
+        applicator: String
+    ): CompanyAdminResponse {
         val update = CompanyUpdate(
             name = request.name?.trim(),
             registrationNumber = request.registrationNumber?.trim(),
@@ -125,7 +129,7 @@ class CompanyManagement(
         if (blank.isNotEmpty())
             throw OpexError.InvalidRequestBody.exception("Fields must not be blank: ${blank.joinToString()}")
 
-        return companyPersister.updateByUuid(companyUuid, update).toAdminResponse()
+        return companyPersister.updateByUuid(companyUuid, update, applicator).toAdminResponse()
     }
 
     private suspend fun findCompany(uuid: String): Company {

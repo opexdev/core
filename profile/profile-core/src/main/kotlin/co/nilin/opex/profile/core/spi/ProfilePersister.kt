@@ -23,6 +23,6 @@ interface ProfilePersister {
     suspend fun validateMobileForUpdate(userId: String, mobile: String)
     suspend fun updateMobile(userId: String, mobile: String)
     suspend fun updateEmail(userId: String, email: String)
-    suspend fun updateStatus(userId: String, status: ProfileStatus): Profile
+    suspend fun updateStatus(userId: String, status: ProfileStatus, applicator: String? = null): Profile
 }
 

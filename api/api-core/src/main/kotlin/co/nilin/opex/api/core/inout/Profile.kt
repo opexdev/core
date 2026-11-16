@@ -18,7 +18,7 @@ data class Profile(
     var status: ProfileStatus? = null,
     var createDate: LocalDateTime? = null,
     var lastUpdateDate: LocalDateTime? = null,
-    var creator: String? = null,
+    var applicator: String? = null,
     var kycLevel: KycLevel? = null,
     var mobileIdentityMatch: Boolean? = null,
     var personalIdentityMatch: Boolean? = null,

@@ -14,5 +14,5 @@ open class Company {
     var officialNewspaperKey: String? = null
     lateinit var createDate: LocalDateTime
     var updateDate: LocalDateTime? = null
-    var creator: String? = null
+    var applicator: String? = null
 }

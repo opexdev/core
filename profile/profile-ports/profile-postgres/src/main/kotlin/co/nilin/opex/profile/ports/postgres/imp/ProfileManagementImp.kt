@@ -231,11 +231,16 @@ class ProfileManagementImp(
 
     override suspend fun updateStatus(
         userId: String,
-        status: ProfileStatus
+        status: ProfileStatus,
+        applicator: String?
     ): Profile {
         val profile = profileRepository.findByUserId(userId)?.awaitFirstOrNull()
             ?: throw OpexError.ProfileNotfound.exception()
         profile.status = status
+        applicator?.let {
+            profile.applicator = it
+            profile.lastUpdateDate = LocalDateTime.now()
+        }
         val saved = profileRepository.save(profile).awaitSingle()
         return saved.convert(Profile::class.java)
     }

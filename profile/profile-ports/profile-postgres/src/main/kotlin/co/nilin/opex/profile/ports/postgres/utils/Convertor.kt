@@ -19,7 +19,7 @@ fun CompleteProfileRequest.toProfileModel(
         mobile = existing.mobile
         status = ProfileStatus.PROFILE_COMPLETED
         createDate = existing.createDate
-        creator = existing.creator
+        applicator = existing.applicator
         kycLevel = existing.kycLevel
         personType = existing.personType
         lastUpdateDate = LocalDateTime.now()

@@ -25,7 +25,7 @@ interface ProfileApprovalRequestRepository : ReactiveCrudRepository<ProfileAppro
     p.status,
     p.create_date,
     p.update_date,
-    p.updater,
+    p.applicator,
     p.description,
     u.first_name,
     u.last_name
@@ -56,7 +56,7 @@ interface ProfileApprovalRequestRepository : ReactiveCrudRepository<ProfileAppro
     p.status,
     p.create_date,
     p.update_date,
-    p.updater,
+    p.applicator,
     p.description,
     u.first_name,
     u.last_name

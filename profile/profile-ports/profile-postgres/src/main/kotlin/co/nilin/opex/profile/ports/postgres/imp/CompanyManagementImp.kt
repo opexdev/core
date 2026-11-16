@@ -57,8 +57,8 @@ class CompanyManagementImp(
     }
 
     @Transactional
-    override suspend fun registerLegalAccount(registration: LegalAccountRegistration, creator: String): Company {
-        upsertRepresentativeProfile(registration, creator)
+    override suspend fun registerLegalAccount(registration: LegalAccountRegistration, applicator: String): Company {
+        upsertRepresentativeProfile(registration, applicator)
 
         val saved = saveCompanyAndLink(
             Company(
@@ -70,7 +70,7 @@ class CompanyManagementImp(
                 introductionLetterKey = registration.introductionLetterKey,
                 articlesOfAssociationKey = registration.articlesOfAssociationKey,
                 officialNewspaperKey = registration.officialNewspaperKey,
-                creator = creator
+                applicator = applicator
             ),
             registration.uuid
         )
@@ -101,7 +101,7 @@ class CompanyManagementImp(
     }
 
     @Transactional
-    override suspend fun updateByUuid(companyUuid: UUID, update: CompanyUpdate): Company {
+    override suspend fun updateByUuid(companyUuid: UUID, update: CompanyUpdate, applicator: String): Company {
         val company = companyRepository.findByCompanyUuid(companyUuid).awaitFirstOrNull()
             ?: throw OpexError.NotFound.exception("Company not found")
 
@@ -123,6 +123,7 @@ class CompanyManagementImp(
         update.articlesOfAssociationKey?.let { company.articlesOfAssociationKey = it }
         update.officialNewspaperKey?.let { company.officialNewspaperKey = it }
         company.updateDate = LocalDateTime.now()
+        company.applicator = applicator
 
         val saved = companyRepository.save(company).awaitFirstOrNull()
             ?: throw OpexError.BadRequest.exception("Failed to update company")
@@ -177,7 +178,7 @@ class CompanyManagementImp(
                 articlesOfAssociationKey = company.articlesOfAssociationKey
                 officialNewspaperKey = company.officialNewspaperKey
                 createDate = LocalDateTime.now()
-                creator = company.creator
+                applicator = company.applicator
             }
         ).awaitFirstOrNull() ?: throw OpexError.BadRequest.exception("Failed to save company")
 
@@ -186,14 +187,14 @@ class CompanyManagementImp(
                 this.companyId = saved.id!!
                 uuid = representativeUuid
                 createDate = LocalDateTime.now()
-                creator = company.creator
+                applicator = company.applicator
             }
         ).awaitFirstOrNull() ?: throw OpexError.BadRequest.exception("Failed to save company representative")
 
         return saved
     }
 
-    private suspend fun upsertRepresentativeProfile(registration: LegalAccountRegistration, creator: String) {
+    private suspend fun upsertRepresentativeProfile(registration: LegalAccountRegistration, applicator: String) {
         profileRepository.upsertLegalRepresentative(
             userId = registration.uuid,
             email = registration.email,
@@ -204,7 +205,7 @@ class CompanyManagementImp(
             personType = PersonType.LEGAL.name,
             kycLevel = KycLevel.LEVEL_2.name,
             status = ProfileStatus.ADMIN_APPROVED.name,
-            creator = creator
+            applicator = applicator
         ).awaitFirstOrNull()
     }
 
@@ -221,6 +222,6 @@ class CompanyManagementImp(
         boardMemberDocumentKeys = boardMemberKeys,
         createDate = createDate,
         updateDate = updateDate,
-        creator = creator
+        applicator = applicator
     )
 }

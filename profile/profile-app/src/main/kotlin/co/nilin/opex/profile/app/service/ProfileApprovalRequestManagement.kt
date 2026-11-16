@@ -31,7 +31,7 @@ class ProfileApprovalRequestManagement(
 
     suspend fun changeRequestStatus(
         id: Long,
-        updater: String,
+        applicator: String,
         description: String?,
         status: ProfileApprovalRequestStatus
     ): ProfileApprovalAdminResponse {
@@ -43,7 +43,7 @@ class ProfileApprovalRequestManagement(
 
         approvalRequest.status = status
         approvalRequest.updateDate = LocalDateTime.now()
-        approvalRequest.updater = updater
+        approvalRequest.applicator = applicator
         approvalRequest.description = description
 
         val response = profileApprovalRequestPersister.update(approvalRequest)
@@ -57,11 +57,11 @@ class ProfileApprovalRequestManagement(
                         LocalDateTime.now()
                     )
                 )
-                profilePersister.updateStatus(approvalRequest.userId, ProfileStatus.ADMIN_APPROVED)
+                profilePersister.updateStatus(approvalRequest.userId, ProfileStatus.ADMIN_APPROVED, applicator)
             }
 
             ProfileApprovalRequestStatus.REJECTED -> {
-                profilePersister.updateStatus(approvalRequest.userId, ProfileStatus.ADMIN_REJECTED)
+                profilePersister.updateStatus(approvalRequest.userId, ProfileStatus.ADMIN_REJECTED, applicator)
             }
 
             else -> {

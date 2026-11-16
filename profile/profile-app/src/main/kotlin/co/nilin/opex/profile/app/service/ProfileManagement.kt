@@ -52,7 +52,7 @@ class ProfileManagement(
                     status = ProfileStatus.CREATED,
                     createDate = LocalDateTime.now(),
                     lastUpdateDate = LocalDateTime.now(),
-                    creator = "system",
+                    applicator = "system",
                     kycLevel = KycLevel.LEVEL_1,
                     personType = personType
                 )
