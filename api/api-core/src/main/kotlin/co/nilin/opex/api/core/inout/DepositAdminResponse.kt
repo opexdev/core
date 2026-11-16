@@ -17,5 +17,6 @@ data class DepositAdminResponse(
     val type: DepositType,
     val attachment: String?,
     val createDate: LocalDateTime,
-    val transferMethod: TransferMethod?
+    val transferMethod: TransferMethod?,
+    val applicator: String? = null
 )

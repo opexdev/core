@@ -20,6 +20,7 @@ data class ReservedTransfer(
     var expDate: LocalDateTime? = null,
     var status: ReservedStatus? = null,
     val rate: BigDecimal? = null,
+    val applicator: String? = null,
 )
 
 

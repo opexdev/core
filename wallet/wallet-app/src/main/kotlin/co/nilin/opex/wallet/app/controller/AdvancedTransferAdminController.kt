@@ -6,12 +6,15 @@ import co.nilin.opex.wallet.app.dto.UserSwapTransactionRequest
 import co.nilin.opex.wallet.app.service.TransferService
 import co.nilin.opex.wallet.core.inout.AdminSwapResponse
 import co.nilin.opex.wallet.core.inout.TransferResult
+import co.nilin.opex.wallet.core.model.TransferCategory
 import co.nilin.opex.wallet.core.model.WalletType
 import co.nilin.opex.wallet.core.spi.ReservedTransferManager
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 import java.time.LocalDateTime
@@ -67,7 +70,10 @@ class AdvancedTransferAdminController {
     }
 
     @PostMapping("/admin/v1/transfer/reserve")
-    suspend fun reserve(@RequestBody request: AdminTransferReserveRequest): ReservedTransferResponse {
+    suspend fun reserve(
+        @RequestBody request: AdminTransferReserveRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): ReservedTransferResponse {
         return transferService.reserveTransferByAdmin(
             request.sourceSymbol,
             request.destSymbol,
@@ -77,7 +83,8 @@ class AdvancedTransferAdminController {
             WalletType.MAIN,
             request.sourceAmount,
             request.destAmount,
-            request.rate
+            request.rate,
+            securityContext.authentication.name
         )
     }
 
@@ -86,11 +93,14 @@ class AdvancedTransferAdminController {
         @PathVariable reserveUuid: String,
         @RequestParam description: String?,
         @RequestParam transferRef: String?,
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): TransferResult {
         return transferService.advanceTransferByAdmin(
             reserveUuid,
             description,
-            transferRef
+            transferRef,
+            TransferCategory.IMPERSONATED_PURCHASE_FINALIZED,
+            securityContext.authentication.name
         ).transferResult
     }
 }
