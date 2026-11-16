@@ -12,5 +12,6 @@ data class ForbiddenSwapPairModel(
     @Column("dest_symbol")
     var destinationSymbol: String,
     var lastUpdateDate: LocalDateTime = LocalDateTime.now(),
-    var createDate: LocalDateTime
+    var createDate: LocalDateTime,
+    var applicator: String? = null
 )

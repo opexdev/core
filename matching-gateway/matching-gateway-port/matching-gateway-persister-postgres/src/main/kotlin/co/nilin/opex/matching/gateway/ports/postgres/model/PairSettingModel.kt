@@ -16,7 +16,8 @@ data class PairSettingModel(
     var orderTypes: String,
     var updateDate: LocalDateTime? = null,
     var internalChart: Boolean,
-    var globalChart: Boolean
+    var globalChart: Boolean,
+    var applicator: String? = null
 ) {
     @Transient
     var categories: List<PairCategory> = emptyList()

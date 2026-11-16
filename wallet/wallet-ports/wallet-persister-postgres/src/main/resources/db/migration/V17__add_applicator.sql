@@ -8,3 +8,6 @@ ALTER TABLE currency_localization ADD COLUMN applicator VARCHAR(80);
 ALTER TABLE terminal_localization ADD COLUMN applicator VARCHAR(80);
 ALTER TABLE currency_off_chain_gateway_localization ADD COLUMN applicator VARCHAR(80);
 ALTER TABLE quote_currency ADD COLUMN applicator VARCHAR(80);
+ALTER TABLE rate ADD COLUMN applicator VARCHAR(80);
+ALTER TABLE forbidden_pair ADD COLUMN applicator VARCHAR(80);
+ALTER TABLE forbidden_swap_pair ADD COLUMN applicator VARCHAR(80);

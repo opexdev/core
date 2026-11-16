@@ -42,8 +42,8 @@ class CurrencyGraphIT : KafkaEnabledTest() {
                 ?.map { currency -> currency.symbol }
             val fpair = rateService.getForbiddenPairs()
             val rates = rateService.getRate()
-            fpair.forbiddenPairs!!.forEach { p -> rateService.deleteForbiddenPair(p) }
-            rates.rates!!.forEach { r -> rateService.deleteRate(r) }
+            fpair.forbiddenPairs!!.forEach { p -> rateService.deleteForbiddenPair(p, applicator = "test-admin") }
+            rates.rates!!.forEach { r -> rateService.deleteRate(r, applicator = "test-admin") }
             //TODO: after moving the wallet creation to otcservice we can remove these two lines
             val wallets = walletRepository.findAll().collectList().block()
             wallets?.filter { w -> currencies.contains(w.currency.toString()) }
@@ -57,11 +57,11 @@ class CurrencyGraphIT : KafkaEnabledTest() {
     @Test
     fun givenTwoPossibleRoute_whenAddCurrencyRates_thenShorterRouteIsAvailable() {
         runBlocking {
-            rateService.addRate(Rate("A", "Z", BigDecimal.TEN))
-            rateService.addRate(Rate("B", "Z", BigDecimal.TEN))
-            rateService.addRate(Rate("Z", "C", BigDecimal.TEN))
-            rateService.addRate(Rate("Z", "D", BigDecimal.TEN))
-            rateService.addRate(Rate("A", "D", BigDecimal.TEN))
+            rateService.addRate(Rate("A", "Z", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("B", "Z", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("Z", "C", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("Z", "D", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("A", "D", BigDecimal.TEN), applicator = "test-admin")
 
             val routes = graphService.getAvailableRoutes()
             Assertions.assertEquals(8, routes.size)
@@ -75,12 +75,12 @@ class CurrencyGraphIT : KafkaEnabledTest() {
     @Test
     fun givenTwoPossibleRoute_whenRemoveCurrencyRate_thenLongerRouteIsAvailable() {
         runBlocking {
-            rateService.addRate(Rate("A", "Z", BigDecimal.TEN))
-            rateService.addRate(Rate("A", "D", BigDecimal.TEN))
-            rateService.addRate(Rate("B", "Z", BigDecimal.TEN))
-            rateService.addRate(Rate("Z", "C", BigDecimal.TEN))
-            rateService.addRate(Rate("Z", "D", BigDecimal.TEN))
-            rateService.deleteRate(Rate("A", "D", BigDecimal.TEN))
+            rateService.addRate(Rate("A", "Z", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("A", "D", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("B", "Z", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("Z", "C", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("Z", "D", BigDecimal.TEN), applicator = "test-admin")
+            rateService.deleteRate(Rate("A", "D", BigDecimal.TEN), applicator = "test-admin")
 
             val routes = graphService.getAvailableRoutes()
             Assertions.assertEquals(8, routes.size)
@@ -94,12 +94,12 @@ class CurrencyGraphIT : KafkaEnabledTest() {
     @Test
     fun givenGraph_whenAddForbiddenRateNames_thenNoRouteIsAvailable() {
         runBlocking {
-            rateService.addRate(Rate("A", "Z", BigDecimal.TEN))
-            rateService.addRate(Rate("A", "D", BigDecimal.TEN))
-            rateService.addRate(Rate("B", "Z", BigDecimal.TEN))
-            rateService.addRate(Rate("Z", "C", BigDecimal.TEN))
-            rateService.addRate(Rate("Z", "D", BigDecimal.TEN))
-            rateService.addForbiddenPair(ForbiddenPair("A", "C"))
+            rateService.addRate(Rate("A", "Z", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("A", "D", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("B", "Z", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("Z", "C", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("Z", "D", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addForbiddenPair(ForbiddenPair("A", "C"), applicator = "test-admin")
 
             val routes = graphService.getAvailableRoutes()
             Assertions.assertEquals(7, routes.size)
@@ -111,16 +111,16 @@ class CurrencyGraphIT : KafkaEnabledTest() {
     @Test
     fun givenGraph_whenAddForbiddenRateNames_thenExceptionAddingForbiddenRate() {
         runBlocking {
-            rateService.addRate(Rate("A", "Z", BigDecimal.TEN))
-            rateService.addRate(Rate("B", "Z", BigDecimal.TEN))
-            rateService.addRate(Rate("Z", "C", BigDecimal.TEN))
-            rateService.addRate(Rate("Z", "D", BigDecimal.TEN))
-            rateService.addForbiddenPair(ForbiddenPair("A", "D"))
+            rateService.addRate(Rate("A", "Z", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("B", "Z", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("Z", "C", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("Z", "D", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addForbiddenPair(ForbiddenPair("A", "D"), applicator = "test-admin")
         }
 
         val exception = Assertions.assertThrows(OpexException::class.java) {
             runBlocking {
-                rateService.addRate(Rate("A", "D", BigDecimal.TEN))
+                rateService.addRate(Rate("A", "D", BigDecimal.TEN), applicator = "test-admin")
             }
         }
         Assertions.assertEquals(OpexError.ForbiddenPair, exception.error)
@@ -129,16 +129,16 @@ class CurrencyGraphIT : KafkaEnabledTest() {
     @Test
     fun givenGraphWithForbiddenRate_whenRemoveForbiddenRateNames_thenRouteIsAvailable() {
         runBlocking {
-            rateService.addRate(Rate("A", "Z", BigDecimal.TEN))
-            rateService.addRate(Rate("A", "D", BigDecimal.TEN))
-            rateService.addRate(Rate("B", "Z", BigDecimal.TEN))
-            rateService.addRate(Rate("Z", "C", BigDecimal.TEN))
-            rateService.addRate(Rate("Z", "D", BigDecimal.TEN))
-            rateService.addForbiddenPair(ForbiddenPair("A", "C"))
+            rateService.addRate(Rate("A", "Z", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("A", "D", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("B", "Z", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("Z", "C", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("Z", "D", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addForbiddenPair(ForbiddenPair("A", "C"), applicator = "test-admin")
 
             Assertions.assertEquals(7, graphService.getAvailableRoutes().size)
 
-            rateService.deleteForbiddenPair(ForbiddenPair("A", "C"))
+            rateService.deleteForbiddenPair(ForbiddenPair("A", "C"), applicator = "test-admin")
 
             Assertions.assertEquals(8, graphService.getAvailableRoutes().size)
 
@@ -151,15 +151,15 @@ class CurrencyGraphIT : KafkaEnabledTest() {
     @Test
     fun givenGraph_whenAddTransitiveSymbols_thenRoutesExcluded() {
         runBlocking {
-            rateService.addRate(Rate("A", "Z", BigDecimal.TEN))
-            rateService.addRate(Rate("A", "D", BigDecimal.TEN))
-            rateService.addRate(Rate("B", "Z", BigDecimal.TEN))
-            rateService.addRate(Rate("Z", "C", BigDecimal.TEN))
-            rateService.addRate(Rate("Z", "D", BigDecimal.TEN))
+            rateService.addRate(Rate("A", "Z", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("A", "D", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("B", "Z", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("Z", "C", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("Z", "D", BigDecimal.TEN), applicator = "test-admin")
 
             Assertions.assertEquals(8, graphService.getAvailableRoutes().size)
 
-            rateService.addTransitiveSymbols(Symbols(listOf("Z")))
+            rateService.addTransitiveSymbols(Symbols(listOf("Z")), applicator = "test-admin")
 
             Assertions.assertEquals(4, graphService.getAvailableRoutes().size)
         }
@@ -168,15 +168,15 @@ class CurrencyGraphIT : KafkaEnabledTest() {
     @Test
     fun givenGraphTransitiveSymbols_whenRemoveTransitiveSymbols_thenRouteIncluded() {
         runBlocking {
-            rateService.addRate(Rate("A", "Z", BigDecimal.TEN))
-            rateService.addRate(Rate("A", "D", BigDecimal.TEN))
-            rateService.addRate(Rate("B", "Z", BigDecimal.TEN))
-            rateService.addRate(Rate("Z", "C", BigDecimal.TEN))
-            rateService.addRate(Rate("Z", "D", BigDecimal.TEN))
-            rateService.addTransitiveSymbols(Symbols(listOf("Z", "D")))
+            rateService.addRate(Rate("A", "Z", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("A", "D", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("B", "Z", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("Z", "C", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addRate(Rate("Z", "D", BigDecimal.TEN), applicator = "test-admin")
+            rateService.addTransitiveSymbols(Symbols(listOf("Z", "D")), applicator = "test-admin")
 
             Assertions.assertEquals(2, graphService.getAvailableRoutes().size)
-            rateService.deleteTransitiveSymbols(Symbols(listOf("Z", "D")))
+            rateService.deleteTransitiveSymbols(Symbols(listOf("Z", "D")), applicator = "test-admin")
             Assertions.assertEquals(8, graphService.getAvailableRoutes().size)
         }
     }

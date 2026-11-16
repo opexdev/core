@@ -4,7 +4,8 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class Rate(
-    val sourceSymbol: String, val destSymbol: String, val rate: BigDecimal
+    val sourceSymbol: String, val destSymbol: String, val rate: BigDecimal,
+    val applicator: String? = null
 )
 
 data class StaleRate(

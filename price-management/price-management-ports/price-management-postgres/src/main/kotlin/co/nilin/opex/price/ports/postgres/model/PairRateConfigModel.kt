@@ -12,5 +12,6 @@ data class PairRateConfigModel(
     @Column("strategy") val strategy: String?,
     @Column("margin") val margin: BigDecimal?,
     @Column("is_active") val isActive: Boolean,
-    @Column("price_mode") val priceMode: String
+    @Column("price_mode") val priceMode: String,
+    @Column("applicator") val applicator: String? = null
 )

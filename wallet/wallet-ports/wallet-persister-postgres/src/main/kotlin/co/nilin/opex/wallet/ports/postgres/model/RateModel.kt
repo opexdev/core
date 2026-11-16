@@ -14,5 +14,6 @@ data class RateModel(
     var destinationSymbol: String,
     var rate: BigDecimal,
     var lastUpdateDate: LocalDateTime = LocalDateTime.now(),
-    var createDate: LocalDateTime
+    var createDate: LocalDateTime,
+    var applicator: String? = null
 )

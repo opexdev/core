@@ -13,5 +13,6 @@ class PairSetting(
     val updateDate: LocalDateTime? = null,
     val internalChart: Boolean,
     val globalChart: Boolean,
-    val categories: List<PairCategory> = emptyList()
+    val categories: List<PairCategory> = emptyList(),
+    val applicator: String? = null
 )

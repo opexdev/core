@@ -37,6 +37,8 @@ $$
     END
 $$;
 
+ALTER TABLE pair_setting ADD COLUMN IF NOT EXISTS applicator VARCHAR(80);
+
 CREATE TABLE IF NOT EXISTS pair_category
 (
     id       SERIAL PRIMARY KEY,

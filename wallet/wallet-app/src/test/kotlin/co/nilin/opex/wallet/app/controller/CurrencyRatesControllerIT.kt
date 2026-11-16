@@ -50,8 +50,8 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
                     ?.map { currency -> currency.name }
             val fpair = rateService.getForbiddenPairs()
             val rates = rateService.getRate()
-            fpair.forbiddenPairs!!.forEach { p -> rateService.deleteForbiddenPair(p) }
-            rates.rates!!.forEach { r -> rateService.deleteRate(r) }
+            fpair.forbiddenPairs!!.forEach { p -> rateService.deleteForbiddenPair(p, applicator = "test-admin") }
+            rates.rates!!.forEach { r -> rateService.deleteRate(r, applicator = "test-admin") }
             //TODO: after moving the wallet creation to otcservice we can remove these two lines
             val wallets = walletRepository.findAll().collectList().block()
             //todo
@@ -134,7 +134,7 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
                 .expectBody(Rate::class.java)
                 .returnResult()
                 .responseBody!!
-            Assertions.assertEquals(Rate("E", "U", BigDecimal.TEN), rate)
+            Assertions.assertEquals(Rate("E", "U", BigDecimal.TEN), rate.copy(applicator = null))
         }
     }
 
@@ -174,7 +174,7 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
                 .expectBody(ForbiddenPairs::class.java)
                 .returnResult()
                 .responseBody!!
-            Assertions.assertEquals(ForbiddenPair("E", "U"), forbiddenPairs.forbiddenPairs?.get(0))
+            Assertions.assertEquals(ForbiddenPair("E", "U"), forbiddenPairs.forbiddenPairs?.get(0)?.copy(applicator = null))
         }
     }
 
