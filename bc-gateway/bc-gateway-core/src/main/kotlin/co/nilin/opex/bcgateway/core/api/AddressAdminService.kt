@@ -15,7 +15,7 @@ interface AddressAdminService {
 
     suspend fun listAvailableAddresses(filter: ReservedAddressFilter): ReservedAddressPage
 
-    suspend fun assign(request: AdminAssignAddressRequest): AddressAssignmentRecord
+    suspend fun assign(request: AdminAssignAddressRequest, applicator: String): AddressAssignmentRecord
 
-    suspend fun revoke(id: Long): AddressAssignmentRecord
+    suspend fun revoke(id: Long, applicator: String): AddressAssignmentRecord
 }

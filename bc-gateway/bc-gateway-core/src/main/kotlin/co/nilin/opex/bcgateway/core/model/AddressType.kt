@@ -1,3 +1,3 @@
 package co.nilin.opex.bcgateway.core.model
 
-data class AddressType(val id: Long, val type: String, val addressRegex: String, val memoRegex: String?)
+data class AddressType(val id: Long, val type: String, val addressRegex: String, val memoRegex: String?, val applicator: String? = null)

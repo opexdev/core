@@ -81,6 +81,7 @@ class CryptoCurrencyController(
                     c.addressTypes.map { it.addressRegex }.getOrNull(0),
                     c.transactionScannerUrl,
                     c.addressScannerUrl,
+                    c.applicator,
                     )
             }
     }
@@ -94,6 +95,7 @@ class CryptoCurrencyController(
             c.addressTypes.map { it.addressRegex }.getOrNull(0),
             c.transactionScannerUrl,
             c.addressScannerUrl,
+            c.applicator,
         )
     }
 

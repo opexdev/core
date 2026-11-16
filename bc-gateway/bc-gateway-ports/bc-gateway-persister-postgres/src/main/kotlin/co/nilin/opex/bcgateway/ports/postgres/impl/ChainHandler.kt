@@ -25,7 +25,8 @@ class ChainHandler(
         name: String,
         addressType: String,
         transactionScannerUrl: String?,
-        addressScannerUrl: String?
+        addressScannerUrl: String?,
+        applicator: String
     ): Chain {
         val chain = chainRepository.findByName(name)?.awaitFirstOrNull()
         if (chain != null)
@@ -34,10 +35,10 @@ class ChainHandler(
         val type = addressTypeRepository.findByType(addressType).awaitFirstOrNull()
             ?: throw OpexError.InvalidAddressType.exception()
 
-        chainRepository.insert(name, transactionScannerUrl, addressScannerUrl).awaitFirstOrNull()
+        chainRepository.insert(name, transactionScannerUrl, addressScannerUrl, applicator).awaitFirstOrNull()
         val model = chainRepository.findByName(name)?.awaitFirstOrElse { throw OpexError.BadRequest.exception() }
         chainAddressRepository.save(ChainAddressTypeModel(null, model!!.name, type.id!!)).awaitFirstOrNull()
-        return Chain(model.name, emptyList(), transactionScannerUrl, addressScannerUrl)
+        return Chain(model.name, emptyList(), transactionScannerUrl, addressScannerUrl, model.applicator)
     }
 
     override suspend fun fetchAllChains(): List<Chain> {
@@ -46,18 +47,18 @@ class ChainHandler(
             .awaitFirstOrElse { emptyList() }
             .map { c ->
                 val addressTypes = chainRepository.findAddressTypesByName(c.name)
-                    .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
+                    .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex, it.applicator) }
                     .toList()
 
-                Chain(c.name, addressTypes, c.transactionScannerUrl, c.addressScannerUrl)
+                Chain(c.name, addressTypes, c.transactionScannerUrl, c.addressScannerUrl, c.applicator)
             }
     }
 
     override suspend fun fetchChainInfo(chain: String): Chain {
         val chainDao = chainRepository.findByName(chain)?.awaitFirstOrElse { throw OpexError.ChainNotFound.exception() }
         val addressTypes = chainRepository.findAddressTypesByName(chain)
-            .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }.toList()
-        return Chain(chainDao!!.name, addressTypes, chainDao.transactionScannerUrl, chainDao.addressScannerUrl)
+            .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex, it.applicator) }.toList()
+        return Chain(chainDao!!.name, addressTypes, chainDao.transactionScannerUrl, chainDao.addressScannerUrl, chainDao.applicator)
     }
 
 }

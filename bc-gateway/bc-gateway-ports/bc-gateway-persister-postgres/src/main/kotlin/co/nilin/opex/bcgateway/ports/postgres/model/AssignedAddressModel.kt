@@ -17,6 +17,7 @@ data class AssignedAddressModel(
     @Column("assigned_Date") val assignedDate: LocalDateTime? = null,
     @Column("revoked_Date") val revokedDate: LocalDateTime? = null,
     val status: AddressStatus? = null,
+    val applicator: String? = null,
 
 
     )

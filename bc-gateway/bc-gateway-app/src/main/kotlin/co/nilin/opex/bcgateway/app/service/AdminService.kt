@@ -29,22 +29,23 @@ class AdminService(
 //    }
 
     @Transactional
-    suspend fun addChain(body: AddChainRequest) {
-        chainLoader.addChain(body.name!!, body.addressType!!, body.transactionScannerUrl, body.addressScannerUrl)
+    suspend fun addChain(body: AddChainRequest, applicator: String) {
+        chainLoader.addChain(body.name!!, body.addressType!!, body.transactionScannerUrl, body.addressScannerUrl, applicator)
     }
 
-    suspend fun addAddressType(name: String, addressRegex: String, memoRegex: String?) {
-        addressTypeHandler.addAddressType(name, addressRegex, memoRegex)
+    suspend fun addAddressType(name: String, addressRegex: String, memoRegex: String?, applicator: String) {
+        addressTypeHandler.addAddressType(name, addressRegex, memoRegex, applicator)
     }
 
-    suspend fun addAddresses(addresses: List<String>, memos: List<String?>?, addressType: String) {
+    suspend fun addAddresses(addresses: List<String>, memos: List<String?>?, addressType: String, applicator: String) {
         var addressTypeObj =
             addressTypeHandler.fetchAddressType(addressType) ?: throw OpexError.InvalidAddressType.exception()
         val reservedAddresses = addresses.mapIndexed { index, address ->
             ReservedAddress(
                 address = address,
                 memo = memos?.getOrNull(index).orEmpty(),
-                type = addressTypeObj
+                type = addressTypeObj,
+                applicator = applicator
             )
         }
         reservedAddressHandler.addReservedAddress(reservedAddresses)

@@ -37,7 +37,7 @@ interface APIKeyService {
         enabled: Boolean
     ): ApiKeyCreateResult
 
-    suspend fun rotateApiKeySecret(apiKeyId: String, newPlaintextSecret: String): ApiKeyCreateResult
+    suspend fun rotateApiKeySecret(apiKeyId: String, newPlaintextSecret: String, adminId: String): ApiKeyCreateResult
 
     suspend fun updateApiKeyRecord(
         apiKeyId: String,
@@ -45,14 +45,15 @@ interface APIKeyService {
         enabled: Boolean?,
         allowedIps: Set<String>?,
         allowedEndpoints: Set<String>?,
-        keycloakUsername: String?
+        keycloakUsername: String?,
+        adminId: String
     ): ApiKeyRecord
 
     suspend fun getApiKeyRecord(apiKeyId: String): ApiKeyRecord?
 
     suspend fun listApiKeyRecords(): List<ApiKeyRecord>
 
-    suspend fun deleteApiKeyRecord(apiKeyId: String)
+    suspend fun deleteApiKeyRecord(apiKeyId: String, adminId: String)
 
     suspend fun getApiKeyForVerification(apiKeyId: String): ApiKeyVerification?
 }

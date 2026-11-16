@@ -50,7 +50,7 @@ open class AddressAdminServiceImpl(
     }
 
     @Transactional
-    override suspend fun assign(request: AdminAssignAddressRequest): AddressAssignmentRecord {
+    override suspend fun assign(request: AdminAssignAddressRequest, applicator: String): AddressAssignmentRecord {
         if (request.uuid.isBlank()) throw OpexError.InvalidRequestBody.exception("uuid is required")
         val reserved = claimAddress(request)
         assignedAddressHandler.findUuid(reserved.address, reserved.memo)?.let { holder ->
@@ -72,22 +72,23 @@ open class AddressAdminServiceImpl(
                 LocalDateTime.now(),
                 null,
                 AddressStatus.Assigned,
-                null
+                null,
+                applicator = applicator
             )
         )
     }
 
     @Transactional
-    override suspend fun revoke(id: Long): AddressAssignmentRecord {
+    override suspend fun revoke(id: Long, applicator: String): AddressAssignmentRecord {
         val record = findById(id)
         if (record.status != AddressStatus.Assigned)
             throw OpexError.BadRequest.exception("Only an assigned address can be revoked")
-        val revoked = assignedAddressHandler.revokeById(id, LocalDateTime.now())
+        val revoked = assignedAddressHandler.revokeById(id, LocalDateTime.now(), applicator)
         val type = record.addressType
         if (type == null) {
             logger.warn("Assignment $id has an unknown address type, not returning ${record.address} to the pool")
         } else if (reservedAddressHandler.findByAddress(record.address, record.memo) == null) {
-            reservedAddressHandler.addReservedAddress(listOf(ReservedAddress(record.address, record.memo, type)))
+            reservedAddressHandler.addReservedAddress(listOf(ReservedAddress(record.address, record.memo, type, applicator)))
         }
         return revoked
     }

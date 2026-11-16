@@ -20,6 +20,7 @@ class AddressManagerImpl(
                 id = it.id
                 status = AddressStatus.Revoked
                 revokedDate = LocalDateTime.now()
+                applicator = null
             })
             reservedAddressHandlerImpl.addReservedAddress(listOf(ReservedAddress(it.address, it.memo, it.type)))
 

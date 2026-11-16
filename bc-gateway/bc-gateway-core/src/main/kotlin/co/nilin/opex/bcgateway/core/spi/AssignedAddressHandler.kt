@@ -32,5 +32,5 @@ interface AssignedAddressHandler {
 
     suspend fun findRecordById(id: Long): AddressAssignmentRecord?
 
-    suspend fun revokeById(id: Long, revokedAt: LocalDateTime): AddressAssignmentRecord
+    suspend fun revokeById(id: Long, revokedAt: LocalDateTime, applicator: String): AddressAssignmentRecord
 }

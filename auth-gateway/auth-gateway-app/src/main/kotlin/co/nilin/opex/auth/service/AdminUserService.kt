@@ -31,7 +31,8 @@ class AdminUserService(
     }
 
     suspend fun createLegalRepresentative(
-        request: CreateLegalRepresentativeRequest
+        request: CreateLegalRepresentativeRequest,
+        adminId: String
     ): CreateLegalRepresentativeResponse {
         validate(request)
 
@@ -54,10 +55,11 @@ class AdminUserService(
             )
         )
 
+        logger.info("Admin {} created legal representative {}", adminId, uuid)
         return CreateLegalRepresentativeResponse(uuid)
     }
 
-    suspend fun sendCredentials(uuid: String): SendCredentialsResponse {
+    suspend fun sendCredentials(uuid: String, adminId: String): SendCredentialsResponse {
         val user = keycloakProxy.findUserByUuid(uuid) ?: throw OpexError.UserNotFound.exception()
         val email = user.email ?: throw OpexError.BadRequest.exception("User has no email address")
 
@@ -71,11 +73,13 @@ class AdminUserService(
         val emailSent = emailSender.send(email, "$appName account credentials", body)
         if (!emailSent) logger.error("Could not deliver credentials email of $uuid")
 
+        logger.info("Admin {} reset credentials of user {} (emailSent={})", adminId, uuid, emailSent)
         return SendCredentialsResponse(emailSent)
     }
 
-    suspend fun deleteUser(uuid: String) {
+    suspend fun deleteUser(uuid: String, adminId: String) {
         keycloakProxy.deleteUser(uuid)
+        logger.info("Admin {} deleted user {}", adminId, uuid)
     }
 
     private fun validate(request: CreateLegalRepresentativeRequest) {

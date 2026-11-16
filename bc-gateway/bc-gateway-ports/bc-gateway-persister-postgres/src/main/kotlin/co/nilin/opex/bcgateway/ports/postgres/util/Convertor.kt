@@ -109,5 +109,6 @@ fun AssignedAddressModel.toRecord(addressTypeMap: Map<Long, AddressType>) = Addr
     assignedDate = assignedDate,
     expTime = expTime,
     revokedDate = revokedDate,
-    status = status
+    status = status,
+    applicator = applicator
 )

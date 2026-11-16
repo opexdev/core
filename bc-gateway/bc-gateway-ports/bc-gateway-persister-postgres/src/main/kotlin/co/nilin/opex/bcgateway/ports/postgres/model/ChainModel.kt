@@ -7,5 +7,6 @@ import org.springframework.data.relational.core.mapping.Table
 data class ChainModel(
     @Id val name: String,
     val transactionScannerUrl: String?,
-    val addressScannerUrl: String?
+    val addressScannerUrl: String?,
+    val applicator: String? = null
 )

@@ -8,5 +8,6 @@ data class ReservedAddressModel(
     val id: Long?,
     val address: String,
     val memo: String?,
-    @Column("address_type") val type: Long
+    @Column("address_type") val type: Long,
+    val applicator: String? = null
 )
