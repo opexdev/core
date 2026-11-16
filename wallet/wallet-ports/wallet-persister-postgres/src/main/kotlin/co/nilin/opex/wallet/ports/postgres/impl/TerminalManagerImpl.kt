@@ -28,7 +28,7 @@ class TerminalManagerImpl(
 ) : TerminalManager {
     private val logger = LoggerFactory.getLogger(TerminalManagerImpl::class.java)
 
-    override suspend fun save(terminalCommand: TerminalCommand, applicator: String): TerminalCommand? {
+    override suspend fun save(terminalCommand: TerminalCommand, applicator: String? = null): TerminalCommand? {
         return transactionalOperator.executeAndAwait {
 
             terminalRepository.findByIdentifier(terminalCommand.identifier)
@@ -62,7 +62,7 @@ class TerminalManagerImpl(
         }
     }
 
-    override suspend fun update(terminalCommand: TerminalCommand, applicator: String): TerminalCommand? {
+    override suspend fun update(terminalCommand: TerminalCommand, applicator: String? = null): TerminalCommand? {
         loadTerminal(terminalCommand.uuid!!)?.let {
             val terminal = terminalRepository
                 .save(terminalCommand.copy(applicator = applicator).toModel().apply { id = it.id })
@@ -74,7 +74,7 @@ class TerminalManagerImpl(
         } ?: throw OpexError.TerminalNotFound.exception()
     }
 
-    override suspend fun delete(uuid: String, applicator: String) {
+    override suspend fun delete(uuid: String, applicator: String? = null) {
         val terminal = loadTerminal(uuid) ?: throw OpexError.TerminalNotFound.exception()
         terminalRepository.deleteById(terminal.id!!).awaitSingleOrNull()
         logger.info("Admin {} deleted terminal {}", applicator, uuid)
@@ -98,7 +98,7 @@ class TerminalManagerImpl(
     override suspend fun saveTerminalLocalizations(
         terminalUuid: String,
         terminalLocalizations: List<TerminalLocalizationCommand>,
-        applicator: String
+        applicator: String? = null
     ): List<TerminalLocalizationCommand> {
 
         return transactionalOperator.executeAndAwait {
@@ -135,7 +135,7 @@ class TerminalManagerImpl(
             ?: emptyList()
     }
 
-    override suspend fun deleteTerminalLocalizations(id: Long, applicator: String) {
+    override suspend fun deleteTerminalLocalizations(id: Long, applicator: String? = null) {
         terminalLocalizationsRepository.deleteById(id).awaitSingleOrNull()
         logger.info("Admin {} deleted terminal localization {}", applicator, id)
     }

@@ -29,7 +29,7 @@ class RateServiceImpl(
     private val logger = LoggerFactory.getLogger(RateServiceImpl::class.java)
 
 
-    override suspend fun addRate(rate: Rate, ignoreIfExist: Boolean?, applicator: String) {
+    override suspend fun addRate(rate: Rate, ignoreIfExist: Boolean?, applicator: String? = null) {
         rate.isValid()
         ratesRepository.findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull()
             ?.let {
@@ -55,7 +55,7 @@ class RateServiceImpl(
             ?.toDto() ?: throw OpexError.PairNotFound.exception()
     }
 
-    override suspend fun deleteRate(rate: Rate, applicator: String): Rates {
+    override suspend fun deleteRate(rate: Rate, applicator: String? = null): Rates {
         return Rates(
             ratesRepository
                 .findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull()?.let {
@@ -68,7 +68,7 @@ class RateServiceImpl(
         }
     }
 
-    override suspend fun updateRate(rate: Rate, applicator: String): Rates {
+    override suspend fun updateRate(rate: Rate, applicator: String? = null): Rates {
         return Rates(
             ratesRepository
                 .findBySourceSymbolAndDestinationSymbol(rate.sourceSymbol, rate.destSymbol)?.awaitFirstOrNull()
@@ -123,7 +123,7 @@ class RateServiceImpl(
         return rate
     }
 
-    override suspend fun addForbiddenPair(forbiddenPair: ForbiddenPair, applicator: String) {
+    override suspend fun addForbiddenPair(forbiddenPair: ForbiddenPair, applicator: String? = null) {
         isPairValid(forbiddenPair.sourceSymbol, forbiddenPair.destinationSymbol)
         forbiddenPairRepository.findBySourceSymbolAndDestinationSymbol(
             forbiddenPair.sourceSymbol,
@@ -133,7 +133,7 @@ class RateServiceImpl(
         } ?: forbiddenPairRepository.save(forbiddenPair.toModel(applicator)).awaitFirstOrNull()
     }
 
-    override suspend fun deleteForbiddenPair(forbiddenPair: ForbiddenPair, applicator: String): ForbiddenPairs {
+    override suspend fun deleteForbiddenPair(forbiddenPair: ForbiddenPair, applicator: String? = null): ForbiddenPairs {
         return ForbiddenPairs(
             forbiddenPairRepository
                 .findBySourceSymbolAndDestinationSymbol(forbiddenPair.sourceSymbol, forbiddenPair.destinationSymbol)
@@ -157,7 +157,7 @@ class RateServiceImpl(
         )
     }
 
-    override suspend fun addForbiddenSwapPair(forbiddenSwapPair: ForbiddenSwapPair, applicator: String) {
+    override suspend fun addForbiddenSwapPair(forbiddenSwapPair: ForbiddenSwapPair, applicator: String? = null) {
         isPairValid(forbiddenSwapPair.sourceSymbol, forbiddenSwapPair.destinationSymbol)
         forbiddenSwapPairRepository.findBySourceSymbolAndDestinationSymbol(
             forbiddenSwapPair.sourceSymbol,
@@ -167,7 +167,7 @@ class RateServiceImpl(
         } ?: forbiddenSwapPairRepository.save(forbiddenSwapPair.toModel(applicator)).awaitFirstOrNull()
     }
 
-    override suspend fun deleteForbiddenSwapPair(forbiddenSwapPair: ForbiddenSwapPair, applicator: String): ForbiddenSwapPairs {
+    override suspend fun deleteForbiddenSwapPair(forbiddenSwapPair: ForbiddenSwapPair, applicator: String? = null): ForbiddenSwapPairs {
         return ForbiddenSwapPairs(
             forbiddenSwapPairRepository
                 .findBySourceSymbolAndDestinationSymbol(
@@ -194,7 +194,7 @@ class RateServiceImpl(
         )
     }
 
-    override suspend fun addTransitiveSymbols(symbols: Symbols, applicator: String) {
+    override suspend fun addTransitiveSymbols(symbols: Symbols, applicator: String? = null) {
         symbols.symbols?.forEach {
             currencyRepository.fetchCurrency(symbol = it)?.awaitFirstOrNull()?.let {
                 if (it.isActive == true)
@@ -206,7 +206,7 @@ class RateServiceImpl(
         }
     }
 
-    override suspend fun deleteTransitiveSymbols(symbols: Symbols, applicator: String): Symbols {
+    override suspend fun deleteTransitiveSymbols(symbols: Symbols, applicator: String? = null): Symbols {
         symbols.symbols?.forEach {
             currencyRepository.fetchCurrency(symbol = it)?.awaitFirstOrNull()?.let {
                 currencyRepository.save(it.apply { isTransitive = false }.toModel()).awaitFirstOrNull()
@@ -255,7 +255,7 @@ class RateServiceImpl(
 
     }
 
-    private fun ForbiddenPair.toModel(applicator: String): ForbiddenPairModel {
+    private fun ForbiddenPair.toModel(applicator: String? = null): ForbiddenPairModel {
         return ForbiddenPairModel(
             null,
             sourceSymbol,
@@ -271,7 +271,7 @@ class RateServiceImpl(
         return ForbiddenPair(sourceSymbol, destinationSymbol, applicator)
     }
 
-    private fun ForbiddenSwapPair.toModel(applicator: String): ForbiddenSwapPairModel {
+    private fun ForbiddenSwapPair.toModel(applicator: String? = null): ForbiddenSwapPairModel {
         return ForbiddenSwapPairModel(
             null,
             sourceSymbol,

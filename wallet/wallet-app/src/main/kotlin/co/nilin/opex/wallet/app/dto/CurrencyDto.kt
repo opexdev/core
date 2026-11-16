@@ -53,8 +53,7 @@ data class CurrencyDto(
             gateways,
             availableGatewayType,
             displayOrder,
-            maxOrder,
-            applicator
+            maxOrder
         )
     }
 }

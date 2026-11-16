@@ -207,8 +207,7 @@ class DepositService(
             depositType = depositType,
             network = chain,
             attachment = attachment,
-            transferMethod = transferMethod,
-            applicator = applicator
+            transferMethod = transferMethod
         )
 
         val gatewayData = fetchDepositData(

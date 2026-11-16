@@ -188,8 +188,7 @@ class TransferService(
                 senderWalletType = senderWalletType,
                 receiverWalletType = receiverWalletType,
                 reservedDestAmount = scaledDestAmount,
-                rate = finalRate,
-                applicator = applicator
+                rate = finalRate
             )
         )
 
@@ -294,7 +293,7 @@ class TransferService(
             destAmount = reservations.reservedDestAmount
         ).transferResult
 
-        reservedTransferManager.commitReserve(reserveNumber, applicator)
+        reservedTransferManager.commitReserve(reserveNumber)
 
         return TransferResultDetailed(
             transferResult = TransferResult(

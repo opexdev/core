@@ -23,8 +23,7 @@ fun CurrencyCommand.toDto(): CurrencyDto {
         gateways,
         availableGatewayType,
         displayOrder,
-        maxOrder =  maxOrder,
-        applicator = applicator
+        maxOrder =  maxOrder
     )
 }
 

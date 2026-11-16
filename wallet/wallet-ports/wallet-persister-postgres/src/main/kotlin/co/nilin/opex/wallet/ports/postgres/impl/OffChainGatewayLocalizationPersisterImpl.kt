@@ -24,7 +24,7 @@ class OffChainGatewayLocalizationPersisterImpl(
     override suspend fun save(
         gatewayUuid: String,
         localizations: List<OffChainGatewayLocalizationCommand>,
-        applicator: String
+        applicator: String? = null
     ): List<OffChainGatewayLocalizationCommand> {
 
         return transactionalOperator.executeAndAwait {
@@ -61,7 +61,7 @@ class OffChainGatewayLocalizationPersisterImpl(
             ?: emptyList()
     }
 
-    override suspend fun delete(id: Long, applicator: String) {
+    override suspend fun delete(id: Long, applicator: String? = null) {
         offChainGatewayLocalizationRepository.deleteById(id).awaitSingleOrNull()
         logger.info("Admin {} deleted off-chain gateway localization {}", applicator, id)
     }

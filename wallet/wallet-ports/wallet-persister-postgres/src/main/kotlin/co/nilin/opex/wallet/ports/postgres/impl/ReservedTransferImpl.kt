@@ -32,7 +32,7 @@ class ReservedTransferImpl(
             }?.toDto()
     }
 
-    override suspend fun commitReserve(reserveNumber: String, applicator: String?) {
+    override suspend fun commitReserve(reserveNumber: String, applicator: String? = null) {
         reservedTransferRepository.findByReserveNumber(reserveNumber)?.awaitSingleOrNull()?.let {
             reservedTransferRepository.save(
                 it.copy(status = ReservedStatus.Committed, applicator = applicator)

@@ -4,12 +4,12 @@ import co.nilin.opex.wallet.core.inout.CurrencyGatewayCommand
 import co.nilin.opex.wallet.core.inout.TerminalCommand
 
 interface GatewayTerminalManager {
-    suspend fun assignTerminalsToGateway(gatewayUuid: String, terminals: List<String>, applicator: String)
+    suspend fun assignTerminalsToGateway(gatewayUuid: String, terminals: List<String>, applicator: String? = null)
 
     suspend fun getAssignedTerminalToGateway(gatewayUuid: String): List<TerminalCommand>?
 
     suspend fun getAssignedGatewayToTerminal(terminalUuid: String): List<CurrencyGatewayCommand>?
 
-    suspend fun revokeTerminalsToGateway(gatewayUuid: String, terminals: List<String>, applicator: String)
+    suspend fun revokeTerminalsToGateway(gatewayUuid: String, terminals: List<String>, applicator: String? = null)
 
 }
