@@ -202,7 +202,8 @@ class VoucherService(
             null,
             DepositType.OFF_CHAIN,
             gatewayUuid,
-            TransferMethod.VOUCHER
+            TransferMethod.VOUCHER,
+            applicator = null
         )
     }
 }

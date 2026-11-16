@@ -96,7 +96,7 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
         externalUrl: String? = null,
         displayOrder: Int? = null,
         maxOrder: BigDecimal? = null,
-        applicator: String? = null
+        applicator: String?
     ): Mono<Void>
 
 

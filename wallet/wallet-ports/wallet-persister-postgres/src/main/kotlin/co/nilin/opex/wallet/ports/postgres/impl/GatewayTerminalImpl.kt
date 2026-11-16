@@ -23,7 +23,7 @@ class GatewayTerminalImpl(
 ) : GatewayTerminalManager {
     private val logger = LoggerFactory.getLogger(GatewayTerminalImpl::class.java)
 
-    override suspend fun assignTerminalsToGateway(gatewayUuid: String, terminals: List<String>, applicator: String? = null) {
+    override suspend fun assignTerminalsToGateway(gatewayUuid: String, terminals: List<String>, applicator: String) {
         gatewayRepository.findByGatewayUuid(gatewayUuid)?.awaitSingleOrNull()?.let { gateway ->
             terminals.forEach { it ->
                 terminalRepository.findByUuid(
@@ -54,7 +54,7 @@ class GatewayTerminalImpl(
         } ?: throw OpexError.TerminalNotFound.exception()
     }
 
-    override suspend fun revokeTerminalsToGateway(gatewayUuid: String, terminals: List<String>, applicator: String? = null) {
+    override suspend fun revokeTerminalsToGateway(gatewayUuid: String, terminals: List<String>, applicator: String) {
         gatewayRepository.findByGatewayUuid(gatewayUuid)?.awaitSingleOrNull()?.let { gateway ->
             terminals.forEach { it ->
                 terminalRepository.findByUuid(

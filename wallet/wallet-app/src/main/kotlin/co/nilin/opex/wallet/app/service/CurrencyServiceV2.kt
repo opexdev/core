@@ -29,6 +29,7 @@ class CurrencyServiceV2(
             request.apply {
                 uuid = UUID.randomUUID().toString()
                 symbol = symbol?.uppercase() ?: throw OpexError.BadRequest.exception()
+                this.applicator = applicator
             }.toCommand()
         )?.toDto()
         walletManager.createWalletForSystem(request.symbol!!, request.systemBalance)
@@ -38,7 +39,7 @@ class CurrencyServiceV2(
     suspend fun updateCurrency(request: CurrencyDto, applicator: String): CurrencyDto? {
         currencyServiceManager.fetchCurrency(FetchCurrency(symbol = request.symbol))
             ?: throw OpexError.CurrencyNotFound.exception()
-        return currencyServiceManager.updateCurrency(request.toCommand())?.toDto()
+        return currencyServiceManager.updateCurrency(request.apply { this.applicator = applicator }.toCommand())?.toDto()
     }
 
 
@@ -51,7 +52,7 @@ class CurrencyServiceV2(
 //            currencyServiceManager.prepareCurrencyToBeACryptoCurrency(request.currencySymbol!!)
 //                    ?: throw OpexError.BadRequest.exception()
 //        }
-        return gatewayService.createGateway(request);
+        return gatewayService.createGateway(request.apply { this.applicator = applicator });
 
     }
 
@@ -147,7 +148,7 @@ class CurrencyServiceV2(
         currencyServiceManager.fetchCurrency(FetchCurrency(symbol = request.currencySymbol))
             ?.let {
 //                    if (it.isCryptoCurrency == true)
-                return gatewayService.updateCryptoGateway(request);
+                return gatewayService.updateCryptoGateway(request.apply { this.applicator = applicator });
             } ?: throw OpexError.CurrencyNotFound.exception()
     }
 
@@ -164,11 +165,11 @@ class CurrencyServiceV2(
         request: List<CurrencyLocalizationCommand>,
         applicator: String
     ): List<CurrencyLocalizationCommand> {
-        return currencyServiceManager.saveCurrencyLocalizations(currency, request);
+        return currencyServiceManager.saveCurrencyLocalizations(currency, request, applicator);
     }
 
     suspend fun deleteCurrencyLocalization(id: Long, applicator: String) {
-        currencyServiceManager.deleteCurrencyLocalization(id)
+        currencyServiceManager.deleteCurrencyLocalization(id, applicator)
     }
 
 }

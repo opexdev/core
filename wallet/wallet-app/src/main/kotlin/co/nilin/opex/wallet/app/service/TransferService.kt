@@ -188,7 +188,8 @@ class TransferService(
                 senderWalletType = senderWalletType,
                 receiverWalletType = receiverWalletType,
                 reservedDestAmount = scaledDestAmount,
-                rate = finalRate
+                rate = finalRate,
+                applicator = applicator
             )
         )
 
@@ -221,7 +222,8 @@ class TransferService(
             transferRef = transferRef,
             transferCategory = transferCategory,
             issuer = issuer,
-            validateIssuer = true
+            validateIssuer = true,
+            applicator = null
         )
     }
 
@@ -251,7 +253,7 @@ class TransferService(
         transferCategory: TransferCategory,
         issuer: String?,
         validateIssuer: Boolean,
-        applicator: String? = null
+        applicator: String?
     ): TransferResultDetailed {
 
         val reservations = reservedTransferManager.fetchValidReserve(reserveNumber)
@@ -293,7 +295,7 @@ class TransferService(
             destAmount = reservations.reservedDestAmount
         ).transferResult
 
-        reservedTransferManager.commitReserve(reserveNumber)
+        reservedTransferManager.commitReserve(reserveNumber, applicator)
 
         return TransferResultDetailed(
             transferResult = TransferResult(
