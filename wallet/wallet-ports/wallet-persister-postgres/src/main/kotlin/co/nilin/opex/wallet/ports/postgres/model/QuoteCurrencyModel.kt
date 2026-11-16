@@ -11,5 +11,6 @@ data class QuoteCurrencyModel(
     val currency: String,
     val isReference: Boolean = false,
     var lastUpdateDate: LocalDateTime = LocalDateTime.now(),
-    val displayOrder: Int? = null
+    val displayOrder: Int? = null,
+    val applicator: String? = null
 )

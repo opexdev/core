@@ -99,7 +99,7 @@ class CurrencyServiceImplV2(
     }
 
     override suspend fun saveCurrencyLocalizations(
-        symbol: String, localizations: List<CurrencyLocalizationCommand>
+        symbol: String, localizations: List<CurrencyLocalizationCommand>, applicator: String
     ): List<CurrencyLocalizationCommand> {
 
         return transactionalOperator.executeAndAwait {
@@ -123,7 +123,8 @@ class CurrencyServiceImplV2(
                         alias = c.alias,
                         description = c.description,
                         shortDescription = c.shortDescription,
-                        language = UserLanguage.safeValueOf(c.language).toString()
+                        language = UserLanguage.safeValueOf(c.language).toString(),
+                        applicator = applicator
                     ).awaitSingleOrNull()
             }
 
@@ -132,8 +133,9 @@ class CurrencyServiceImplV2(
         } ?: throw OpexError.BadRequest.exception("Failed to save currency localizations")
     }
 
-    override suspend fun deleteCurrencyLocalization(id: Long) {
+    override suspend fun deleteCurrencyLocalization(id: Long, applicator: String) {
         currencyLocalizationsRepository.deleteById(id).awaitSingleOrNull()
+        logger.info("Admin {} deleted currency localization {}", applicator, id)
     }
 
     private suspend fun loadCurrency(request: FetchCurrency): Mono<CurrencyView>? {
@@ -171,7 +173,8 @@ class CurrencyServiceImplV2(
                 request.sign,
                 request.externalUrl,
                 request.displayOrder,
-                request.maxOrder
+                request.maxOrder,
+                request.applicator
             ).awaitFirstOrNull()
 
             if (listOf(
@@ -190,7 +193,8 @@ class CurrencyServiceImplV2(
                         alias = request.alias,
                         description = request.description,
                         shortDescription = request.shortDescription,
-                        language = getDefaultUserLanguage()
+                        language = getDefaultUserLanguage(),
+                        applicator = request.applicator
                     )
                 ).awaitFirstOrNull()
             }

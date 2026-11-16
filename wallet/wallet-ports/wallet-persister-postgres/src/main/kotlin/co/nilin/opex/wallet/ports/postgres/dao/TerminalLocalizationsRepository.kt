@@ -15,18 +15,20 @@ interface TerminalLocalizationsRepository : ReactiveCrudRepository<TerminalLocal
     @Modifying
     @Query(
         """
-    INSERT INTO terminal_localization (terminal_id, description, owner, language)
-    VALUES (:terminalId, :description, :owner, :language)
+    INSERT INTO terminal_localization (terminal_id, description, owner, language, applicator)
+    VALUES (:terminalId, :description, :owner, :language, :applicator)
     ON CONFLICT (terminal_id, language)
     DO UPDATE SET
         description = :description,
-        owner = :owner
+        owner = :owner,
+        applicator = :applicator
 """
     )
     fun upsert(
         terminalId: Long,
         description: String?,
         owner: String?,
-        language: String
+        language: String,
+        applicator: String
     ): Mono<Void>
 }

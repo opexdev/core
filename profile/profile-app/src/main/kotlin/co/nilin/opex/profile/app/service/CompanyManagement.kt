@@ -152,6 +152,7 @@ class CompanyManagement(
         boardMemberDocumentKeys,
         createDate,
         updateDate,
-        companyUuid
+        companyUuid,
+        applicator
     )
 }

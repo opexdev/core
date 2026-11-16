@@ -22,7 +22,8 @@ data class CurrencyCommand(
     var externalUrl: String? = null,
     var gateways: List<CurrencyGatewayCommand>? = null,
     var availableGatewayType: String? = null,
-    var displayOrder: Int? = null
+    var displayOrder: Int? = null,
+    var applicator: String? = null
 
 ) {
     fun updateTo(newData: CurrencyCommand): CurrencyCommand {

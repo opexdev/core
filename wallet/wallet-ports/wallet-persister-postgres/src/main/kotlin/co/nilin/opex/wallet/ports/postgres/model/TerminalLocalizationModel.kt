@@ -11,4 +11,5 @@ data class TerminalLocalizationModel(
     var description: String? = null,
     var owner: String? = null,
     var language: String,
+    var applicator: String? = null,
 )

@@ -3,6 +3,8 @@ package co.nilin.opex.wallet.app.controller
 import co.nilin.opex.wallet.app.dto.OffChainGatewayLocalizationResponse
 import co.nilin.opex.wallet.core.model.OffChainGatewayLocalizationCommand
 import co.nilin.opex.wallet.core.spi.OffChainGatewayLocalizationPersister
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -20,14 +22,18 @@ class OffChainGatewayLocalizationController(
     @PostMapping("/{gatewayUuid}/localization")
     suspend fun saveGatewayLocalizations(
         @PathVariable("gatewayUuid") gatewayUuid: String,
-        @RequestBody gatewayLocalizations: List<OffChainGatewayLocalizationCommand>
+        @RequestBody gatewayLocalizations: List<OffChainGatewayLocalizationCommand>,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): OffChainGatewayLocalizationResponse {
-        val localizations = offChainGatewayLocalizationPersister.save(gatewayUuid, gatewayLocalizations)
+        val localizations = offChainGatewayLocalizationPersister.save(gatewayUuid, gatewayLocalizations, securityContext.authentication.name)
         return OffChainGatewayLocalizationResponse(gatewayUuid, localizations)
     }
 
     @DeleteMapping("/localization/{id}")
-    suspend fun deleteGatewayLocalization(@PathVariable("id") id: Long) {
-        offChainGatewayLocalizationPersister.delete(id)
+    suspend fun deleteGatewayLocalization(
+        @PathVariable("id") id: Long,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ) {
+        offChainGatewayLocalizationPersister.delete(id, securityContext.authentication.name)
     }
 }

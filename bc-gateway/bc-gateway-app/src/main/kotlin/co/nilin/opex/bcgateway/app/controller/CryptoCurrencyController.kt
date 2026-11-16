@@ -8,6 +8,8 @@ import co.nilin.opex.bcgateway.core.model.FetchGateways
 import co.nilin.opex.bcgateway.core.model.WithdrawData
 import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.bcgateway.core.spi.CryptoCurrencyHandlerV2
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -104,9 +106,10 @@ class CryptoCurrencyController(
     @PostMapping("/gateway/{uuid}/localization")
     suspend fun saveGatewayLocalization(
         @PathVariable("uuid") gatewayUuid: String,
-        @RequestBody localizations: List<CurrencyOnChainGatewayLocalizationCommand>
+        @RequestBody localizations: List<CurrencyOnChainGatewayLocalizationCommand>,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): OnChainGatewayLocalizationResponse {
-        val gatewayLocalizations = cryptoCurrencyHandler.saveOnChainGatewayLocalization(gatewayUuid, localizations)
+        val gatewayLocalizations = cryptoCurrencyHandler.saveOnChainGatewayLocalization(gatewayUuid, localizations, securityContext.authentication.name)
         return OnChainGatewayLocalizationResponse(gatewayUuid, gatewayLocalizations)
     }
 
@@ -121,8 +124,9 @@ class CryptoCurrencyController(
     @DeleteMapping("/gateway/localization/{id}")
     suspend fun deleteGatewayLocalization(
         @PathVariable("id") id: Long,
+        @CurrentSecurityContext securityContext: SecurityContext,
     ) {
-        cryptoCurrencyHandler.deleteOnChainGatewayLocalizations(id)
+        cryptoCurrencyHandler.deleteOnChainGatewayLocalizations(id, securityContext.authentication.name)
     }
 
 }

@@ -6,11 +6,12 @@ interface OffChainGatewayLocalizationPersister {
 
     suspend fun save(
         gatewayUuid: String,
-        localizations: List<OffChainGatewayLocalizationCommand>
+        localizations: List<OffChainGatewayLocalizationCommand>,
+        applicator: String
     ): List<OffChainGatewayLocalizationCommand>
 
     suspend fun fetch(gatewayUuid: String): List<OffChainGatewayLocalizationCommand>
-    suspend fun delete(id: Long)
+    suspend fun delete(id: Long, applicator: String)
 }
 
 

@@ -127,7 +127,8 @@ class CurrencyHandlerImplV2(
                         gatewayId = gateway.id!!,
                         depositDescription = request.depositDescription,
                         withdrawDescription = request.withdrawDescription,
-                        language = getDefaultUserLanguage()
+                        language = getDefaultUserLanguage(),
+                        applicator = request.applicator
                     )
                 ).awaitSingleOrNull()
             }
@@ -172,7 +173,8 @@ class CurrencyHandlerImplV2(
 
     override suspend fun saveOnChainGatewayLocalization(
         gatewayUuid: String,
-        localizations: List<CurrencyOnChainGatewayLocalizationCommand>
+        localizations: List<CurrencyOnChainGatewayLocalizationCommand>,
+        applicator: String
     ): List<CurrencyOnChainGatewayLocalizationCommand> {
         return transactionalOperator.executeAndAwait {
 
@@ -185,7 +187,8 @@ class CurrencyHandlerImplV2(
                         gatewayId = gateway.id!!,
                         depositDescription = g.depositDescription,
                         withdrawDescription = g.withdrawDescription,
-                        language = UserLanguage.safeValueOf(g.language).toString()
+                        language = UserLanguage.safeValueOf(g.language).toString(),
+                        applicator = applicator
                     ).awaitSingleOrNull()
             }
 
@@ -208,7 +211,8 @@ class CurrencyHandlerImplV2(
             ?: emptyList()
     }
 
-    override suspend fun deleteOnChainGatewayLocalizations(id: Long) {
+    override suspend fun deleteOnChainGatewayLocalizations(id: Long, applicator: String) {
         currencyOnChainGatewayLocalizationRepository.deleteById(id).awaitSingleOrNull()
+        logger.info("Admin {} deleted on-chain gateway localization {}", applicator, id)
     }
 }

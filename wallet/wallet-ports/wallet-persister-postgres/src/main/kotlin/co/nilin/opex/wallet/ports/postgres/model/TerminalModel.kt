@@ -13,4 +13,5 @@ data class TerminalModel(
     var active: Boolean? = true,
     var metaData: String,
     var displayOrder: Int? = null,
+    var applicator: String? = null,
 )

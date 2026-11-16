@@ -1,0 +1,10 @@
+ALTER TABLE deposits ADD COLUMN applicator VARCHAR(80);
+ALTER TABLE reserved_transfer ADD COLUMN applicator VARCHAR(80);
+ALTER TABLE currency ADD COLUMN applicator VARCHAR(80);
+ALTER TABLE currency_off_chain_gateway ADD COLUMN applicator VARCHAR(80);
+ALTER TABLE terminal ADD COLUMN applicator VARCHAR(80);
+ALTER TABLE gateway_terminal ADD COLUMN applicator VARCHAR(80);
+ALTER TABLE currency_localization ADD COLUMN applicator VARCHAR(80);
+ALTER TABLE terminal_localization ADD COLUMN applicator VARCHAR(80);
+ALTER TABLE currency_off_chain_gateway_localization ADD COLUMN applicator VARCHAR(80);
+ALTER TABLE quote_currency ADD COLUMN applicator VARCHAR(80);

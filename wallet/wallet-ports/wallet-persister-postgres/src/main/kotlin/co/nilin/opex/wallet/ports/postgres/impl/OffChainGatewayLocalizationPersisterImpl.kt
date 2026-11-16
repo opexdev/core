@@ -8,6 +8,7 @@ import co.nilin.opex.wallet.ports.postgres.dao.OffChainGatewayLocalizationReposi
 import co.nilin.opex.wallet.ports.postgres.dao.OffChainGatewayRepository
 import co.nilin.opex.wallet.ports.postgres.util.toCommand
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.transaction.reactive.TransactionalOperator
 import org.springframework.transaction.reactive.executeAndAwait
@@ -18,10 +19,12 @@ class OffChainGatewayLocalizationPersisterImpl(
     private val offChainGatewayLocalizationRepository: OffChainGatewayLocalizationRepository,
     private val transactionalOperator: TransactionalOperator
 ) : OffChainGatewayLocalizationPersister {
+    private val logger = LoggerFactory.getLogger(OffChainGatewayLocalizationPersisterImpl::class.java)
 
     override suspend fun save(
         gatewayUuid: String,
-        localizations: List<OffChainGatewayLocalizationCommand>
+        localizations: List<OffChainGatewayLocalizationCommand>,
+        applicator: String
     ): List<OffChainGatewayLocalizationCommand> {
 
         return transactionalOperator.executeAndAwait {
@@ -35,7 +38,8 @@ class OffChainGatewayLocalizationPersisterImpl(
                         gatewayId = gateway.id!!,
                         depositDescription = g.depositDescription,
                         withdrawDescription = g.withdrawDescription,
-                        language = UserLanguage.safeValueOf(g.language).toString()
+                        language = UserLanguage.safeValueOf(g.language).toString(),
+                        applicator = applicator
                     ).awaitSingleOrNull()
             }
 
@@ -57,7 +61,8 @@ class OffChainGatewayLocalizationPersisterImpl(
             ?: emptyList()
     }
 
-    override suspend fun delete(id: Long) {
+    override suspend fun delete(id: Long, applicator: String) {
         offChainGatewayLocalizationRepository.deleteById(id).awaitSingleOrNull()
+        logger.info("Admin {} deleted off-chain gateway localization {}", applicator, id)
     }
 }

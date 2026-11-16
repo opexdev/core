@@ -9,7 +9,6 @@ import co.nilin.opex.wallet.core.spi.GatewayTerminalManager
 import co.nilin.opex.wallet.ports.postgres.dao.GatewayTerminalRepository
 import co.nilin.opex.wallet.ports.postgres.dao.OffChainGatewayRepository
 import co.nilin.opex.wallet.ports.postgres.dao.TerminalRepository
-import co.nilin.opex.wallet.ports.postgres.model.GatewayTerminalModel
 import co.nilin.opex.wallet.ports.postgres.util.toCommand
 import co.nilin.opex.wallet.ports.postgres.util.toDto
 import kotlinx.coroutines.reactor.awaitSingleOrNull
@@ -24,16 +23,13 @@ class GatewayTerminalImpl(
 ) : GatewayTerminalManager {
     private val logger = LoggerFactory.getLogger(GatewayTerminalImpl::class.java)
 
-    override suspend fun assignTerminalsToGateway(gatewayUuid: String, terminals: List<String>) {
+    override suspend fun assignTerminalsToGateway(gatewayUuid: String, terminals: List<String>, applicator: String) {
         gatewayRepository.findByGatewayUuid(gatewayUuid)?.awaitSingleOrNull()?.let { gateway ->
             terminals.forEach { it ->
                 terminalRepository.findByUuid(
                     it
                 )?.awaitSingleOrNull()?.let {
-                    runCatching {
-                        gatewayTerminalRepository.save(GatewayTerminalModel(null, it.id!!, gateway.id!!))
-                            ?.awaitSingleOrNull()
-                    }
+                    gatewayTerminalRepository.upsert(it.id!!, gateway.id!!, applicator).awaitSingleOrNull()
 
                 }
             }
@@ -58,21 +54,20 @@ class GatewayTerminalImpl(
         } ?: throw OpexError.TerminalNotFound.exception()
     }
 
-    override suspend fun revokeTerminalsToGateway(gatewayUuid: String, terminals: List<String>) {
+    override suspend fun revokeTerminalsToGateway(gatewayUuid: String, terminals: List<String>, applicator: String) {
         gatewayRepository.findByGatewayUuid(gatewayUuid)?.awaitSingleOrNull()?.let { gateway ->
             terminals.forEach { it ->
                 terminalRepository.findByUuid(
                     it
                 )?.awaitSingleOrNull()?.let {
-                    runCatching {
-                        gatewayTerminalRepository.deleteByTerminalIdAndGatewayId(it.id!!, gateway.id!!)
-                            ?.awaitSingleOrNull()
-                    }
+                    gatewayTerminalRepository.deleteByTerminalIdAndGatewayId(it.id!!, gateway.id!!)
+                        .awaitSingleOrNull()
 
                 }
             }
 
         } ?: throw OpexError.GatewayNotFount.exception()
+        logger.info("Admin {} revoked terminals {} from gateway {}", applicator, terminals, gatewayUuid)
     }
 
 }

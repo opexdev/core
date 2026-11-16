@@ -15,15 +15,16 @@ interface CurrencyLocalizationsRepository : ReactiveCrudRepository<CurrencyLocal
     @Modifying
     @Query(
         """
-    INSERT INTO currency_localization (currency, name, title, alias, description, short_description, language)
-    VALUES (:currency, :name, :title, :alias, :description, :shortDescription, :language)
+    INSERT INTO currency_localization (currency, name, title, alias, description, short_description, language, applicator)
+    VALUES (:currency, :name, :title, :alias, :description, :shortDescription, :language, :applicator)
     ON CONFLICT (currency, language)
     DO UPDATE SET
         name = :name,
         title = :title,
         alias = :alias,
         description = :description,
-        short_description = :shortDescription
+        short_description = :shortDescription,
+        applicator = :applicator
 """
     )
     fun upsert(
@@ -33,7 +34,8 @@ interface CurrencyLocalizationsRepository : ReactiveCrudRepository<CurrencyLocal
         alias: String?,
         description: String?,
         shortDescription: String?,
-        language: String
+        language: String,
+        applicator: String
     ): Mono<Void>
 
 }

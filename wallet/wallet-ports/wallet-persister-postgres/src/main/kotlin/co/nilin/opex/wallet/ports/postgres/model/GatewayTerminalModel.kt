@@ -9,5 +9,6 @@ data class GatewayTerminalModel(
     var id: Long? = null,
     var terminalId: Long,
     var gatewayId: Long,
+    var applicator: String? = null,
 )
 

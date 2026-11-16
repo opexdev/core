@@ -91,7 +91,8 @@ class OffChainGatewayManagerImpl(
                         gatewayId = gateway.id!!,
                         depositDescription = currencyGateway.depositDescription,
                         withdrawDescription = currencyGateway.withdrawDescription,
-                        language = getDefaultUserLanguage()
+                        language = getDefaultUserLanguage(),
+                        applicator = currencyGateway.applicator
                     )
                 ).awaitSingleOrNull()
             }

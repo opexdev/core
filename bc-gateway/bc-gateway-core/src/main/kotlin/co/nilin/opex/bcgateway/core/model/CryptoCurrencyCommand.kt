@@ -24,6 +24,7 @@ data class CryptoCurrencyCommand(
     var withdrawDescription: String? = null,
     var displayOrder: Int? = null,
     var type: String = "OnChain",
+    var applicator: String? = null,
 
 //        var chainDetail: Chain? = null
 

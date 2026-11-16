@@ -15,5 +15,6 @@ data class CurrencyLocalizationModel(
     var description: String? = null,
     var shortDescription: String? = null,
     var language: String,
+    var applicator: String? = null,
 
     )

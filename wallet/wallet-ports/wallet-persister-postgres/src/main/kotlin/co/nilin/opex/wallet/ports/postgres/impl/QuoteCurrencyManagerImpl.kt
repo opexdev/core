@@ -18,7 +18,7 @@ class QuoteCurrencyManagerImpl(
         return quoteCurrencyRepository.findAllByReference(isReference).toList()
     }
 
-    override suspend fun update(currency: String, isActive: Boolean, displayOrder: Int) {
+    override suspend fun update(currency: String, isActive: Boolean, displayOrder: Int, applicator: String) {
         quoteCurrencyRepository.findByCurrency(currency).awaitFirstOrNull()?.let { quoteCurrency ->
             quoteCurrencyRepository.save(
                 QuoteCurrencyModel(
@@ -26,7 +26,8 @@ class QuoteCurrencyManagerImpl(
                     currency,
                     isActive,
                     LocalDateTime.now(),
-                    displayOrder
+                    displayOrder,
+                    applicator
                 )
             ).awaitFirstOrNull()
         }

@@ -26,6 +26,7 @@ data class CurrencyDto(
     var displayOrder: Int? = null,
     var systemBalance: BigDecimal? = null,
     var maxOrder: BigDecimal? = null,
+    var applicator: String? = null,
 
     ) {
 
@@ -52,7 +53,8 @@ data class CurrencyDto(
             gateways,
             availableGatewayType,
             displayOrder,
-            maxOrder
+            maxOrder,
+            applicator
         )
     }
 }

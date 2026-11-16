@@ -37,7 +37,8 @@ interface CurrencyImplementationRepository : ReactiveCrudRepository<CurrencyOnCh
        c.is_withdraw_active,
        cl.deposit_description,
        cl.withdraw_description,
-       c.display_order
+       c.display_order,
+       c.applicator
     FROM currency_on_chain_gateway c
              LEFT JOIN public.currency_on_chain_gateway_localization cl ON c.id = cl.gateway_id AND cl.language = :lang
     where (:gatewayUuid is null or gateway_uuid=:gatewayUuid)
@@ -91,7 +92,8 @@ interface CurrencyImplementationRepository : ReactiveCrudRepository<CurrencyOnCh
        c.is_withdraw_active,
        cl.deposit_description,
        cl.withdraw_description,
-       c.display_order
+       c.display_order,
+       c.applicator
     FROM currency_on_chain_gateway c
              LEFT JOIN public.currency_on_chain_gateway_localization cl ON c.id = cl.gateway_id AND cl.language = :lang
     where c.gateway_uuid = :gatewayUuid

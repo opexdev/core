@@ -105,26 +105,32 @@ class DepositAdminController(
 
     @PostMapping("/terminal")
     suspend fun registerTerminal(
-        @RequestBody body: TerminalCommand
+        @RequestBody body: TerminalCommand,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): TerminalCommand? {
-        return terminalManager.save(body.apply { uuid = UUID.randomUUID().toString() })
+        return terminalManager.save(
+            body.apply { uuid = UUID.randomUUID().toString() },
+            securityContext.authentication.name
+        )
     }
 
 
     @PutMapping("/terminal/{uuid}")
     suspend fun updateTerminal(
         @PathVariable("uuid") terminalUuid: String,
-        @RequestBody body: TerminalCommand
+        @RequestBody body: TerminalCommand,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): TerminalCommand? {
-        return terminalManager.update(body.apply { uuid = terminalUuid })
+        return terminalManager.update(body.apply { uuid = terminalUuid }, securityContext.authentication.name)
     }
 
 
     @DeleteMapping("/terminal/{uuid}")
     suspend fun deleteTerminal(
         @PathVariable("uuid") terminalUuid: String,
+        @CurrentSecurityContext securityContext: SecurityContext,
     ) {
-        terminalManager.delete(terminalUuid)
+        terminalManager.delete(terminalUuid, securityContext.authentication.name)
     }
 
     @GetMapping("/terminal")
@@ -150,9 +156,10 @@ class DepositAdminController(
     @PostMapping("/terminal/{uuid}/localization")
     suspend fun saveTerminalLocalization(
         @PathVariable("uuid") terminalUuid: String,
-        @RequestBody terminalLocalizations: List<TerminalLocalizationCommand>
+        @RequestBody terminalLocalizations: List<TerminalLocalizationCommand>,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): TerminalLocalizationResponse {
-        val terminalLocalizations = terminalManager.saveTerminalLocalizations(terminalUuid, terminalLocalizations)
+        val terminalLocalizations = terminalManager.saveTerminalLocalizations(terminalUuid, terminalLocalizations, securityContext.authentication.name)
         return TerminalLocalizationResponse(terminalUuid, terminalLocalizations)
     }
 
@@ -167,7 +174,8 @@ class DepositAdminController(
     @DeleteMapping("/terminal/localization/{id}")
     suspend fun deleteTerminalLocalization(
         @PathVariable("id") id: Long,
+        @CurrentSecurityContext securityContext: SecurityContext,
     ) {
-        terminalManager.deleteTerminalLocalizations(id)
+        terminalManager.deleteTerminalLocalizations(id, securityContext.authentication.name)
     }
 }
