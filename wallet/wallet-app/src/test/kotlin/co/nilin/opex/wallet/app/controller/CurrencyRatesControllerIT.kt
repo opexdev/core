@@ -23,6 +23,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import java.math.BigDecimal
+import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockJwt
 
 
 @AutoConfigureWebTestClient
@@ -73,6 +74,7 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
 
     @Test
     fun whenSetCurrencyExchangeRateIsOK_thenRetrieveRoute() {
+        val webClient = webClient.mutateWith(mockJwt())
         runBlocking {
             webClient.post().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
                 .bodyValue(SetCurrencyExchangeRateRequest("E", "U", BigDecimal.TEN))
@@ -102,6 +104,7 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
 
     @Test
     fun whenSetCurrencyExchangeRateIsOK_thenRetrieveRates() {
+        val webClient = webClient.mutateWith(mockJwt())
         runBlocking {
             webClient.post().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
                 .bodyValue(SetCurrencyExchangeRateRequest("E", "U", BigDecimal.TEN))
@@ -140,6 +143,8 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
 
     @Test
     fun givenRateExist_whenRemoveCurrencyExchangeRate_thenRouteRemoved() {
+        val webClient = webClient.mutateWith(mockJwt())
+
         runBlocking {
             webClient.post().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
                 .bodyValue(SetCurrencyExchangeRateRequest("E", "U", BigDecimal.TEN))
@@ -162,6 +167,7 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
 
     @Test
     fun whenSetForbiddenPairs_thenStored() {
+        val webClient = webClient.mutateWith(mockJwt())
         runBlocking {
             webClient.post().uri("/otc/forbidden-pairs").accept(MediaType.APPLICATION_JSON)
                 .bodyValue(CurrencyPair("E", "U"))
@@ -181,6 +187,7 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
 
     @Test
     fun givenForbiddenPair_whenRemoveForbiddenPairs_thenRemoved() {
+        val webClient = webClient.mutateWith(mockJwt())
         runBlocking {
             webClient.post().uri("/otc/forbidden-pairs").accept(MediaType.APPLICATION_JSON)
                 .bodyValue(CurrencyPair("E", "U"))
@@ -203,6 +210,8 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
 
     @Test
     fun whenSetTransitiveSymbols_thenStored() {
+        val webClient = webClient.mutateWith(mockJwt())
+
         runBlocking {
             webClient.post().uri("/otc/transitive-symbols").accept(MediaType.APPLICATION_JSON)
                 .bodyValue(Symbols(listOf("E", "U")))
@@ -222,6 +231,7 @@ class CurrencyRatesControllerIT : KafkaEnabledTest() {
 
     @Test
     fun givenTransitiveSymbols_whenRemoveTransitiveSymbol_thenRemoved() {
+        val webClient = webClient.mutateWith(mockJwt())
         runBlocking {
             webClient.post().uri("/otc/transitive-symbols").accept(MediaType.APPLICATION_JSON)
                 .bodyValue(
