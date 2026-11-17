@@ -11,7 +11,7 @@ interface CryptoCurrencyHandlerV2 {
 
     suspend fun updateOnChainGateway(request: CryptoCurrencyCommand): CryptoCurrencyCommand?
 
-    suspend fun deleteOnChainGateway(gatewayUuid: String, currency: String): Void?
+    suspend fun deleteOnChainGateway(gatewayUuid: String, currency: String,applicator: String): Void?
 
     suspend fun fetchCurrencyOnChainGateways(data: FetchGateways? = null): List<CryptoCurrencyCommand>?
 

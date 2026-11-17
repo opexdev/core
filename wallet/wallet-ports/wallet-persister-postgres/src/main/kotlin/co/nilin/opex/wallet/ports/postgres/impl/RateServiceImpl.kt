@@ -209,7 +209,10 @@ class RateServiceImpl(
     override suspend fun deleteTransitiveSymbols(symbols: Symbols, applicator: String): Symbols {
         symbols.symbols?.forEach {
             currencyRepository.fetchCurrency(symbol = it)?.awaitFirstOrNull()?.let {
-                currencyRepository.save(it.apply { isTransitive = false }.toModel()).awaitFirstOrNull()
+                currencyRepository.save(it.apply {
+                    isTransitive = false
+                    this.applicator = applicator
+                }.toModel()).awaitFirstOrNull()
             }
         }
         return Symbols(

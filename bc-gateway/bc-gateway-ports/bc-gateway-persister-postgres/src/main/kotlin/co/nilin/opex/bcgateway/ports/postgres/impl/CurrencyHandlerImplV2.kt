@@ -54,18 +54,26 @@ class CurrencyHandlerImplV2(
             }
     }
 
-    override suspend fun deleteOnChainGateway(gatewayUuid: String, currency: String): Void? {
-
+    override suspend fun deleteOnChainGateway(
+        gatewayUuid: String,
+        currency: String,
+        applicator: String
+    ): Void? {
         loadImpls(FetchGateways(gatewayUuid = gatewayUuid, currencySymbol = currency))
-            ?.awaitFirstOrElse { throw OpexError.GatewayNotFount.exception() }?.let {
-                try {
-                    return currencyImplementationRepository.deleteByGatewayUuid(gatewayUuid)?.awaitFirstOrNull()
-                } catch (e: Exception) {
-                    throw OpexError.BadRequest.exception()
+            ?.awaitFirstOrElse { throw OpexError.GatewayNotFount.exception() }
+            ?: return null
 
-                }
-            }
-        return null
+        try {
+            val result = currencyImplementationRepository
+                .deleteByGatewayUuid(gatewayUuid)
+                ?.awaitFirstOrNull()
+
+            logger.info("Admin {} deleted on-chain gateway {}", applicator, gatewayUuid)
+
+            return result
+        } catch (e: Exception) {
+            throw OpexError.BadRequest.exception()
+        }
     }
 
     override suspend fun fetchCurrencyOnChainGateways(data: FetchGateways?): List<CryptoCurrencyCommand>? {
