@@ -2,6 +2,8 @@ package co.nilin.opex.auth.model
 
 import com.fasterxml.jackson.annotation.JsonInclude
 
+data class TwoFactorConfigResponse(val otpConfig: OTPType, val receiver: String?)
+
 data class TwoFactorRequest(
     val method: OTPType,
 )
