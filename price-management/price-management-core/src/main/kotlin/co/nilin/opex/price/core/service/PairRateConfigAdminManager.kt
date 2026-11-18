@@ -23,7 +23,7 @@ class PairRateConfigAdminManager(
         return priceProxy.getProvidersPrice(symbol)
     }
 
-    suspend fun upsertConfig(request: UpsertPairRateConfigRequest): PairRateConfigView {
+    suspend fun upsertConfig(request: UpsertPairRateConfigRequest, applicator: String): PairRateConfigView {
         validate(request)
         val providers = request.providers.orEmpty()
 
@@ -33,7 +33,8 @@ class PairRateConfigAdminManager(
                 strategy = request.strategy,
                 margin = request.margin,
                 isActive = request.isActive,
-                priceMode = request.priceMode
+                priceMode = request.priceMode,
+                applicator = applicator
             )
         )
         pairProviderIncludePersister.replaceIncludedProviders(request.symbol, providers)
@@ -48,7 +49,8 @@ class PairRateConfigAdminManager(
             margin = request.margin,
             isActive = request.isActive,
             priceMode = request.priceMode,
-            providers = providers
+            providers = providers,
+            applicator = applicator
         )
     }
 
@@ -100,7 +102,8 @@ class PairRateConfigAdminManager(
             margin = margin,
             isActive = isActive,
             priceMode = priceMode,
-            providers = providers
+            providers = providers,
+            applicator = applicator
         )
     }
 }

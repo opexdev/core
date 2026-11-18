@@ -1,9 +1,9 @@
 package co.nilin.opex.api.ports.opex.controller
 
 import co.nilin.opex.api.core.inout.ConfirmTwoFactorRequest
-import co.nilin.opex.api.core.inout.OTPType
 import co.nilin.opex.api.core.inout.SetupTOTPResponse
 import co.nilin.opex.api.core.inout.TOTPCode
+import co.nilin.opex.api.core.inout.TwoFactorConfigResponse
 import co.nilin.opex.api.core.inout.TwoFactorRequest
 import co.nilin.opex.api.core.inout.TwoFactorResponse
 import co.nilin.opex.api.core.inout.auth.*
@@ -37,8 +37,8 @@ class UserTwoFactorController(private val authProxy: AuthProxy) {
         description = """GET /opex/v1/user/2fa.
 Security: Bearer token is required.
 
-Behavior: Retrieves the currently active two-factor authentication (2FA) method for the authenticated user.
-Possible return values: NONE, EMAIL, SMS, TOTP.""",
+Returns the authenticated user's active `otpConfig` (NONE, EMAIL, SMS, or TOTP) and its `receiver`.
+The receiver is the email address, mobile number, or TOTP account label. It is null when unavailable.""",
         responses = [
             ApiResponse(
                 responseCode = "200",
@@ -46,7 +46,7 @@ Possible return values: NONE, EMAIL, SMS, TOTP.""",
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = OTPType::class)
+                        schema = Schema(implementation = TwoFactorConfigResponse::class)
                     )
                 ]
             ),
@@ -59,7 +59,7 @@ Possible return values: NONE, EMAIL, SMS, TOTP.""",
     )
     suspend fun getTwoFactorConfig(
         @Parameter(hidden = true) @CurrentSecurityContext securityContext: SecurityContext
-    ): ResponseEntity<OTPType> {
+    ): ResponseEntity<TwoFactorConfigResponse> {
         val response = authProxy.getTwoFactorConfig(securityContext.jwtAuthentication().tokenValue())
         return ResponseEntity.ok(response)
     }

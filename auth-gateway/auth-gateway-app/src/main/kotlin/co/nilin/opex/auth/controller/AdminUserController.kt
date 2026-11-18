@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -41,9 +43,10 @@ Behavior: Creates an enabled Keycloak user without a password and publishes the 
         ]
     )
     suspend fun createLegalRepresentative(
-        @RequestBody request: CreateLegalRepresentativeRequest
+        @RequestBody request: CreateLegalRepresentativeRequest,
+        @Parameter(hidden = true) @CurrentSecurityContext securityContext: SecurityContext
     ): CreateLegalRepresentativeResponse {
-        return adminUserService.createLegalRepresentative(request)
+        return adminUserService.createLegalRepresentative(request, securityContext.authentication.name)
     }
 
     @PostMapping("/{uuid}/credentials")
@@ -64,9 +67,10 @@ Response: `emailSent` reports whether delivery succeeded. A false value means th
     )
     suspend fun sendCredentials(
         @Parameter(name = "uuid", description = "Keycloak user id.", required = true)
-        @PathVariable("uuid") uuid: String
+        @PathVariable("uuid") uuid: String,
+        @Parameter(hidden = true) @CurrentSecurityContext securityContext: SecurityContext
     ): SendCredentialsResponse {
-        return adminUserService.sendCredentials(uuid)
+        return adminUserService.sendCredentials(uuid, securityContext.authentication.name)
     }
 
     @DeleteMapping("/{uuid}")
@@ -80,8 +84,9 @@ Behavior: Removes the Keycloak user. Used to compensate a failed provisioning fl
     )
     suspend fun deleteUser(
         @Parameter(name = "uuid", description = "Keycloak user id.", required = true)
-        @PathVariable("uuid") uuid: String
+        @PathVariable("uuid") uuid: String,
+        @Parameter(hidden = true) @CurrentSecurityContext securityContext: SecurityContext
     ) {
-        adminUserService.deleteUser(uuid)
+        adminUserService.deleteUser(uuid, securityContext.authentication.name)
     }
 }

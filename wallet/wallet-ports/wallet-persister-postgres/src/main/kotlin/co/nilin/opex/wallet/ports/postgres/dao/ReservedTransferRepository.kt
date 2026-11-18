@@ -75,7 +75,8 @@ interface ReservedTransferRepository : ReactiveCrudRepository<ReservedTransferMo
         rt.reserve_date as reserve_date,
         rt.exp_date as exp_date,
         rt.status as status,
-        rt.rate as rate
+        rt.rate as rate,
+        rt.applicator as applicator
     from reserved_transfer rt
      join wallet_owner wo on wo.uuid = rt.sender_uuid
     where (:owner is null or rt.sender_uuid = :owner)

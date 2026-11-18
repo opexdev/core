@@ -18,9 +18,10 @@ interface CurrencyServiceManager {
     suspend fun fetchCurrencyLocalizations(symbol: String): List<CurrencyLocalizationCommand>
     suspend fun saveCurrencyLocalizations(
         symbol: String,
-        localizations: List<CurrencyLocalizationCommand>
+        localizations: List<CurrencyLocalizationCommand>,
+        applicator: String
     ): List<CurrencyLocalizationCommand>
 
-    suspend fun deleteCurrencyLocalization(id: Long)
+    suspend fun deleteCurrencyLocalization(id: Long, applicator: String)
 
 }

@@ -23,6 +23,7 @@ data class Deposit(
     var createDate: Date = Date(),
     val id: Long? = null,
     var transferMethod: TransferMethod?,
+    var applicator: String? = null,
 )
 
 data class Deposits(var deposits: List<Deposit>)

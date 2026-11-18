@@ -4,5 +4,6 @@ data class Chain(
     val name: String,
     val addressTypes: List<AddressType>,
     val transactionScannerUrl: String? = null,
-    val addressScannerUrl: String? = null
+    val addressScannerUrl: String? = null,
+    val applicator: String? = null
 )

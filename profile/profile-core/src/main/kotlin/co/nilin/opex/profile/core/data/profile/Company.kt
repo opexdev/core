@@ -16,7 +16,7 @@ data class Company(
     var boardMemberDocumentKeys: List<String> = emptyList(),
     var createDate: LocalDateTime? = null,
     var updateDate: LocalDateTime? = null,
-    var creator: String? = null
+    var applicator: String? = null
 )
 
 data class CompanyRepresentative(
@@ -24,5 +24,5 @@ data class CompanyRepresentative(
     var companyId: Long,
     var uuid: String,
     var createDate: LocalDateTime? = null,
-    var creator: String? = null
+    var applicator: String? = null
 )

@@ -15,17 +15,17 @@ class AddressTypeHandlerImpl(private val repository: AddressTypeRepository) : Ad
         return repository.findAll()
             .collectList()
             .awaitFirstOrElse { emptyList() }
-            .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
+            .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex, it.applicator) }
     }
 
-    override suspend fun addAddressType(name: String, addressRegex: String, memoRegex: String?) {
+    override suspend fun addAddressType(name: String, addressRegex: String, memoRegex: String?, applicator: String) {
         if (repository.findByType(name).awaitFirstOrNull() == null) {
-            repository.save(AddressTypeModel(null, name, addressRegex, memoRegex)).awaitFirstOrNull()
+            repository.save(AddressTypeModel(null, name, addressRegex, memoRegex, applicator)).awaitFirstOrNull()
         }
     }
 
     override suspend fun fetchAddressType(name: String): AddressType? {
         return repository.findByType(name)
-            .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }.awaitFirstOrNull()
+            .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex, it.applicator) }.awaitFirstOrNull()
     }
 }

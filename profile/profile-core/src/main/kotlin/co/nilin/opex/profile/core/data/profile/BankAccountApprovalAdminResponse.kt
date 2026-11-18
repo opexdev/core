@@ -9,7 +9,7 @@ data class BankAccountApprovalAdminResponse(
     var status: BankAccountStatus? = null,
     var createDate: LocalDateTime,
     var updateDate: LocalDateTime? = null,
-    var updater: String? = null,
+    var applicator: String? = null,
     var description: String? = null,
     var name: String? = null,
     var cardNumber: String? = null,

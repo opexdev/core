@@ -26,5 +26,6 @@ data class CompanyAdminResponse(
     val boardMemberDocumentKeys: List<String>,
     val createDate: LocalDateTime?,
     val updateDate: LocalDateTime?,
-    val companyUuid: UUID
+    val companyUuid: UUID,
+    val applicator: String? = null
 )

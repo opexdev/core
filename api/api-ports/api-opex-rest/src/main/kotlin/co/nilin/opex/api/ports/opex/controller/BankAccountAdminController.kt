@@ -43,7 +43,7 @@ class BankAccountAdminController(
         summary = "Get a user's bank accounts",
         description = """GET /opex/v1/admin/bank-account/user/{uuid}.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
-Behavior: Every bank account of that user, whatever its status. Unlike the user-facing list this also carries the owner, the dates and `creator`, which tells an account an admin added apart from one the user submitted.
+Behavior: Every bank account of that user, whatever its status. Unlike the user-facing list this also carries the owner, the dates and `applicator`, which tells an account an admin added apart from one the user submitted.
 Allowed values:
 - status: WAITING, VERIFIED, REJECTED.""",
         security = [SecurityRequirement(name = "bearerAuth")],
@@ -83,7 +83,7 @@ Allowed values:
         description = """POST /opex/v1/admin/bank-account/user/{uuid}.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
 Validation: At least one of `cardNumber` or `iban` is required, and the uuid must belong to an existing profile.
-Behavior: Stores the account as VERIFIED with the acting admin as `creator`. The admin adding it is itself the verification, so no identity inquiry runs and no review request is created. The duplicate check still applies: a card or iban already VERIFIED for another user is refused, since handing one account to two users is a data problem rather than a verification one.
+Behavior: Stores the account as VERIFIED with the acting admin as `applicator`. The admin adding it is itself the verification, so no identity inquiry runs and no review request is created. The duplicate check still applies: a card or iban already VERIFIED for another user is refused, since handing one account to two users is a data problem rather than a verification one.
 Note: `accountNumber` and `bank` are worth supplying. No inquiry fills them here, and deposit routing finds an owner by `accountNumber` alone.
 Allowed values:
 - status: WAITING, VERIFIED, REJECTED.""",

@@ -22,7 +22,8 @@ class PriceConfigPersisterImpl(
             strategy = config.strategy?.name,
             margin = config.margin,
             isActive = config.isActive,
-            priceMode = config.priceMode.name
+            priceMode = config.priceMode.name,
+            applicator = config.applicator
         ).awaitFirstOrNull()
         return config
     }

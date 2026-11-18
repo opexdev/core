@@ -2,6 +2,8 @@ package co.nilin.opex.matching.gateway.app.controller
 
 import co.nilin.opex.matching.gateway.ports.postgres.dto.PairSetting
 import co.nilin.opex.matching.gateway.ports.postgres.service.PairSettingService
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
@@ -20,7 +22,10 @@ class PairSettingController(private val pairSettingService: PairSettingService) 
     }
 
     @PutMapping
-    suspend fun updatePairSetting(@RequestBody pairSetting: PairSetting): PairSetting {
-        return pairSettingService.update(pairSetting)
+    suspend fun updatePairSetting(
+        @RequestBody pairSetting: PairSetting,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): PairSetting {
+        return pairSettingService.update(pairSetting, securityContext.authentication.name)
     }
 }

@@ -12,7 +12,8 @@ data class PairRateConfigView(
     val margin: BigDecimal?,
     val isActive: Boolean,
     val priceMode: PriceMode,
-    val providers: List<String>
+    val providers: List<String>,
+    val applicator: String? = null
 )
 
 data class UpsertPairRateConfigRequest(

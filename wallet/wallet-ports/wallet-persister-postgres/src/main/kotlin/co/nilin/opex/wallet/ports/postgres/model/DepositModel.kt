@@ -29,4 +29,5 @@ data class DepositModel(
     var depositType: DepositType,
     val createDate: LocalDateTime = LocalDateTime.now(),
     var transferMethod: TransferMethod?,
+    var applicator: String? = null,
     )

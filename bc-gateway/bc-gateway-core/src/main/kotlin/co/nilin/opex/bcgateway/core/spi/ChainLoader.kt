@@ -8,7 +8,8 @@ interface ChainLoader {
         name: String,
         addressType: String,
         transactionScannerUrl: String?,
-        addressScannerUrl: String?
+        addressScannerUrl: String?,
+        applicator: String
     ): Chain
 
     suspend fun fetchAllChains(): List<Chain>

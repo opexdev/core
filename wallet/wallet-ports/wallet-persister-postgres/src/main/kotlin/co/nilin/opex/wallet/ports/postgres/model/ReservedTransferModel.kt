@@ -23,5 +23,6 @@ data class ReservedTransferModel(
     var reserveDate: LocalDateTime? = LocalDateTime.now(),
     var expDate: LocalDateTime? = null,
     var status: ReservedStatus? = null,
-    var rate: BigDecimal? = null
+    var rate: BigDecimal? = null,
+    val applicator: String? = null
 )

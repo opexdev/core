@@ -99,7 +99,8 @@ class DepositController(
             null,
             depositType = DepositType.ON_CHAIN,
             gatewayUuid = gatewayUuid,
-            null
+            transferMethod = null,
+            applicator = null
         )
     }
 

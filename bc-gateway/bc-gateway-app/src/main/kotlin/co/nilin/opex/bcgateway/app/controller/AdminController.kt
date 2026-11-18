@@ -10,6 +10,8 @@ import co.nilin.opex.bcgateway.core.spi.AddressTypeHandler
 import co.nilin.opex.bcgateway.core.spi.ChainLoader
 import co.nilin.opex.bcgateway.ports.postgres.impl.CurrencyHandlerImplV2
 import co.nilin.opex.common.OpexError
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -31,15 +33,16 @@ class AdminController(
                     c.addressTypes.map { it.addressRegex }.getOrNull(0),
                     c.transactionScannerUrl,
                     c.addressScannerUrl,
+                    c.applicator,
                 )
             }
     }
 
     @PostMapping("/chain")
-    suspend fun addChain(@RequestBody body: AddChainRequest) {
+    suspend fun addChain(@RequestBody body: AddChainRequest, @CurrentSecurityContext securityContext: SecurityContext) {
         if (!body.isValid())
             throw OpexError.InvalidRequestBody.exception()
-        service.addChain(body)
+        service.addChain(body, securityContext.authentication.name)
     }
 
     @GetMapping("/address/type")
@@ -48,15 +51,15 @@ class AdminController(
     }
 
     @PostMapping("/address/type")
-    suspend fun addAddressType(@RequestBody body: AddressTypeRequest) {
+    suspend fun addAddressType(@RequestBody body: AddressTypeRequest, @CurrentSecurityContext securityContext: SecurityContext) {
         if (body.name.isNullOrEmpty() || body.addressRegex.isNullOrEmpty())
             throw OpexError.InvalidRequestBody.exception()
-        service.addAddressType(body.name, body.addressRegex, body.memoRegex)
+        service.addAddressType(body.name, body.addressRegex, body.memoRegex, securityContext.authentication.name)
     }
 
     @PostMapping("/addresses")
-    suspend fun addAddresses(@RequestBody body: AddAddressesRequest) {
-        service.addAddresses(body.addresses, body.memos, body.addressType)
+    suspend fun addAddresses(@RequestBody body: AddAddressesRequest, @CurrentSecurityContext securityContext: SecurityContext) {
+        service.addAddresses(body.addresses, body.memos, body.addressType, securityContext.authentication.name)
     }
 
     // shifted to crypto currency class!

@@ -20,5 +20,6 @@ data class OffChainGatewayView(
     val depositDescription: String?,
     val withdrawDescription: String?,
     val displayOrder: Int? = null,
+    val applicator: String? = null,
 
     )

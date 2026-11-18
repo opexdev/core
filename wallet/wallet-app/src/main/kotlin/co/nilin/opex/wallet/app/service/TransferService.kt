@@ -147,6 +147,7 @@ class TransferService(
         sourceAmount: BigDecimal,
         destAmount: BigDecimal? = null,
         rate: BigDecimal? = null,
+        applicator: String,
     ): ReservedTransferResponse {
 
         if ((rate != null && destAmount != null) || (rate == null && destAmount == null)) {
@@ -188,7 +189,8 @@ class TransferService(
                 senderWalletType = senderWalletType,
                 receiverWalletType = receiverWalletType,
                 reservedDestAmount = scaledDestAmount,
-                rate = finalRate
+                rate = finalRate,
+                applicator = applicator
             )
         )
 
@@ -221,7 +223,8 @@ class TransferService(
             transferRef = transferRef,
             transferCategory = transferCategory,
             issuer = issuer,
-            validateIssuer = true
+            validateIssuer = true,
+            applicator = null
         )
     }
 
@@ -231,6 +234,7 @@ class TransferService(
         description: String?,
         transferRef: String?,
         transferCategory: TransferCategory = TransferCategory.IMPERSONATED_PURCHASE_FINALIZED,
+        applicator: String,
     ): TransferResultDetailed {
         return executeAdvanceTransfer(
             reserveNumber = reserveNumber,
@@ -238,7 +242,8 @@ class TransferService(
             transferRef = transferRef,
             transferCategory = transferCategory,
             issuer = null,
-            validateIssuer = false
+            validateIssuer = false,
+            applicator = applicator
         )
     }
 
@@ -248,7 +253,8 @@ class TransferService(
         transferRef: String?,
         transferCategory: TransferCategory,
         issuer: String?,
-        validateIssuer: Boolean
+        validateIssuer: Boolean,
+        applicator: String?
     ): TransferResultDetailed {
 
         val reservations = reservedTransferManager.fetchValidReserve(reserveNumber)

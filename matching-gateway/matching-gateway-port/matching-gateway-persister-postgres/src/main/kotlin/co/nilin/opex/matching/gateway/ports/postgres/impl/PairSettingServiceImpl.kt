@@ -65,7 +65,7 @@ class PairSettingServiceImpl(
         }
     }
 
-    override suspend fun update(pairSetting: PairSetting): PairSetting {
+    override suspend fun update(pairSetting: PairSetting, applicator: String): PairSetting {
         val existing = pairSettingRepository.findByPair(pairSetting.pair)
             .awaitFirstOrNull()
             ?: throw OpexError.PairNotFound.exception()
@@ -78,6 +78,7 @@ class PairSettingServiceImpl(
             updateDate = LocalDateTime.now()
             internalChart = pairSetting.internalChart
             globalChart = pairSetting.globalChart
+            this.applicator = applicator
         }
 
         val saved = pairSettingRepository.save(existing)

@@ -109,7 +109,8 @@ class DepositService(
             attachment = request.attachment,
             depositType = DepositType.OFF_CHAIN,
             gatewayUuid = request.gatewayUuid,
-            transferMethod = TransferMethod.MANUALLY
+            transferMethod = TransferMethod.MANUALLY,
+            applicator = senderUuid
         )
     }
     // -------------------------------------------------------------------------
@@ -165,6 +166,7 @@ class DepositService(
                 depositType = DepositType.OFF_CHAIN,
                 gatewayUuid = null,
                 transferMethod = TransferMethod.BANK_DEPOSIT,
+                applicator = null,
             )
         }
         return DepositWebhookResponse(request.referenceNumber, DepositStatus.DONE.name, false)
@@ -189,6 +191,7 @@ class DepositService(
         depositType: DepositType,
         gatewayUuid: String?,
         transferMethod: TransferMethod?,
+        applicator: String?,
     ): TransferResult? {
 
         logger.info(
@@ -206,7 +209,8 @@ class DepositService(
             depositType = depositType,
             network = chain,
             attachment = attachment,
-            transferMethod = transferMethod
+            transferMethod = transferMethod,
+            applicator = applicator
         )
 
         val gatewayData = fetchDepositData(

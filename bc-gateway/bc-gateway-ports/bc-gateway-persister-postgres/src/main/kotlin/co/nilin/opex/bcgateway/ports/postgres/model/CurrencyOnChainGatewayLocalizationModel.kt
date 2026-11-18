@@ -10,7 +10,8 @@ data class CurrencyOnChainGatewayLocalizationModel(
     var gatewayId: Long,
     var depositDescription: String? = null,
     var withdrawDescription: String? = null,
-    var language: String
+    var language: String,
+    var applicator: String? = null
 
 )
 

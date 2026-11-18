@@ -10,7 +10,7 @@ interface ReservedTransferManager {
 
     suspend fun fetchValidReserve(reserveNumber: String): ReservedTransfer?
 
-    suspend fun commitReserve(reserveNumber: String)
+    suspend fun commitReserve(reserveNumber: String, applicator: String?)
 
     suspend fun reserve(request: ReservedTransfer): ReservedTransfer
 

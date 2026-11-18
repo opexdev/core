@@ -6,4 +6,5 @@ data class ChainResponse(
     val addressRegex: String? = null,
     val transactionScannerUrl: String? = null,
     val addressScannerUrl: String?= null,
+    val applicator: String? = null,
 )

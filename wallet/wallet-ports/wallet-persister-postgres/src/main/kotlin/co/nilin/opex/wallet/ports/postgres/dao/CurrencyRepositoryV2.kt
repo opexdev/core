@@ -33,7 +33,8 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
         cl.short_description,
         c.external_url ,
         c.display_order,
-        c.max_order
+        c.max_order,
+        c.applicator
     FROM currency c
     LEFT JOIN currency_localization cl 
         ON cl.currency = c.symbol AND cl.language = :lang
@@ -66,7 +67,8 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
         cl.short_description,
         c.external_url,
         c.display_order,
-        c.max_order
+        c.max_order,
+        c.applicator
     FROM currency c
     LEFT JOIN currency_localization cl 
         ON cl.currency = c.symbol AND cl.language = :lang
@@ -82,7 +84,7 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
     ): Flux<CurrencyView>?
 
 
-    @Query("insert into currency(symbol,uuid,precision,icon,is_transitive,is_active,sign,external_url,display_order,max_order) values(:symbol,:uuid,:precision,:icon,:isTransitive,:isActive,:sign,:externalUrl,:displayOrder,:maxOrder)  ")
+    @Query("insert into currency(symbol,uuid,precision,icon,is_transitive,is_active,sign,external_url,display_order,max_order,applicator) values(:symbol,:uuid,:precision,:icon,:isTransitive,:isActive,:sign,:externalUrl,:displayOrder,:maxOrder,:applicator)  ")
     fun insert(
         symbol: String,
         uuid: String,
@@ -93,7 +95,8 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
         sign: String? = null,
         externalUrl: String? = null,
         displayOrder: Int? = null,
-        maxOrder: BigDecimal? = null
+        maxOrder: BigDecimal? = null,
+        applicator: String?
     ): Mono<Void>
 
 
@@ -114,7 +117,8 @@ interface CurrencyRepositoryV2 : ReactiveCrudRepository<CurrencyModel, String> {
         cl.short_description,
         c.external_url,
         c.display_order,
-        c.max_order
+        c.max_order,
+        c.applicator
     FROM currency c
     LEFT JOIN currency_localization cl 
         ON cl.currency = c.symbol AND cl.language = :lang

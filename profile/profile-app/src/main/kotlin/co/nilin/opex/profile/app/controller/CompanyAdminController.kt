@@ -51,8 +51,9 @@ class CompanyAdminController(val companyManagement: CompanyManagement) {
     @PutMapping("/{companyUuid}")
     suspend fun updateCompany(
         @PathVariable("companyUuid") companyUuid: UUID,
-        @RequestBody request: UpdateCompanyRequest
+        @RequestBody request: UpdateCompanyRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): CompanyAdminResponse {
-        return companyManagement.updateCompany(companyUuid, request)
+        return companyManagement.updateCompany(companyUuid, request, securityContext.authentication.name)
     }
 }

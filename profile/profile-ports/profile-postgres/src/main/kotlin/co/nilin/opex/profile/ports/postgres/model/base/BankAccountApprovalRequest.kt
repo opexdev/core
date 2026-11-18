@@ -7,6 +7,6 @@ open class BankAccountApprovalRequest {
     lateinit var userId: String
     var createDate: LocalDateTime? = null
     var updateDate: LocalDateTime? = null
-    var updater: String? = null
+    var applicator: String? = null
     var description: String? = null
 }

@@ -25,14 +25,15 @@ class UserTwoFactorController(private val twoFactorConfigService: TwoFactorConfi
     @Operation(
         summary = "Get current two-factor authentication configuration",
         description = """
-GET /v1/2fa
+GET /v1/user/2fa
 
 Security: Bearer token is required.
 
 Behavior:
-Retrieves the currently active two-factor authentication (2FA) method for the authenticated user.
+Returns the authenticated user's active `otpConfig` and its `receiver`.
+The receiver is the email address, mobile number, or TOTP account label. It is null when unavailable.
 
-Possible return values:
+Possible otpConfig values:
 - NONE: Two-factor authentication is disabled.
 - EMAIL: 2FA via Email OTP is active.
 - SMS: 2FA via SMS OTP is active.
@@ -45,13 +46,13 @@ Possible return values:
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = OTPType::class)
+                        schema = Schema(implementation = TwoFactorConfigResponse::class)
                     )
                 ]
             )
         ]
     )
-    suspend fun getTwoFactorConfig(@CurrentSecurityContext securityContext: SecurityContext): OTPType {
+    suspend fun getTwoFactorConfig(@CurrentSecurityContext securityContext: SecurityContext): TwoFactorConfigResponse {
         return twoFactorConfigService.getTwoFactorConfig(securityContext.authentication.name)
     }
 

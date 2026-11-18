@@ -8,5 +8,6 @@ data class  TerminalCommand(
     var metaData: String,
     var description : String? = null,
     var displayOrder: Int? = null,
+    var applicator: String? = null,
 
 )

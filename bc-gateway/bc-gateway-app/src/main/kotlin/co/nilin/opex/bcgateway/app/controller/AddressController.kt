@@ -71,7 +71,10 @@ class AddressController(
      * (address, regex, address_type)
      */
     @PutMapping
-    suspend fun putAddresses(@RequestPart("file") file: Mono<FilePart>) {
+    suspend fun putAddresses(
+        @RequestPart("file") file: Mono<FilePart>,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ) {
         val f = File("reserved.csv")
         file.awaitSingle().transferTo(f).awaitSingleOrNull() ?: OpexError.BadRequest.exception("Invalid File")
         val csv = f.readLines(StandardCharsets.UTF_8)
@@ -80,7 +83,7 @@ class AddressController(
             val columns = it.split(",")
             if (columns.size != 3) throw OpexError.BadRequest.exception("Invalid CSV File")
             val at = addressTypes[columns[2]] ?: throw OpexError.BadRequest.exception("Invalid Address Type")
-            ReservedAddress(columns[0], columns[1], at)
+            ReservedAddress(columns[0], columns[1], at, securityContext.authentication.name)
         }
         // Do nothing in case of duplication (Or any constraint issue)
         runCatching { reservedAddressHandler.addReservedAddress(items) }

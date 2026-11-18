@@ -59,7 +59,8 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         d.deposit_type as type,
         d.attachment as attachment,
         d.create_date as create_date,
-        d.transfer_method as transfer_method
+        d.transfer_method as transfer_method,
+        d.applicator as applicator
     from deposits d
         join wallet_owner wo on d.uuid = wo.uuid
     where (:owner is null or wo.uuid = :owner)
@@ -103,7 +104,8 @@ interface DepositRepository : ReactiveCrudRepository<DepositModel, Long> {
         d.deposit_type as type,
         d.attachment as attachment,
         d.create_date as create_date,
-        d.transfer_method as transfer_method
+        d.transfer_method as transfer_method,
+        d.applicator as applicator
     from deposits d
         join wallet_owner wo on d.uuid = wo.uuid
     where (:owner is null or wo.uuid = :owner)

@@ -5,6 +5,7 @@ import co.nilin.opex.wallet.ports.postgres.dto.OffChainGatewayView
 import co.nilin.opex.wallet.ports.postgres.dto.TerminalView
 import co.nilin.opex.wallet.ports.postgres.model.GatewayTerminalModel
 import org.springframework.data.r2dbc.repository.Query
+import org.springframework.data.r2dbc.repository.Modifying
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
@@ -12,6 +13,14 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface GatewayTerminalRepository : ReactiveCrudRepository<GatewayTerminalModel, Long> {
+
+    @Modifying
+    @Query("""
+        INSERT INTO gateway_terminal (terminal_id, gateway_id, applicator)
+        VALUES (:terminalId, :gatewayId, :applicator)
+        ON CONFLICT (terminal_id, gateway_id) DO UPDATE SET applicator = :applicator
+    """)
+    fun upsert(terminalId: Long, gatewayId: Long, applicator: String): Mono<Void>
 
     fun deleteByTerminalIdAndGatewayId(terminalId: Long, gatewayId: Long): Mono<Void>
 
@@ -24,7 +33,8 @@ interface GatewayTerminalRepository : ReactiveCrudRepository<GatewayTerminalMode
        t.active,
        t.meta_data,
        t.display_order,
-       tl.description
+       tl.description,
+       t.applicator
     FROM gateway_terminal gt
     JOIN terminal t ON gt.terminal_id=t.id
     LEFT JOIN terminal_localization tl ON tl.terminal_id = t.id 
@@ -50,7 +60,8 @@ interface GatewayTerminalRepository : ReactiveCrudRepository<GatewayTerminalMode
        g.is_withdraw_active,
        gl.deposit_description,
        gl.withdraw_description,
-       g.display_order
+       g.display_order,
+       g.applicator
     from gateway_terminal gt
              left join currency_off_chain_gateway g on gt.gateway_id = g.id
              left join currency_off_chain_gateway_localization gl on g.id = gl.gateway_id and gl.language = :lang

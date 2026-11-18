@@ -24,21 +24,24 @@ interface PairRateConfigRepository : ReactiveCrudRepository<PairRateConfigModel,
         strategy,
         margin,
         is_active,
-        price_mode
+        price_mode,
+        applicator
     )
     VALUES (
         :symbol,
         :strategy,
         :margin,
         :isActive,
-        :priceMode
+        :priceMode,
+        :applicator
     )
     ON CONFLICT (symbol)
     DO UPDATE SET
         strategy = :strategy,
         margin = :margin,
         is_active = :isActive,
-        price_mode = :priceMode
+        price_mode = :priceMode,
+        applicator = :applicator
 """
     )
     fun upsert(
@@ -46,6 +49,7 @@ interface PairRateConfigRepository : ReactiveCrudRepository<PairRateConfigModel,
         strategy: String?,
         margin: BigDecimal?,
         isActive: Boolean,
-        priceMode: String
+        priceMode: String,
+        applicator: String?
     ): Mono<Void>
 }

@@ -78,7 +78,7 @@ class BankAccountManagement(
             bank = verified.bank,
             status = if (verified.needsReview) BankAccountStatus.WAITING else BankAccountStatus.VERIFIED,
             createDate = LocalDateTime.now(),
-            creator = "system"
+            applicator = "system"
         )
 
         val saved = bankAccountPersister.save(bankAccount)
@@ -130,7 +130,7 @@ class BankAccountManagement(
                 bank = request.bank,
                 status = BankAccountStatus.VERIFIED,
                 createDate = LocalDateTime.now(),
-                creator = adminUuid
+                applicator = adminUuid
             )
         )
         return saved.toBankAccountAdminResponse()

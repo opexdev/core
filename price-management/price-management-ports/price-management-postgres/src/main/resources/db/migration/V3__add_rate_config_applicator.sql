@@ -1,0 +1,1 @@
+ALTER TABLE pair_rate_config ADD COLUMN applicator VARCHAR(80);

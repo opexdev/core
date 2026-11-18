@@ -14,7 +14,8 @@ fun PairRateConfigModel.asCoreModel() = PairRateConfig(
     strategy = strategy?.let { PriceStrategy.valueOf(it) },
     margin = margin,
     isActive = isActive,
-    priceMode = PriceMode.valueOf(priceMode)
+    priceMode = PriceMode.valueOf(priceMode),
+    applicator = applicator
 )
 
 fun PairProviderIncludeModel.asCoreModel() = PairProviderInclude(

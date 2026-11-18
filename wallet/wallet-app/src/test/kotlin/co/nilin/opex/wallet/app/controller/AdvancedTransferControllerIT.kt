@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.http.MediaType
+import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockJwt
 import org.springframework.test.web.reactive.server.WebTestClient
 import java.math.BigDecimal
 import java.util.*
@@ -41,7 +42,6 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
 
     @BeforeEach
     fun setup() {
-
         runBlocking {
             currencyService.createNewCurrency(CurrencyCommand("ETH", name = "ETH", precision = BigDecimal.TEN , maxOrder = BigDecimal.valueOf(1000)), true)
             currencyService.createNewCurrency(CurrencyCommand("BTC", name = "BTC", precision = BigDecimal.TEN  , maxOrder = BigDecimal.valueOf(1000)), true)
@@ -53,6 +53,7 @@ class AdvancedTransferControllerIT : KafkaEnabledTest() {
 
 
         }
+        val webClient = webClient.mutateWith(mockJwt())
 
         webClient.post().uri("/otc/rate").accept(MediaType.APPLICATION_JSON)
             .bodyValue(SetCurrencyExchangeRateRequest("ETH", "Z", BigDecimal.valueOf(100), true))

@@ -27,7 +27,7 @@ fun BankAccount.toBankAccountAdminResponse() = BankAccountAdminResponse(
     status = this.status,
     createDate = this.createDate,
     updateDate = this.updateDate,
-    creator = this.creator
+    applicator = this.applicator
 )
 
 fun AddressBook.toAddressBookResponse() = AddressBookResponse(

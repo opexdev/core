@@ -15,4 +15,5 @@ data class SwapAdminResponse(
     var expDate: LocalDateTime? = null,
     var status: ReservedStatus? = null,
     val rate: BigDecimal? = null,
+    val applicator: String? = null,
 )

@@ -13,6 +13,6 @@ open class BankAccount {
     lateinit var status: BankAccountStatus
     lateinit var createDate: LocalDateTime
     var updateDate: LocalDateTime? = null
-    var creator: String? = null
+    var applicator: String? = null
 
 }

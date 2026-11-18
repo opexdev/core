@@ -6,7 +6,7 @@ interface AddressTypeHandler {
 
     suspend fun fetchAll(): List<AddressType>
 
-    suspend fun addAddressType(name: String, addressRegex: String, memoRegex: String?)
+    suspend fun addAddressType(name: String, addressRegex: String, memoRegex: String?, applicator: String)
 
     suspend fun fetchAddressType(name: String): AddressType?
 }

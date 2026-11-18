@@ -17,8 +17,15 @@ class TwoFactorConfigService(
 ) {
     private val logger by LoggerDelegate()
 
-    suspend fun getTwoFactorConfig(uuid: String): OTPType =
-        getUserByUuid(uuid).currentOtpMethod
+    suspend fun getTwoFactorConfig(uuid: String): TwoFactorConfigResponse {
+        val user = getUserByUuid(uuid)
+        val method = user.currentOtpMethod
+        val receiver = when (method) {
+            OTPType.TOTP -> user.totpLabel
+            else -> user.destinationFor(method)
+        }
+        return TwoFactorConfigResponse(otpConfig = method, receiver = receiver)
+    }
 
     suspend fun requestEnableTwoFactor(method: OTPType, uuid: String): TwoFactorResponse {
         validateMethod(method)
@@ -35,7 +42,7 @@ class TwoFactorConfigService(
                 if (!totpConfig.isActivated || !totpConfig.isEnabled) {
                     throw OpexError.TOTPSetupIncomplete.exception()
                 }
-                TwoFactorResponse(otp = null, otpReceiver = OTPReceiver("$appName : ${user.username}", OTPType.TOTP))
+                TwoFactorResponse(otp = null, otpReceiver = OTPReceiver(user.totpLabel, OTPType.TOTP))
             }
 
             OTPType.NONE -> throw OpexError.InvalidOTPType.exception()
@@ -61,7 +68,7 @@ class TwoFactorConfigService(
         }
         return when (method) {
             OTPType.EMAIL, OTPType.SMS -> sendOtpRequest(user, method)
-            OTPType.TOTP -> TwoFactorResponse(otp = null, otpReceiver = OTPReceiver("$appName : ${user.username}", OTPType.TOTP))
+            OTPType.TOTP -> TwoFactorResponse(otp = null, otpReceiver = OTPReceiver(user.totpLabel, OTPType.TOTP))
             OTPType.NONE -> throw OpexError.InvalidOTPType.exception()
         }
     }
@@ -84,7 +91,7 @@ class TwoFactorConfigService(
         return when {
             !totpResponse.isEnabled && !totpResponse.isActivated -> otpProxy.setupTOTP(
                 uuid,
-                "$appName : ${user.username}"
+                user.totpLabel
             )
 
             totpResponse.isEnabled -> SetupTOTPResponse(totpResponse.uri)
@@ -130,7 +137,7 @@ class TwoFactorConfigService(
     }
 
     private suspend fun sendOtpRequest(user: KeycloakUser, method: OTPType): TwoFactorResponse {
-        val destination = user.getDestinationFor(method)
+        val destination = user.destinationFor(method) ?: throw OpexError.BadRequest.exception()
         val receiver = OTPReceiver(destination, method)
 
         val response = otpProxy.requestOTP(
@@ -150,7 +157,7 @@ class TwoFactorConfigService(
         method: OTPType,
         otpCode: String
     ): OTPVerifyResponse {
-        val destination = user.getDestinationFor(method)
+        val destination = user.destinationFor(method) ?: throw OpexError.BadRequest.exception()
 
         val result = otpProxy.verifyOTP(
             OTPVerifyRequest(
@@ -177,9 +184,12 @@ class TwoFactorConfigService(
             ?.let { runCatching { OTPType.valueOf(it) }.getOrNull() }
             ?: OTPType.NONE
 
-    private fun KeycloakUser.getDestinationFor(method: OTPType): String = when (method) {
+    private val KeycloakUser.totpLabel: String
+        get() = "$appName : $username"
+
+    private fun KeycloakUser.destinationFor(method: OTPType): String? = when (method) {
         OTPType.EMAIL -> email
         OTPType.SMS -> mobile
         else -> null
-    } ?: throw OpexError.BadRequest.exception()
+    }
 }

@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.security.SecureRandom
 import java.util.*
@@ -232,9 +234,12 @@ Behavior: Rotates the API key secret. The new secret is returned only once in th
             )
         ]
     )
-    suspend fun rotate(@PathVariable apiKeyId: String): ApiKeyResponse {
+    suspend fun rotate(
+        @PathVariable apiKeyId: String,
+        @Parameter(hidden = true) @CurrentSecurityContext securityContext: SecurityContext
+    ): ApiKeyResponse {
         val newSecret = generateSecretBase64()
-        val stored = apiKeyService.rotateApiKeySecret(apiKeyId, newSecret)
+        val stored = apiKeyService.rotateApiKeySecret(apiKeyId, newSecret, securityContext.authentication.name)
         return ApiKeyResponse(
             apiKeyId = stored.record.apiKeyId,
             label = stored.record.label,
@@ -281,14 +286,19 @@ Behavior: Updates API key metadata and enabled status. Secret is not returned.""
             )
         ]
     )
-    suspend fun update(@PathVariable apiKeyId: String, @RequestBody req: UpdateApiKeyRequest): ApiKeyResponse {
+    suspend fun update(
+        @PathVariable apiKeyId: String,
+        @RequestBody req: UpdateApiKeyRequest,
+        @Parameter(hidden = true) @CurrentSecurityContext securityContext: SecurityContext
+    ): ApiKeyResponse {
         val s = apiKeyService.updateApiKeyRecord(
             apiKeyId = apiKeyId,
             label = req.label,
             enabled = req.enabled,
             allowedIps = req.allowedIps,
             allowedEndpoints = req.allowedEndpoints,
-            keycloakUsername = req.keycloakUsername
+            keycloakUsername = req.keycloakUsername,
+            adminId = securityContext.authentication.name
         )
         return ApiKeyResponse(
             apiKeyId = s.apiKeyId,
@@ -333,7 +343,10 @@ Response body: No response body.""",
             )
         ]
     )
-    suspend fun delete(@PathVariable apiKeyId: String) {
-        apiKeyService.deleteApiKeyRecord(apiKeyId)
+    suspend fun delete(
+        @PathVariable apiKeyId: String,
+        @Parameter(hidden = true) @CurrentSecurityContext securityContext: SecurityContext
+    ) {
+        apiKeyService.deleteApiKeyRecord(apiKeyId, securityContext.authentication.name)
     }
 }

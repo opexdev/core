@@ -14,19 +14,21 @@ interface OffChainGatewayLocalizationRepository : ReactiveCrudRepository<OffChai
     @Modifying
     @Query(
         """
-    INSERT INTO currency_off_chain_gateway_localization (gateway_id, deposit_description, withdraw_description, language)
-    VALUES (:gatewayId, :depositDescription, :withdrawDescription, :language)
+    INSERT INTO currency_off_chain_gateway_localization (gateway_id, deposit_description, withdraw_description, language, applicator)
+    VALUES (:gatewayId, :depositDescription, :withdrawDescription, :language, :applicator)
     ON CONFLICT (gateway_id, language)
     DO UPDATE SET
         deposit_description = :depositDescription,
-        withdraw_description = :withdrawDescription
+        withdraw_description = :withdrawDescription,
+        applicator = :applicator
 """
     )
     fun upsert(
         gatewayId: Long,
         depositDescription: String?,
         withdrawDescription: String?,
-        language: String
+        language: String,
+        applicator: String
     ): Mono<Void>
 
     fun findByGatewayId(gatewayId: Long): Flux<OffChainGatewayLocalizationModel>

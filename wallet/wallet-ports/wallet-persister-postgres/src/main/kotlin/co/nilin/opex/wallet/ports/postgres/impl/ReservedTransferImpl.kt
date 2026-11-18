@@ -32,9 +32,11 @@ class ReservedTransferImpl(
             }?.toDto()
     }
 
-    override suspend fun commitReserve(reserveNumber: String) {
+    override suspend fun commitReserve(reserveNumber: String, applicator: String?) {
         reservedTransferRepository.findByReserveNumber(reserveNumber)?.awaitSingleOrNull()?.let {
-            reservedTransferRepository.save(it.apply { status = ReservedStatus.Committed })?.awaitSingleOrNull()
+            reservedTransferRepository.save(
+                it.copy(status = ReservedStatus.Committed, applicator = applicator)
+            )?.awaitSingleOrNull()
         }
     }
 
@@ -148,7 +150,8 @@ class ReservedTransferImpl(
             reserveDate,
             expDate,
             status,
-            rate
+            rate,
+            applicator
         )
     }
 
@@ -167,7 +170,8 @@ class ReservedTransferImpl(
             this.reserveDate,
             this.expDate,
             this.status,
-            this.rate
+            this.rate,
+            this.applicator
         )
     }
 

@@ -9,9 +9,9 @@ import co.nilin.opex.profile.core.data.profile.LegalAccountRegistration
 interface CompanyPersister {
 
     suspend fun ensureAvailable(availability: LegalAccountAvailability)
-    suspend fun registerLegalAccount(registration: LegalAccountRegistration, creator: String): Company
+    suspend fun registerLegalAccount(registration: LegalAccountRegistration, applicator: String): Company
     suspend fun findByRepresentativeUuid(uuid: String): Company?
     suspend fun findByCompanyNationalId(nationalId: String): Company?
     suspend fun findByUuid(companyUuid: UUID): Company?
-    suspend fun updateByUuid(companyUuid: UUID, update: CompanyUpdate): Company
+    suspend fun updateByUuid(companyUuid: UUID, update: CompanyUpdate, applicator: String): Company
 }

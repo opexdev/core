@@ -30,6 +30,7 @@ fun CryptoCurrencyCommand.toModel(): CurrencyOnChainGatewayModel {
         isDepositActive,
         isWithdrawActive,
         displayOrder,
+        applicator,
     )
 }
 
@@ -56,6 +57,7 @@ fun CurrencyOnChainGatewayModel.toDto(): CryptoCurrencyCommand {
         null,//todo
         null,//todo
         displayOrder,
+        applicator = applicator,
     )
 
 }
@@ -83,6 +85,7 @@ fun CurrencyOnChainGatewayView.toDto(): CryptoCurrencyCommand {
         depositDescription,
         withdrawDescription,
         displayOrder,
+        applicator = applicator,
     )
 
 }
@@ -92,7 +95,8 @@ fun CurrencyOnChainGatewayLocalizationModel.toCommand(): CurrencyOnChainGatewayL
         id = id,
         depositDescription = depositDescription,
         withdrawDescription = withdrawDescription,
-        language = language
+        language = language,
+        applicator = applicator
     )
 }
 
@@ -105,5 +109,6 @@ fun AssignedAddressModel.toRecord(addressTypeMap: Map<Long, AddressType>) = Addr
     assignedDate = assignedDate,
     expTime = expTime,
     revokedDate = revokedDate,
-    status = status
+    status = status,
+    applicator = applicator
 )

@@ -1,9 +1,9 @@
 package co.nilin.opex.api.ports.proxy.impl
 
 import co.nilin.opex.api.core.inout.ConfirmTwoFactorRequest
-import co.nilin.opex.api.core.inout.OTPType
 import co.nilin.opex.api.core.inout.SetupTOTPResponse
 import co.nilin.opex.api.core.inout.TOTPCode
+import co.nilin.opex.api.core.inout.TwoFactorConfigResponse
 import co.nilin.opex.api.core.inout.TwoFactorRequest
 import co.nilin.opex.api.core.inout.TwoFactorResponse
 import co.nilin.opex.api.core.inout.auth.*
@@ -230,14 +230,14 @@ class AuthProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient)
             .awaitBodilessEntity()
     }
 
-    override suspend fun getTwoFactorConfig(token: String): OTPType {
+    override suspend fun getTwoFactorConfig(token: String): TwoFactorConfigResponse {
         return webClient.get()
             .uri("$baseUrl/v1/user/2fa")
             .accept(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .retrieve()
             .onStatus({ t -> t.isError }, { it.createException() })
-            .bodyToMono<OTPType>()
+            .bodyToMono<TwoFactorConfigResponse>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get 2fa config") }
     }
 

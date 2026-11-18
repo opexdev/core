@@ -24,7 +24,8 @@ data class AddressAssignmentRecord(
     val assignedDate: LocalDateTime?,
     val expTime: LocalDateTime?,
     val revokedDate: LocalDateTime?,
-    val status: AddressStatus?
+    val status: AddressStatus?,
+    val applicator: String? = null
 )
 
 data class AddressAssignmentPage(
@@ -50,7 +51,8 @@ data class ReservedAddressFilter(
 data class ReservedAddressRecord(
     val address: String,
     val memo: String?,
-    val addressType: AddressType?
+    val addressType: AddressType?,
+    val applicator: String? = null
 )
 
 data class ReservedAddressPage(

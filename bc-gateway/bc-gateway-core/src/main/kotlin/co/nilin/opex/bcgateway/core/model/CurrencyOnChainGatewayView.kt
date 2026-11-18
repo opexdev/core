@@ -23,7 +23,8 @@ data class CurrencyOnChainGatewayView(
     var isWithdrawActive: Boolean? = true,
     val depositDescription: String? = null,
     val withdrawDescription: String? = null,
-    val displayOrder: Int? = null
+    val displayOrder: Int? = null,
+    val applicator: String? = null
 )
 
 

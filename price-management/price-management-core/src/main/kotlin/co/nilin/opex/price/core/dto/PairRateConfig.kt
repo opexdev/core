@@ -9,5 +9,6 @@ data class PairRateConfig(
     /** Required for AUTO, unused (and must be null) for MANUAL. */
     val margin: BigDecimal?,
     val isActive: Boolean,
-    val priceMode: PriceMode
+    val priceMode: PriceMode,
+    val applicator: String? = null
 )

@@ -6,8 +6,10 @@ import co.nilin.opex.api.core.utils.toCsv
 import co.nilin.opex.api.core.utils.toSet
 import co.nilin.opex.api.ports.postgres.dao.ApiKeyRegistryRepository
 import co.nilin.opex.api.ports.postgres.model.ApiKeyRegistryModel
+import co.nilin.opex.common.utils.LoggerDelegate
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -16,6 +18,7 @@ class APIKeyServiceImpl(
     private val apiKeySecretCrypto: ApiKeySecretCrypto,
     private val apiKeyRegistryRepository: ApiKeyRegistryRepository
 ) : APIKeyService {
+    private val logger by LoggerDelegate()
 
     private fun toRecord(e: ApiKeyRegistryModel): APIKeyService.ApiKeyRecord =
         APIKeyService.ApiKeyRecord(
@@ -62,7 +65,7 @@ class APIKeyServiceImpl(
         )
     }
 
-    override suspend fun rotateApiKeySecret(apiKeyId: String, newPlaintextSecret: String): APIKeyService.ApiKeyCreateResult {
+    override suspend fun rotateApiKeySecret(apiKeyId: String, newPlaintextSecret: String, adminId: String): APIKeyService.ApiKeyCreateResult {
         val existing = apiKeyRegistryRepository.findById(apiKeyId).awaitSingle() ?: error("API key not found: $apiKeyId")
         val enc = apiKeySecretCrypto.encrypt(newPlaintextSecret)
         val updated = existing.copy(
@@ -70,6 +73,7 @@ class APIKeyServiceImpl(
             updatedAt = LocalDateTime.now()
         )
         val saved = apiKeyRegistryRepository.save(updated).awaitSingle()
+        logger.info("Admin {} rotated secret of API key {}", adminId, apiKeyId)
         return APIKeyService.ApiKeyCreateResult(
             secret = newPlaintextSecret,
             record = toRecord(saved)
@@ -82,7 +86,8 @@ class APIKeyServiceImpl(
         enabled: Boolean?,
         allowedIps: Set<String>?,
         allowedEndpoints: Set<String>?,
-        keycloakUsername: String?
+        keycloakUsername: String?,
+        adminId: String
     ): APIKeyService.ApiKeyRecord {
         val existing = apiKeyRegistryRepository.findById(apiKeyId).awaitSingle() ?: error("API key not found: $apiKeyId")
         val updated = existing.copy(
@@ -94,6 +99,7 @@ class APIKeyServiceImpl(
             updatedAt = LocalDateTime.now()
         )
         val saved = apiKeyRegistryRepository.save(updated).awaitSingle()
+        logger.info("Admin {} updated API key {}", adminId, apiKeyId)
         return toRecord(saved)
     }
 
@@ -105,10 +111,11 @@ class APIKeyServiceImpl(
     override suspend fun listApiKeyRecords(): List<APIKeyService.ApiKeyRecord> =
         apiKeyRegistryRepository.findAll().map { toRecord(it) }.collectList().awaitSingle().sortedBy { it.apiKeyId }
 
-    override suspend fun deleteApiKeyRecord(apiKeyId: String) {
+    override suspend fun deleteApiKeyRecord(apiKeyId: String, adminId: String) {
         val exists = apiKeyRegistryRepository.existsById(apiKeyId).awaitSingle()
         if (!exists) error("API key not found: $apiKeyId")
-        apiKeyRegistryRepository.deleteById(apiKeyId).awaitSingle()
+        apiKeyRegistryRepository.deleteById(apiKeyId).awaitSingleOrNull()
+        logger.info("Admin {} deleted API key {}", adminId, apiKeyId)
     }
 
     override suspend fun getApiKeyForVerification(apiKeyId: String): APIKeyService.ApiKeyVerification? {
