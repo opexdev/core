@@ -32,7 +32,7 @@ class WithdrawServiceTest {
     private val gatewayService = mockk<GatewayService>()
     private val precisionService = mockk<PrecisionService>()
     private val accountantProxy = mockk<AccountantProxy>()
-    private val withdrawRequestEventSubmitter = mockk<WithdrawRequestEventSubmitter>()
+    private val withdrawRequestEventSubmitter = mockk<WithdrawRequestEventSubmitter>(relaxed = true)
     private val otpProxy = mockk<OtpProxy>()
     private val profileProxy = mockk<ProfileProxy>()
     private val withdrawOtpPersister = mockk<WithdrawOtpPersister>()
@@ -466,7 +466,7 @@ class WithdrawServiceTest {
             withdrawService = WithdrawService(
                 withdrawPersister, walletManager, walletOwnerManager, currencyService,
                 transferManager, meterRegistry, gatewayService, precisionService,
-                accountantProxy, withdrawRequestEventSubmitter, otpProxy, profileProxy,
+                accountantProxy, withdrawRequestEventSubmitter, null, otpProxy, profileProxy,
                 withdrawOtpPersister, gatewayPersister, SYSTEM_UUID,
                 withdrawLimitEnabled = false, otpRequiredCount = 2, bankAccountValidation = false
             )
@@ -630,7 +630,7 @@ class WithdrawServiceTest {
             withdrawService = WithdrawService(
                 withdrawPersister, walletManager, walletOwnerManager, currencyService,
                 transferManager, meterRegistry, gatewayService, precisionService,
-                accountantProxy, withdrawRequestEventSubmitter, otpProxy, profileProxy,
+                accountantProxy, withdrawRequestEventSubmitter, null, otpProxy, profileProxy,
                 withdrawOtpPersister, gatewayPersister, SYSTEM_UUID,
                 withdrawLimitEnabled = false, otpRequiredCount = 2, bankAccountValidation = false
             )
@@ -651,7 +651,7 @@ class WithdrawServiceTest {
             withdrawService = WithdrawService(
                 withdrawPersister, walletManager, walletOwnerManager, currencyService,
                 transferManager, meterRegistry, gatewayService, precisionService,
-                accountantProxy, withdrawRequestEventSubmitter, otpProxy, profileProxy,
+                accountantProxy, withdrawRequestEventSubmitter, null, otpProxy, profileProxy,
                 withdrawOtpPersister, gatewayPersister, SYSTEM_UUID,
                 withdrawLimitEnabled = false, otpRequiredCount = 2, bankAccountValidation = false
             )
@@ -674,7 +674,7 @@ class WithdrawServiceTest {
             withdrawService = WithdrawService(
                 withdrawPersister, walletManager, walletOwnerManager, currencyService,
                 transferManager, meterRegistry, gatewayService, precisionService,
-                accountantProxy, withdrawRequestEventSubmitter, otpProxy, profileProxy,
+                accountantProxy, withdrawRequestEventSubmitter, null, otpProxy, profileProxy,
                 withdrawOtpPersister, gatewayPersister, SYSTEM_UUID,
                 withdrawLimitEnabled = false, otpRequiredCount = 2, bankAccountValidation = false
             )
@@ -697,7 +697,7 @@ class WithdrawServiceTest {
             withdrawService = WithdrawService(
                 withdrawPersister, walletManager, walletOwnerManager, currencyService,
                 transferManager, meterRegistry, gatewayService, precisionService,
-                accountantProxy, withdrawRequestEventSubmitter, otpProxy, profileProxy,
+                accountantProxy, withdrawRequestEventSubmitter, null, otpProxy, profileProxy,
                 withdrawOtpPersister, gatewayPersister, SYSTEM_UUID,
                 withdrawLimitEnabled = false, otpRequiredCount = 2, bankAccountValidation = false
             )
@@ -1293,7 +1293,7 @@ class WithdrawServiceTest {
             withdrawService = WithdrawService(
                 withdrawPersister, walletManager, walletOwnerManager, currencyService,
                 transferManager, meterRegistry, gatewayService, precisionService,
-                accountantProxy, withdrawRequestEventSubmitter, otpProxy, profileProxy,
+                accountantProxy, withdrawRequestEventSubmitter, null, otpProxy, profileProxy,
                 withdrawOtpPersister, gatewayPersister, SYSTEM_UUID,
                 withdrawLimitEnabled = true, otpRequiredCount = 0, bankAccountValidation = false
             )
@@ -1335,7 +1335,7 @@ class WithdrawServiceTest {
             withdrawService = WithdrawService(
                 withdrawPersister, walletManager, walletOwnerManager, currencyService,
                 transferManager, meterRegistry, gatewayService, precisionService,
-                accountantProxy, withdrawRequestEventSubmitter, otpProxy, profileProxy,
+                accountantProxy, withdrawRequestEventSubmitter, null, otpProxy, profileProxy,
                 withdrawOtpPersister, gatewayPersister, SYSTEM_UUID,
                 withdrawLimitEnabled = true, otpRequiredCount = 0, bankAccountValidation = false
             )
@@ -1377,7 +1377,6 @@ class WithdrawServiceTest {
             coEvery { withdrawPersister.persist(any()) } returns withdraw
             coEvery { withdrawPersister.findByWithdrawUuid(any()) } returns withdraw
             coEvery { transferManager.transfer(any()) } returns TransferResultDetailed(mockk(), "tx-test")
-            coEvery { withdrawRequestEventSubmitter.send(any(), any(), any(), any(), any(), any()) } returns Unit
             coEvery {
                 gatewayPersister.getAddressRegex(DEST_NETWORK)
             } returns ".*"

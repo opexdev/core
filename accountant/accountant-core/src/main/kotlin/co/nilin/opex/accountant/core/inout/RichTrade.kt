@@ -29,5 +29,12 @@ class RichTrade(
     val makerCommisionAsset: String,
     val matchedPrice: BigDecimal,
     val matchedQuantity: BigDecimal,
-    val tradeDateTime: LocalDateTime
+    val tradeDateTime: LocalDateTime,
+    val executionReference: String? = null,
+    val baseAsset: String? = null,
+    val quoteAsset: String? = null,
+    val takerSettlementActionId: String? = null,
+    val makerSettlementActionId: String? = null,
+    val takerFeeActionId: String? = null,
+    val makerFeeActionId: String? = null
 )

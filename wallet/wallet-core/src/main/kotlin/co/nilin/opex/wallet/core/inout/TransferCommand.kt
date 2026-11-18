@@ -11,5 +11,7 @@ data class TransferCommand(
     val description: String?,
     val transferRef: String?,
     val transferCategory: TransferCategory,
-    val destAmount: Amount = amount
+    val destAmount: Amount = amount,
+    val operationId: String? = null,
+    val perspectivePartyId: String? = null
 )

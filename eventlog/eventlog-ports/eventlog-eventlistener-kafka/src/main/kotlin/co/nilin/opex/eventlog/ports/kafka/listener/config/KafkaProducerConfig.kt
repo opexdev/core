@@ -1,5 +1,6 @@
 package co.nilin.opex.eventlog.ports.kafka.listener.config
 
+import co.nilin.opex.eventlog.ports.kafka.listener.inout.AccountingTransactionKafkaEvent
 import co.nilin.opex.matching.engine.core.eventh.events.CoreEvent
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
@@ -35,6 +36,19 @@ class KafkaProducerConfig {
 
     @Bean("eventLogKafkaTemplate")
     fun kafkaTemplate(@Qualifier("eventLogProducerFactory") producerFactory: ProducerFactory<String?, CoreEvent>): KafkaTemplate<String?, CoreEvent> {
+        return KafkaTemplate(producerFactory)
+    }
+
+    @Bean("eventLogAccountingTransactionProducerFactory")
+    fun accountingTransactionProducerFactory(@Qualifier("eventLogProducerConfig") producerConfigs: Map<String, Any?>): ProducerFactory<String?, AccountingTransactionKafkaEvent> {
+        return DefaultKafkaProducerFactory(producerConfigs)
+    }
+
+    @Bean("eventLogAccountingTransactionKafkaTemplate")
+    fun accountingTransactionKafkaTemplate(
+        @Qualifier("eventLogAccountingTransactionProducerFactory")
+        producerFactory: ProducerFactory<String?, AccountingTransactionKafkaEvent>
+    ): KafkaTemplate<String?, AccountingTransactionKafkaEvent> {
         return KafkaTemplate(producerFactory)
     }
 

@@ -32,6 +32,7 @@ class TransferService(
     private val currencyGraph: GraphService,
     private val reservedTransferManager: ReservedTransferManager,
     private val precisionService: PrecisionService,
+    private val swapEventSubmitter: SwapEventSubmitter,
 
     ) {
 
@@ -261,7 +262,8 @@ class TransferService(
         val withdrawRef = "${refPrefix}${reserveNumber}-withdraw"
         val depositRef = "${refPrefix}${reserveNumber}-deposit"
 
-        val senderTransfer = _transfer(
+        val operationId = "swap:$reserveNumber"
+        val senderResult = _transfer(
             symbol = reservations.sourceSymbol,
             senderWalletType = reservations.senderWalletType,
             senderUuid = reservations.senderUuid,
@@ -272,10 +274,12 @@ class TransferService(
             transferRef = withdrawRef,
             transferCategory = transferCategory,
             destSymbol = reservations.sourceSymbol,
-            destAmount = reservations.sourceAmount
-        ).transferResult
+            destAmount = reservations.sourceAmount,
+            operationId = operationId,
+            perspectivePartyId = reservations.senderUuid
+        )
 
-        val receiverTransfer = _transfer(
+        val receiverResult = _transfer(
             symbol = reservations.destSymbol,
             senderWalletType = WalletType.MAIN,
             senderUuid = walletOwnerManager.systemUuid,
@@ -286,10 +290,36 @@ class TransferService(
             transferRef = depositRef,
             transferCategory = transferCategory,
             destSymbol = reservations.destSymbol,
-            destAmount = reservations.reservedDestAmount
-        ).transferResult
+            destAmount = reservations.reservedDestAmount,
+            operationId = operationId,
+            perspectivePartyId = reservations.receiverUuid
+        )
 
         reservedTransferManager.commitReserve(reserveNumber)
+        swapEventSubmitter.send(
+            uuid = reservations.senderUuid,
+            txId = operationId,
+            sourceAsset = reservations.sourceSymbol,
+            sourceAmount = reservations.sourceAmount,
+            destAsset = reservations.destSymbol,
+            destAmount = reservations.reservedDestAmount,
+            sourceTransactionId = senderResult.tx,
+            destinationTransactionId = receiverResult.tx,
+            sourceReference = withdrawRef,
+            destinationReference = depositRef,
+            systemPartyId = walletOwnerManager.systemUuid,
+            receiverPartyId = reservations.receiverUuid,
+            sourceSenderWalletId = senderResult.transferResult.sourceWallet?.toString(),
+            sourceReceiverWalletId = senderResult.transferResult.destWallet?.toString(),
+            destinationSenderWalletId = receiverResult.transferResult.sourceWallet?.toString(),
+            destinationReceiverWalletId = receiverResult.transferResult.destWallet?.toString(),
+            sourceSenderWalletType = senderResult.transferResult.sourceWalletType.name,
+            sourceReceiverWalletType = senderResult.transferResult.destWalletType.name,
+            destinationSenderWalletType = receiverResult.transferResult.sourceWalletType.name,
+            destinationReceiverWalletType = receiverResult.transferResult.destWalletType.name
+        )
+        val senderTransfer = senderResult.transferResult
+        val receiverTransfer = receiverResult.transferResult
 
         return TransferResultDetailed(
             transferResult = TransferResult(
@@ -302,7 +332,7 @@ class TransferService(
                 receiverTransfer.destUuid,
                 receiverTransfer.destWalletType,
                 receiverTransfer.receivedAmount
-            ), ""
+            ), operationId
         )
     }
 
@@ -318,6 +348,8 @@ class TransferService(
         transferCategory: TransferCategory = TransferCategory.NO_CATEGORY,
         destSymbol: String = symbol,
         destAmount: BigDecimal = amount,
+        operationId: String? = null,
+        perspectivePartyId: String? = null,
     ): TransferResultDetailed {
         if (senderWalletType == WalletType.CASHOUT || receiverWalletType == WalletType.CASHOUT)
             throw OpexError.InvalidCashOutUsage.exception()
@@ -359,7 +391,9 @@ class TransferService(
                 description,
                 transferRef,
                 transferCategory,
-                Amount(receiverWallet.currency, destAmount)
+                Amount(receiverWallet.currency, destAmount),
+                operationId = operationId,
+                perspectivePartyId = perspectivePartyId
             )
         )
     }

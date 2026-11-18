@@ -13,9 +13,20 @@ class DummyDepositSubmitter(
     override suspend fun send(
         uuid: String,
         depositRef: String?,
+        depositUuid: String?,
+        lifecycleEventId: String?,
+        walletTransactionRef: String?,
+        businessReference: String?,
         currency: String,
         amount: BigDecimal,
-        createDate: LocalDateTime?
+        principalAmount: BigDecimal?,
+        appliedCustomerFee: BigDecimal?,
+        feeAsset: String?,
+        transferCategory: String?,
+        status: String?,
+        createDate: LocalDateTime?,
+        lifecycleTransitionDate: LocalDateTime?,
+        completionDate: LocalDateTime?
     ) {
 
     }

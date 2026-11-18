@@ -43,4 +43,14 @@ class KafkaTopicConfig {
         })
     }
 
+    @Autowired
+    fun swapTopics(applicationContext: GenericApplicationContext) {
+        applicationContext.registerBean("topic_swap", NewTopic::class.java, Supplier {
+            TopicBuilder.name("swap")
+                .partitions(1)
+                .replicas(1)
+                .build()
+        })
+    }
+
 }

@@ -1,6 +1,7 @@
 package co.nilin.opex.accountant.app.listener
 
 import co.nilin.opex.accountant.core.spi.UserWithdrawVolumePersister
+import co.nilin.opex.accountant.core.model.WithdrawStatus
 import co.nilin.opex.accountant.ports.kafka.listener.inout.WithdrawRequestEvent
 import co.nilin.opex.accountant.ports.kafka.listener.spi.WithdrawRequestListener
 import kotlinx.coroutines.CoroutineScope
@@ -28,6 +29,8 @@ class WithdrawRequestEventListener(private val userWithdrawVolumePersister: User
         logger.info("==========================================================================")
         logger.info("Incoming WithdrawRequest event: $event")
         logger.info("==========================================================================")
+        // Approval is a lifecycle change, not a second reservation or settlement.
+        if (event.status == WithdrawStatus.ACCEPTED) return
         scope.launch {
             userWithdrawVolumePersister.update(event.uuid, event.currency, event.amount, event.createDate, event.status)
         }

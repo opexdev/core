@@ -9,9 +9,20 @@ interface WithdrawRequestEventSubmitter {
     suspend fun send(
         uuid: String,
         withdrawId: Long?,
+        withdrawUuid: String? = null,
+        lifecycleEventId: String? = null,
+        walletTransactionRef: String? = null,
+        businessReference: String? = null,
         currency: String,
         amount: BigDecimal,
+        principalAmount: BigDecimal? = null,
+        appliedCustomerFee: BigDecimal? = null,
+        feeAsset: String? = null,
+        transferCategory: String? = null,
         withdrawStatus: WithdrawStatus,
-        createDate: LocalDateTime
+        createDate: LocalDateTime,
+        lifecycleTransitionDate: LocalDateTime? = null,
+        completionDate: LocalDateTime? = null,
+        counterpartyReferenceId: String? = null
     )
 }

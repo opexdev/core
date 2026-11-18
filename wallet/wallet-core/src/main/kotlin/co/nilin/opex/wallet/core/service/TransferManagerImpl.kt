@@ -6,6 +6,7 @@ import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.inout.TransferResultDetailed
 import co.nilin.opex.wallet.core.model.*
 import co.nilin.opex.wallet.core.spi.*
+import java.math.BigDecimal
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Component
@@ -20,6 +21,8 @@ class TransferManagerImpl(
     private val walletOwnerManager: WalletOwnerManager,
     private val transactionManager: TransactionManager,
     private val userTransactionManager: UserTransactionManager,
+    private val accountingTransactionEventSubmitter: AccountingTransactionEventSubmitter,
+    private val swapEventSubmitter: SwapEventSubmitter? = null,
 ) : TransferManager {
 
     private val logger = LoggerFactory.getLogger(TransferManagerImpl::class.java)
@@ -82,6 +85,7 @@ class TransferManagerImpl(
         //get the result and add to return result type
         walletListener.onDeposit(destWallet, srcWallet, transferCommand.amount, amountToTransfer, tx.toString())
         walletListener.onWithdraw(srcWallet, destWallet, transferCommand.amount, tx.toString())
+        emitAccountingEventForTransfer(transferCommand, tx.toString())
         //post transfer hook(dispatch post transfer event)
 
         //notify balance change
@@ -144,6 +148,120 @@ class TransferManagerImpl(
             ),
             existingTxId.toString()
         )
+    }
+
+    private suspend fun emitAccountingEventForTransfer(transferCommand: TransferCommand, txId: String) {
+        val sourceUserId = transferCommand.sourceWallet.owner.uuid
+        val destUserId = transferCommand.destWallet.owner.uuid
+        val asset = transferCommand.amount.currency.symbol
+        val amount = transferCommand.amount.amount
+        val transferCategory = transferCommand.transferCategory.name
+        val operationId = transferCommand.operationId ?: extractWithdrawOperationId(transferCommand.transferRef)
+        val withdrawStatus = withdrawStatusForCategory(transferCommand.transferCategory)
+
+        val eventType = when (transferCommand.transferCategory) {
+            TransferCategory.TRADE -> "TRADE"
+            TransferCategory.FEE -> "FEE"
+            TransferCategory.PURCHASE_FINALIZED,
+            TransferCategory.IMPERSONATED_PURCHASE_FINALIZED -> "SWAP"
+            TransferCategory.REFERRAL_COMMISSION,
+            TransferCategory.REFERENT_COMMISSION -> "REFERRAL"
+            TransferCategory.REFERRAL_KYC_REWARD,
+            TransferCategory.KYC_ACCEPTED_REWARD -> "REWARD"
+            TransferCategory.DEPOSIT,
+            TransferCategory.DEPOSIT_MANUALLY -> "DEPOSIT"
+            TransferCategory.WITHDRAW_ACCEPT,
+            TransferCategory.WITHDRAW_MANUALLY -> "WITHDRAW"
+            // Requests, cancellations and rejections have no external financial outflow.
+            // Their history is captured by the dedicated withdrawal lifecycle publisher.
+            else -> return
+        }
+        // Direction belongs to a named party, not to an operation category.
+        val perspective = transferCommand.perspectivePartyId ?: when (eventType) {
+            "DEPOSIT", "REFERRAL", "REWARD" -> destUserId
+            else -> sourceUserId
+        }
+        val side = if (sourceUserId == destUserId && perspective == sourceUserId) "INTERNAL" else when (perspective) {
+            sourceUserId -> "OUT"
+            destUserId -> "IN"
+            else -> null
+        }
+        val now = LocalDateTime.now()
+
+        accountingTransactionEventSubmitter.send(
+            AccountingTransactionEvent(
+                txId = txId,
+                eventId = "wallet-transfer:$txId",
+                userId = perspective,
+                type = eventType,
+                symbol = transferCommand.amount.currency.symbol,
+                asset = asset,
+                amount = amount,
+                fee = null,
+                feeAsset = asset,
+                principalAmount = null,
+                grossAmount = amount,
+                withdrawStatus = withdrawStatus,
+                transferCategory = transferCategory,
+                operationId = operationId,
+                financialActionId = transferCommand.transferRef
+                    ?.takeIf { it.startsWith("accountant:fiActions:") }
+                    ?.removePrefix("accountant:fiActions:"),
+                businessReference = transferCommand.transferRef,
+                walletTransactionRef = txId,
+                recordRole = when (eventType) {
+                    "SWAP" -> "SWAP_SETTLEMENT"
+                    "TRADE" -> "TRADE_SETTLEMENT"
+                    "FEE" -> "FEE_SETTLEMENT"
+                    "WITHDRAW" -> withdrawRecordRoleForCategory(transferCommand.transferCategory, eventType)
+                    else -> "TRANSFER"
+                },
+                senderPartyId = sourceUserId,
+                receiverPartyId = destUserId,
+                senderWalletId = transferCommand.sourceWallet.id?.toString(),
+                receiverWalletId = transferCommand.destWallet.id?.toString(),
+                senderWalletType = transferCommand.sourceWallet.type.name,
+                receiverWalletType = transferCommand.destWallet.type.name,
+                perspectivePartyId = perspective,
+                sourceAsset = asset,
+                sourceAmount = amount,
+                destinationAsset = transferCommand.destAmount.currency.symbol,
+                destinationAmount = transferCommand.destAmount.amount,
+                source = "CORE_WALLET",
+                referenceId = txId,
+                side = side,
+                price = null,
+                quantity = null,
+                operationCreatedAt = null,
+                lifecycleTransitionAt = now,
+                completedAt = null,
+                occurredAt = now
+            )
+        )
+    }
+
+    private fun withdrawStatusForCategory(category: TransferCategory): String? {
+        return when (category) {
+            TransferCategory.WITHDRAW_ACCEPT,
+            TransferCategory.WITHDRAW_MANUALLY -> WithdrawStatus.DONE.name
+            else -> null
+        }
+    }
+
+    private fun extractWithdrawOperationId(transferRef: String?): String? {
+        if (transferRef == null) return null
+        val parts = transferRef.split(":")
+        if (parts.size < 3 || parts[0] != "wallet" || parts[1] != "withdraw") return null
+        return parts[2]
+    }
+
+    private fun withdrawRecordRoleForCategory(category: TransferCategory, eventType: String): String? {
+        if (eventType != "WITHDRAW") return null
+        return when (category) {
+            TransferCategory.WITHDRAW_MANUALLY -> "WITHDRAW_COMPLETION"
+            TransferCategory.WITHDRAW_ACCEPT -> "INTERNAL_MOVEMENT"
+            else -> null
+        }
     }
 
     private suspend fun createUserTX(command: TransferCommand, txId: Long) {

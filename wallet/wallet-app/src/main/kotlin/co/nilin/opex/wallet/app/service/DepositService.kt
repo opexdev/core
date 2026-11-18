@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 
 @Service
@@ -249,7 +250,7 @@ class DepositService(
                 walletOwnerManager.systemUuid to TransferCategory.DEPOSIT
             }
 
-        val transferResult = transferService.transfer(
+        val transferResultDetailed = transferService.transfer(
             symbol = symbol,
             senderWalletType = WalletType.MAIN,
             senderUuid = actualSenderUuid,
@@ -259,10 +260,15 @@ class DepositService(
             description = description,
             transferRef = transferRef,
             transferCategory = transferCategory
-        ).transferResult
+        )
 
-        publishDepositEvent(depositCommand)
-        return transferResult
+        publishDepositEvent(
+            deposit = depositCommand,
+            walletTransactionRef = transferResultDetailed.tx,
+            transferCategory = transferCategory,
+            lifecycleTransitionDate = LocalDateTime.now()
+        )
+        return transferResultDetailed.transferResult
     }
 
     // -------------------------------------------------------------------------
@@ -418,7 +424,7 @@ class DepositService(
         val receiverOwner = getOrCreateWalletOwner(request.userId)
         val receiverWallet = getOrCreateMainWallet(receiverOwner, currency)
 
-        transferManager.transfer(
+        val transferResultDetailed = transferManager.transfer(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,
@@ -445,7 +451,12 @@ class DepositService(
         )
 
         traceDepositService.saveDepositInNewTransaction(deposit)
-        publishDepositEvent(deposit)
+        publishDepositEvent(
+            deposit = deposit,
+            walletTransactionRef = transferResultDetailed.tx,
+            transferCategory = TransferCategory.DEPOSIT,
+            lifecycleTransitionDate = LocalDateTime.now()
+        )
 
         return PaymentDepositResponse(true)
     }
@@ -454,13 +465,35 @@ class DepositService(
     // Events
     // -------------------------------------------------------------------------
 
-    suspend fun publishDepositEvent(deposit: Deposit) {
+    suspend fun publishDepositEvent(
+        deposit: Deposit,
+        walletTransactionRef: String? = null,
+        transferCategory: TransferCategory? = null,
+        lifecycleTransitionDate: LocalDateTime? = null
+    ) {
         if (depositSnapshotEnabled) {
+            val creationDate = LocalDateTime.ofInstant(deposit.createDate.toInstant(), ZoneId.systemDefault())
+            val operationId = deposit.depositUuid
+            val status = deposit.status.name
+            val transition = lifecycleTransitionDate
+            val completionDate = if (deposit.status == DepositStatus.DONE) transition else null
             depositEventSubmitter.send(
-                deposit.ownerUuid,
-                deposit.transactionRef,
-                deposit.currency,
-                deposit.amount
+                uuid = deposit.ownerUuid,
+                depositRef = deposit.transactionRef,
+                depositUuid = operationId,
+                lifecycleEventId = "deposit-lifecycle:$operationId:$status",
+                walletTransactionRef = walletTransactionRef,
+                businessReference = deposit.transactionRef,
+                currency = deposit.currency,
+                amount = deposit.amount,
+                principalAmount = deposit.amount,
+                appliedCustomerFee = deposit.appliedFee,
+                feeAsset = deposit.currency,
+                transferCategory = transferCategory?.name,
+                status = status,
+                createDate = creationDate,
+                lifecycleTransitionDate = transition,
+                completionDate = completionDate
             )
         }
     }

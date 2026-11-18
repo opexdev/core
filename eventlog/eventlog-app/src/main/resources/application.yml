@@ -44,6 +44,18 @@ app:
   custom-message:
     enabled: ${CUSTOM_MESSAGE_ENABLED:false}
     base-url: ${CUSTOM_MESSAGE_URL}
+  accounting:
+    mock:
+      enabled: ${ACCOUNTING_MOCK_ENABLED:false}
+      external-enabled: ${ACCOUNTING_EXTERNAL_MOCK_ENABLED:false}
+    kafka:
+      enabled: ${ACCOUNTING_KAFKA_ENABLED:true}
+      transaction-topic-pattern: ${ACCOUNTING_TX_TOPIC_PATTERN:accounting_transactions}
+      publish-topic: ${ACCOUNTING_TX_PUBLISH_TOPIC:accounting_transactions}
+  eventlog:
+    capture:
+      enabled: ${EVENTLOG_CAPTURE_ENABLED:true}
+      topic-pattern: ${EVENTLOG_CAPTURE_TOPIC_PATTERN:.*}
 ---
 spring:
   config:

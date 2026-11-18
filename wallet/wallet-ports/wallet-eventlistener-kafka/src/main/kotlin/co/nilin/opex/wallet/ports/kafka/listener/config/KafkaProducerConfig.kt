@@ -1,6 +1,7 @@
 package co.nilin.opex.wallet.ports.kafka.listener.config
 
 import co.nilin.opex.wallet.core.inout.FinancialActionResponseEvent
+import co.nilin.opex.wallet.core.model.AccountingTransactionEvent
 import co.nilin.opex.wallet.ports.kafka.listener.model.*
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
@@ -29,7 +30,7 @@ class KafkaProducerConfig {
             ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
             ProducerConfig.ACKS_CONFIG to "all",
-            JsonSerializer.TYPE_MAPPINGS to "fiAction_response_event:co.nilin.opex.wallet.core.inout.FinancialActionResponseEvent,withdrawRequestEvent:co.nilin.opex.wallet.ports.kafka.listener.model.WithdrawRequestEvent,depositEvent:co.nilin.opex.wallet.ports.kafka.listener.model.DepositEvent"
+            JsonSerializer.TYPE_MAPPINGS to "fiAction_response_event:co.nilin.opex.wallet.core.inout.FinancialActionResponseEvent,withdrawRequestEvent:co.nilin.opex.wallet.ports.kafka.listener.model.WithdrawRequestEvent,depositEvent:co.nilin.opex.wallet.ports.kafka.listener.model.DepositEvent,swap_event:co.nilin.opex.wallet.ports.kafka.listener.model.SwapEvent,accounting_transaction_event:co.nilin.opex.wallet.core.model.AccountingTransactionEvent"
         )
     }
 
@@ -75,6 +76,28 @@ class KafkaProducerConfig {
 
     @Bean
     fun depositProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, DepositEvent> {
+        return DefaultKafkaProducerFactory(producerConfigs)
+    }
+
+    @Bean
+    fun swapKafkaTemplate(@Qualifier("swapProducerFactory") factory: ProducerFactory<String?, SwapEvent>): KafkaTemplate<String?, SwapEvent> {
+        return KafkaTemplate(factory)
+    }
+
+    @Bean
+    fun swapProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, SwapEvent> {
+        return DefaultKafkaProducerFactory(producerConfigs)
+    }
+
+    @Bean
+    fun accountingTransactionKafkaTemplate(
+        @Qualifier("accountingTransactionProducerFactory") factory: ProducerFactory<String?, AccountingTransactionEvent>
+    ): KafkaTemplate<String?, AccountingTransactionEvent> {
+        return KafkaTemplate(factory)
+    }
+
+    @Bean
+    fun accountingTransactionProducerFactory(@Qualifier("producerConfigs") producerConfigs: Map<String, Any>): ProducerFactory<String?, AccountingTransactionEvent> {
         return DefaultKafkaProducerFactory(producerConfigs)
     }
 

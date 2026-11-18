@@ -183,7 +183,14 @@ open class TradeManagerImpl(
             feeActions.makerFeeAction.symbol,
             makerPrice,
             trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction),
-            trade.eventDate
+            trade.eventDate,
+            executionReference = "accountant-trade:" + takerTransferAction.uuid,
+            baseAsset = trade.pair.leftSideName,
+            quoteAsset = trade.pair.rightSideName,
+            takerSettlementActionId = takerTransferAction.uuid,
+            makerSettlementActionId = makerTransferAction.uuid,
+            takerFeeActionId = feeActions.takerFeeAction.uuid,
+            makerFeeActionId = feeActions.makerFeeAction.uuid
         )
         richTradePublisher.publish(richTrade)
 

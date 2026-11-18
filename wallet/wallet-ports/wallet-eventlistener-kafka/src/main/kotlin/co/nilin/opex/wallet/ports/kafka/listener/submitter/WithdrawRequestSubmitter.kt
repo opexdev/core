@@ -13,9 +13,9 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Component
-@ConditionalOnProperty(name = ["app.withdraw.limit.enabled"], havingValue = "true")
+@ConditionalOnProperty(name = ["app.withdraw.event.enabled"], havingValue = "true", matchIfMissing = true)
 class WithdrawRequestSubmitter(
-    @Qualifier("withdrawRequestKafkaTemplate") private val template: KafkaTemplate<String, WithdrawRequestEvent>
+    @Qualifier("withdrawRequestKafkaTemplate") private val template: KafkaTemplate<String?, WithdrawRequestEvent>
 ) :
     WithdrawRequestEventSubmitter {
 
@@ -30,16 +30,48 @@ class WithdrawRequestSubmitter(
     override suspend fun send(
         uuid: String,
         withdrawId: Long?,
+        withdrawUuid: String?,
+        lifecycleEventId: String?,
+        walletTransactionRef: String?,
+        businessReference: String?,
         currency: String,
         amount: BigDecimal,
+        principalAmount: BigDecimal?,
+        appliedCustomerFee: BigDecimal?,
+        feeAsset: String?,
+        transferCategory: String?,
         withdrawStatus: WithdrawStatus,
-        createDate: LocalDateTime
+        createDate: LocalDateTime,
+        lifecycleTransitionDate: LocalDateTime?,
+        completionDate: LocalDateTime?,
+        counterpartyReferenceId: String?
     ) {
         retryTemplate.execute<Unit, Exception> {
             try {
+                val event = WithdrawRequestEvent(
+                    uuid = uuid,
+                    withdrawId = withdrawId,
+                    withdrawUuid = withdrawUuid,
+                    lifecycleEventId = lifecycleEventId,
+                    walletTransactionRef = walletTransactionRef,
+                    businessReference = businessReference,
+                    currency = currency,
+                    amount = amount,
+                    principalAmount = principalAmount,
+                    appliedCustomerFee = appliedCustomerFee,
+                    feeAsset = feeAsset,
+                    transferCategory = transferCategory,
+                    status = withdrawStatus,
+                    createDate = createDate,
+                    lifecycleTransitionDate = lifecycleTransitionDate,
+                    completionDate = completionDate,
+                    counterpartyReferenceId = counterpartyReferenceId
+                )
+                val messageKey = lifecycleEventId ?: "withdraw:${withdrawId ?: uuid}:${withdrawStatus.name}"
                 template.send(
                     "withdraw_request",
-                    WithdrawRequestEvent(uuid, withdrawId, currency, amount, withdrawStatus, createDate)
+                    messageKey,
+                    event
                 ).get()
                 logger.info("Withdraw request event sent")
             } catch (ex: Exception) {

@@ -28,15 +28,46 @@ class DepositSubmitter(
     override suspend fun send(
         uuid: String,
         depositRef: String?,
+        depositUuid: String?,
+        lifecycleEventId: String?,
+        walletTransactionRef: String?,
+        businessReference: String?,
         currency: String,
         amount: BigDecimal,
-        createDate: LocalDateTime?
+        principalAmount: BigDecimal?,
+        appliedCustomerFee: BigDecimal?,
+        feeAsset: String?,
+        transferCategory: String?,
+        status: String?,
+        createDate: LocalDateTime?,
+        lifecycleTransitionDate: LocalDateTime?,
+        completionDate: LocalDateTime?
     ) {
         retryTemplate.execute<Unit, Exception> {
             try {
+                val event = DepositEvent(
+                    uuid = uuid,
+                    depositRef = depositRef,
+                    depositUuid = depositUuid,
+                    lifecycleEventId = lifecycleEventId,
+                    walletTransactionRef = walletTransactionRef,
+                    businessReference = businessReference,
+                    currency = currency,
+                    amount = amount,
+                    principalAmount = principalAmount,
+                    appliedCustomerFee = appliedCustomerFee,
+                    feeAsset = feeAsset,
+                    transferCategory = transferCategory,
+                    status = status,
+                    createDate = createDate,
+                    lifecycleTransitionDate = lifecycleTransitionDate,
+                    completionDate = completionDate
+                )
+                val messageKey = lifecycleEventId ?: "deposit:${depositUuid ?: depositRef ?: uuid}:${status ?: "UNKNOWN"}"
                 template.send(
                     "deposit",
-                    DepositEvent(uuid, depositRef, currency, amount, createDate)
+                    messageKey,
+                    event
                 ).get()
                 logger.info("Deposit event sent")
             } catch (ex: Exception) {

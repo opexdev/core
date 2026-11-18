@@ -22,8 +22,18 @@ private class TransferManagerImplTest {
     private val walletListener: WalletListener = mockk()
     private val transactionManager: TransactionManager = mockk()
     private val userTxManager: UserTransactionManager = mockk()
+    private val accountingTransactionEventSubmitter: AccountingTransactionEventSubmitter = mockk()
+    private val swapEventSubmitter: SwapEventSubmitter = mockk()
     private val transferManager: TransferManagerImpl =
-        TransferManagerImpl(walletManager, walletListener, walletOwnerManager, transactionManager, userTxManager)
+        TransferManagerImpl(
+            walletManager,
+            walletListener,
+            walletOwnerManager,
+            transactionManager,
+            userTxManager,
+            accountingTransactionEventSubmitter,
+            swapEventSubmitter
+        )
 
     private fun stubWalletListener() {
         coEvery {
@@ -49,6 +59,8 @@ private class TransferManagerImplTest {
         )
         coEvery { walletListener.onWithdraw(any(), any(), any(), any()) } returns Unit
         coEvery { walletListener.onDeposit(any(), any(), any(), any(), any()) } returns Unit
+        coEvery { accountingTransactionEventSubmitter.send(any()) } returns Unit
+        coEvery { swapEventSubmitter.send(any(), any(), any(), any(), any(), any(), any()) } returns Unit
         coEvery { transactionManager.save(any()) } returns 1
 
         val result = transferManager.transfer(VALID.TRANSFER_COMMAND).transferResult

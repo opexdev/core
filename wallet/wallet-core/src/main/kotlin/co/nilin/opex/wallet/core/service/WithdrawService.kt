@@ -30,6 +30,7 @@ class WithdrawService(
     private val precisionService: PrecisionService,
     private val accountantProxy: AccountantProxy,
     private val withdrawRequestEventSubmitter: WithdrawRequestEventSubmitter,
+    private val accountingTransactionEventSubmitter: AccountingTransactionEventSubmitter? = null,
     private val otpProxy: OtpProxy,
     private val profileProxy: ProfileProxy,
     private val withdrawOtpPersister: WithdrawOtpPersister,
@@ -190,7 +191,7 @@ class WithdrawService(
                 receiverWallet,
                 Amount(currency, withdraw.amount + withdraw.appliedFee),
                 null,
-                "wallet:withdraw:${owner.uuid}:${WithdrawStatus.CREATED}:${LocalDateTime.now()}",
+                withdrawBusinessReference(withdraw.withdrawUuid!!, WithdrawStatus.CREATED),
                 TransferCategory.WITHDRAW_REQUEST
             )
         )
@@ -206,15 +207,51 @@ class WithdrawService(
     }
 
     private suspend fun publishWithdrawEvent(withdraw: Withdraw, withdrawStatus: WithdrawStatus) {
-        if (withdrawLimitEnabled)
-            withdrawRequestEventSubmitter.send(
-                withdraw.ownerUuid,
-                withdraw.withdrawId!!,
-                withdraw.currency,
-                withdraw.amount + withdraw.appliedFee,
-                withdrawStatus,
-                withdraw.createDate
-            )
+        val operationId = withdraw.withdrawUuid ?: withdraw.withdrawId?.toString()
+        val lifecycleEventId = "withdraw-lifecycle:${operationId ?: "unknown"}:${withdrawStatus.name}"
+        val transitionDate = withdraw.lastUpdateDate ?: withdraw.createDate
+        val completionDate = if (withdrawStatus == WithdrawStatus.DONE) {
+            withdraw.lastUpdateDate
+        } else {
+            null
+        }
+        val transferCategory = when (withdrawStatus) {
+            WithdrawStatus.CREATED -> TransferCategory.WITHDRAW_REQUEST
+            WithdrawStatus.DONE -> TransferCategory.WITHDRAW_ACCEPT
+            WithdrawStatus.REJECTED -> TransferCategory.WITHDRAW_REJECT
+            WithdrawStatus.CANCELED -> TransferCategory.WITHDRAW_CANCEL
+            else -> null
+        }
+        val walletTransactionRef = when (withdrawStatus) {
+            WithdrawStatus.CREATED, WithdrawStatus.ACCEPTED -> withdraw.requestTransaction
+            WithdrawStatus.DONE, WithdrawStatus.REJECTED, WithdrawStatus.CANCELED -> withdraw.finalizedTransaction
+            else -> null
+        }
+        val grossAmount = withdraw.amount + withdraw.appliedFee
+
+        withdrawRequestEventSubmitter.send(
+            uuid = withdraw.ownerUuid,
+            withdrawId = withdraw.withdrawId,
+            withdrawUuid = withdraw.withdrawUuid,
+            lifecycleEventId = lifecycleEventId,
+            walletTransactionRef = walletTransactionRef,
+            businessReference = operationId?.let { withdrawBusinessReference(it, withdrawStatus) },
+            currency = withdraw.currency,
+            amount = grossAmount,
+            principalAmount = withdraw.amount,
+            appliedCustomerFee = withdraw.appliedFee,
+            feeAsset = withdraw.currency,
+            transferCategory = transferCategory?.name,
+            withdrawStatus = withdrawStatus,
+            createDate = withdraw.createDate,
+            lifecycleTransitionDate = transitionDate,
+            completionDate = completionDate,
+            counterpartyReferenceId = withdraw.destTransactionRef
+        )
+    }
+
+    private fun withdrawBusinessReference(withdrawUuid: String, status: WithdrawStatus): String {
+        return "wallet:withdraw:$withdrawUuid:${status.name}"
     }
 
     private fun incrementWithdrawMetric() {
@@ -278,7 +315,9 @@ class WithdrawService(
 
         withdraw.status = WithdrawStatus.ACCEPTED
         withdraw.applicator = applicator
-        withdrawPersister.persist(withdraw)
+        withdraw.lastUpdateDate = LocalDateTime.now()
+        val acceptedWithdraw = withdrawPersister.persist(withdraw)
+        publishWithdrawEvent(acceptedWithdraw, WithdrawStatus.ACCEPTED)
 
         return WithdrawActionResult(withdrawUuid, WithdrawStatus.ACCEPTED)
     }
@@ -298,24 +337,46 @@ class WithdrawService(
         val receiverWallet = walletManager.findWalletByOwnerAndCurrencyAndType(owner, WalletType.MAIN, currency)
             ?: throw OpexError.WalletNotFound.exception()
 
-        withdrawPersister.persist(withdraw.apply {
-            withdraw.status = WithdrawStatus.CANCELED
-            withdraw.lastUpdateDate = LocalDateTime.now()
-        })
-
-        publishWithdrawEvent(withdraw, WithdrawStatus.CANCELED)
-
-
-        transferManager.transfer(
+        val transferResultDetailed = transferManager.transfer(
             TransferCommand(
                 sourceWallet,
                 receiverWallet,
                 Amount(currency, withdraw.amount + withdraw.appliedFee),
                 null,
-                "wallet:withdraw:${withdraw.withdrawId}:${WithdrawStatus.CANCELED}:${LocalDateTime.now()}",
+                withdrawBusinessReference(withdraw.withdrawUuid ?: withdraw.withdrawId?.toString() ?: withdrawId, WithdrawStatus.CANCELED),
                 TransferCategory.WITHDRAW_CANCEL
             )
         )
+        val updatedWithdraw = withdrawPersister.persist(
+            Withdraw(
+                withdraw.withdrawId,
+                withdraw.withdrawUuid,
+                withdraw.ownerUuid,
+                withdraw.currency,
+                withdraw.wallet,
+                withdraw.amount,
+                withdraw.requestTransaction,
+                transferResultDetailed.tx,
+                withdraw.appliedFee,
+                withdraw.destAmount,
+                withdraw.destSymbol,
+                withdraw.destAddress,
+                withdraw.destNetwork,
+                withdraw.destNote,
+                withdraw.destTransactionRef,
+                withdraw.statusReason,
+                WithdrawStatus.CANCELED,
+                withdraw.applicator,
+                withdraw.withdrawType,
+                withdraw.attachment,
+                withdraw.createDate,
+                LocalDateTime.now(),
+                withdraw.transferMethod,
+                withdraw.otpRequired
+            )
+        )
+
+        publishWithdrawEvent(updatedWithdraw, WithdrawStatus.CANCELED)
     }
 
     @Transactional
@@ -338,11 +399,11 @@ class WithdrawService(
                 receiverWallet,
                 Amount(sourceWallet.currency, withdraw.amount + withdraw.appliedFee),
                 rejectCommand.statusReason,
-                "wallet:withdraw:${withdraw.withdrawId}:${WithdrawStatus.REJECTED}:${LocalDateTime.now()}",
+                withdrawBusinessReference(withdraw.withdrawUuid ?: withdraw.withdrawId?.toString() ?: rejectCommand.withdrawId, WithdrawStatus.REJECTED),
                 TransferCategory.WITHDRAW_REJECT
             )
         )
-        withdrawPersister.persist(
+        val updatedWithdraw = withdrawPersister.persist(
             Withdraw(
                 withdraw.withdrawId,
                 withdraw.withdrawUuid,
@@ -370,7 +431,7 @@ class WithdrawService(
                 otpRequired = otpRequiredCount
             )
         )
-        publishWithdrawEvent(withdraw, WithdrawStatus.REJECTED)
+        publishWithdrawEvent(updatedWithdraw, WithdrawStatus.REJECTED)
 
         return WithdrawActionResult(withdraw.withdrawUuid!!, WithdrawStatus.REJECTED)
     }
@@ -396,7 +457,7 @@ class WithdrawService(
                 receiverWallet,
                 Amount(sourceWallet.currency, withdraw.amount + withdraw.appliedFee),
                 null,
-                "wallet:withdraw:${sourceWallet.owner.uuid}:${WithdrawStatus.ACCEPTED}:${doneCommand.destTransactionRef}",
+                withdrawBusinessReference(withdraw.withdrawUuid ?: withdraw.withdrawId?.toString() ?: doneCommand.withdrawId, WithdrawStatus.DONE),
                 TransferCategory.WITHDRAW_ACCEPT
             )
         )
@@ -429,6 +490,7 @@ class WithdrawService(
                 otpRequired = otpRequiredCount
             )
         )
+        publishWithdrawEvent(updateWithdraw, WithdrawStatus.DONE)
         return WithdrawActionResult(updateWithdraw.withdrawUuid!!, WithdrawStatus.DONE)
     }
 

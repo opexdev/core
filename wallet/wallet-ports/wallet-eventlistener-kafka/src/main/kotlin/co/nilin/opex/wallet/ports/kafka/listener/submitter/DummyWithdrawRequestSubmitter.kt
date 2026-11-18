@@ -8,17 +8,28 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Component
-@ConditionalOnProperty(name = ["app.withdraw.limit.enabled"], havingValue = "false")
+@ConditionalOnProperty(name = ["app.withdraw.event.enabled"], havingValue = "false")
 class DummyWithdrawRequestSubmitter(
 ) :
     WithdrawRequestEventSubmitter {
     override suspend fun send(
         uuid: String,
         withdrawId: Long?,
+        withdrawUuid: String?,
+        lifecycleEventId: String?,
+        walletTransactionRef: String?,
+        businessReference: String?,
         currency: String,
         amount: BigDecimal,
+        principalAmount: BigDecimal?,
+        appliedCustomerFee: BigDecimal?,
+        feeAsset: String?,
+        transferCategory: String?,
         withdrawStatus: WithdrawStatus,
-        createDate: LocalDateTime
+        createDate: LocalDateTime,
+        lifecycleTransitionDate: LocalDateTime?,
+        completionDate: LocalDateTime?,
+        counterpartyReferenceId: String?
     ) {
 
     }
