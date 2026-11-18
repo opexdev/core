@@ -22,7 +22,8 @@ interface TerminalRepository : ReactiveCrudRepository<TerminalModel, Long> {
        t.active,
        t.meta_data,
        t.display_order,
-       tl.description
+       tl.description,
+       t.applicator
     FROM terminal t
     LEFT JOIN terminal_localization tl 
       ON tl.terminal_id = t.id 
@@ -41,7 +42,8 @@ interface TerminalRepository : ReactiveCrudRepository<TerminalModel, Long> {
        t.active,
        t.meta_data,
        t.display_order,
-       tl.description
+       tl.description,
+       t.applicator
     FROM terminal t
     LEFT JOIN terminal_localization tl 
       ON tl.terminal_id = t.id 

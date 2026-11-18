@@ -886,7 +886,7 @@ class WithdrawServiceTest {
         @Test
         fun `should reject withdraw successfully`() = runBlocking {
             val command = WithdrawRejectCommand(WITHDRAW_UUID, "Invalid address", null, "applicator")
-            val withdraw = createWithdraw(WithdrawStatus.CREATED)
+            val withdraw = createWithdraw(WithdrawStatus.ACCEPTED).copy(applicator = "accepting-admin")
             val owner = createOwner()
             val sourceWallet = createWallet(owner, WalletType.CASHOUT)
             val receiverWallet = createWallet(owner, WalletType.MAIN)
@@ -907,7 +907,10 @@ class WithdrawServiceTest {
 
             Assertions.assertEquals(WITHDRAW_UUID, result.withdrawId)
             Assertions.assertEquals(WithdrawStatus.REJECTED, result.status)
-            coVerify { withdrawPersister.persist(match { it.status == WithdrawStatus.REJECTED && it.statusReason == "Invalid address" }) }
+            coVerify { withdrawPersister.persist(match {
+                it.status == WithdrawStatus.REJECTED && it.statusReason == "Invalid address" &&
+                        it.applicator == command.applicator
+            }) }
         }
 
         @Test
@@ -928,6 +931,7 @@ class WithdrawServiceTest {
             withdrawService.rejectWithdraw(command)
 
             coVerify { walletManager.createWallet(owner, any(), any(), WalletType.MAIN) }
+            coVerify { withdrawPersister.persist(match { it.applicator == command.applicator }) }
         }
 
         @Test
@@ -1054,7 +1058,7 @@ class WithdrawServiceTest {
         @Test
         fun `should mark withdraw as done successfully`() = runBlocking {
             val command = WithdrawDoneCommand(WITHDRAW_UUID, BigDecimal.ONE, "tx-ref-123", "test", "test", "test")
-            val withdraw = createWithdraw(WithdrawStatus.ACCEPTED)
+            val withdraw = createWithdraw(WithdrawStatus.ACCEPTED).copy(applicator = "accepting-admin")
             val systemOwner = createSystemOwner()
             val sourceWallet = createWallet(createOwner(), WalletType.CASHOUT)
             val receiverWallet = createWallet(systemOwner, WalletType.MAIN)
@@ -1073,7 +1077,9 @@ class WithdrawServiceTest {
             Assertions.assertEquals(WITHDRAW_UUID, result.withdrawId)
             Assertions.assertEquals(WithdrawStatus.DONE, result.status)
             coVerify { transferManager.transfer(any()) }
-            coVerify { withdrawPersister.persist(match { it.status == WithdrawStatus.DONE }) }
+            coVerify { withdrawPersister.persist(match {
+                it.status == WithdrawStatus.DONE && it.applicator == command.applicator
+            }) }
         }
 
         @Test

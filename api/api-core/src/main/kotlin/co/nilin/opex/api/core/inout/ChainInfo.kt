@@ -5,5 +5,6 @@ data class ChainInfo(
     val addressTypes: String?,
     val addressRegex: String? = null,
     val transactionScannerUrl: String? = null,
-    val addressScannerUrl: String? = null
+    val addressScannerUrl: String? = null,
+    val applicator: String? = null
 )

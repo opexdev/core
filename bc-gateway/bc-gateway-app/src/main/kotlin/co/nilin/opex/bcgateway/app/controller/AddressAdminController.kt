@@ -7,6 +7,8 @@ import co.nilin.opex.bcgateway.core.model.AddressAssignmentRecord
 import co.nilin.opex.bcgateway.core.model.AdminAssignAddressRequest
 import co.nilin.opex.bcgateway.core.model.ReservedAddressFilter
 import co.nilin.opex.bcgateway.core.model.ReservedAddressPage
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -35,12 +37,18 @@ class AddressAdminController(private val addressAdminService: AddressAdminServic
     }
 
     @PostMapping("/assign")
-    suspend fun assign(@RequestBody request: AdminAssignAddressRequest): AddressAssignmentRecord {
-        return addressAdminService.assign(request)
+    suspend fun assign(
+        @RequestBody request: AdminAssignAddressRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): AddressAssignmentRecord {
+        return addressAdminService.assign(request, securityContext.authentication.name)
     }
 
     @PostMapping("/assignments/{id}/revoke")
-    suspend fun revoke(@PathVariable("id") id: Long): AddressAssignmentRecord {
-        return addressAdminService.revoke(id)
+    suspend fun revoke(
+        @PathVariable("id") id: Long,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): AddressAssignmentRecord {
+        return addressAdminService.revoke(id, securityContext.authentication.name)
     }
 }

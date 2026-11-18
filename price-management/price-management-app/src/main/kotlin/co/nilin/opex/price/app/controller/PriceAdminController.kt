@@ -5,6 +5,8 @@ import co.nilin.opex.price.core.dto.PairRateConfigView
 import co.nilin.opex.price.core.dto.ProviderPrice
 import co.nilin.opex.price.core.dto.UpsertPairRateConfigRequest
 import co.nilin.opex.price.core.service.PairRateConfigAdminManager
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -22,8 +24,11 @@ class PriceAdminController(
         pairRateConfigAdminManager.getConfig(symbol) ?: throw OpexError.RateConfigNotFound.exception()
 
     @PostMapping
-    suspend fun upsert(@RequestBody request: UpsertPairRateConfigRequest): PairRateConfigView =
-        pairRateConfigAdminManager.upsertConfig(request)
+    suspend fun upsert(
+        @RequestBody request: UpsertPairRateConfigRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): PairRateConfigView =
+        pairRateConfigAdminManager.upsertConfig(request, securityContext.authentication.name)
 
     @GetMapping("/{symbol}/providers")
     suspend fun getProvidersPrice(@PathVariable symbol: String): List<ProviderPrice> {

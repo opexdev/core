@@ -20,32 +20,32 @@ class ReservedAddressHandlerImpl(
     private val addressTypeHandler: AddressTypeHandler
 ) : ReservedAddressHandler {
     override suspend fun addReservedAddress(list: List<ReservedAddress>) {
-        val items = list.map { ReservedAddressModel(null, it.address, it.memo, it.type.id) }
+        val items = list.map { ReservedAddressModel(null, it.address, it.memo, it.type.id, it.applicator) }
         reservedAddressRepository.saveAll(items).collectList().awaitFirst()
     }
 
     override suspend fun claimNext(addressType: AddressType): ReservedAddress? {
         val model = reservedAddressRepository.claimByType(addressType.id).awaitFirstOrNull() ?: return null
-        return ReservedAddress(model.address, model.memo, addressType)
+        return ReservedAddress(model.address, model.memo, addressType, model.applicator)
     }
 
     override suspend fun claimAny(): ReservedAddress? {
         val model = reservedAddressRepository.claimAny().awaitFirstOrNull() ?: return null
         val type = addressTypeHandler.fetchAll().firstOrNull { it.id == model.type } ?: return null
-        return ReservedAddress(model.address, model.memo, type)
+        return ReservedAddress(model.address, model.memo, type, model.applicator)
     }
 
     override suspend fun claimByAddress(address: String, memo: String?): ReservedAddress? {
         // reserved_addresses.memo is NOT NULL, so an absent memo means the empty string
         val model = reservedAddressRepository.claimByAddress(address, memo ?: "").awaitFirstOrNull() ?: return null
         val type = addressTypeHandler.fetchAll().firstOrNull { it.id == model.type } ?: return null
-        return ReservedAddress(model.address, model.memo, type)
+        return ReservedAddress(model.address, model.memo, type, model.applicator)
     }
 
     override suspend fun findByAddress(address: String, memo: String?): ReservedAddress? {
         val model = reservedAddressRepository.findByAddressAndMemo(address, memo).awaitFirstOrNull() ?: return null
         val type = addressTypeHandler.fetchAll().firstOrNull { it.id == model.type } ?: return null
-        return ReservedAddress(model.address, model.memo, type)
+        return ReservedAddress(model.address, model.memo, type, model.applicator)
     }
 
     override suspend fun search(filter: ReservedAddressFilter): List<ReservedAddressRecord> {
@@ -56,7 +56,7 @@ class ReservedAddressHandlerImpl(
             address = filter.address,
             limit = filter.limit,
             offset = filter.offset
-        ).map { ReservedAddressRecord(it.address, it.memo, addressTypes[it.type]) }.toList()
+        ).map { ReservedAddressRecord(it.address, it.memo, addressTypes[it.type], it.applicator) }.toList()
     }
 
     override suspend fun count(filter: ReservedAddressFilter): Long {

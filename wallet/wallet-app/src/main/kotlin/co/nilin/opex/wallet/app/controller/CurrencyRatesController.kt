@@ -9,6 +9,8 @@ import co.nilin.opex.wallet.core.model.otc.*
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.Example
 import io.swagger.annotations.ExampleProperty
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 
@@ -26,9 +28,12 @@ class CurrencyRatesController(
         message = "OK",
         code = 200,
     )
-    suspend fun createRate(@RequestBody request: SetCurrencyExchangeRateRequest) {
+    suspend fun createRate(
+        @RequestBody request: SetCurrencyExchangeRateRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ) {
         request.validate()
-        rateService.addRate(Rate(request.sourceSymbol, request.destSymbol, request.rate), request.ignoreIfExist)
+        rateService.addRate(Rate(request.sourceSymbol, request.destSymbol, request.rate), request.ignoreIfExist, securityContext.authentication.name)
     }
 
     @PutMapping("/rate")
@@ -36,9 +41,12 @@ class CurrencyRatesController(
         message = "OK",
         code = 200,
     )
-    suspend fun updateRate(@RequestBody request: SetCurrencyExchangeRateRequest): Rates {
+    suspend fun updateRate(
+        @RequestBody request: SetCurrencyExchangeRateRequest,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): Rates {
         request.validate()
-        return rateService.updateRate(Rate(request.sourceSymbol, request.destSymbol, request.rate))
+        return rateService.updateRate(Rate(request.sourceSymbol, request.destSymbol, request.rate), securityContext.authentication.name)
     }
 
     @DeleteMapping("/rate/{sourceSymbol}/{destSymbol}")
@@ -46,8 +54,12 @@ class CurrencyRatesController(
         message = "OK",
         code = 200,
     )
-    suspend fun deleteRate(@PathVariable sourceSymbol: String, @PathVariable destSymbol: String): Rates {
-        return rateService.deleteRate(Rate(sourceSymbol, destSymbol, BigDecimal.ZERO))
+    suspend fun deleteRate(
+        @PathVariable sourceSymbol: String,
+        @PathVariable destSymbol: String,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): Rates {
+        return rateService.deleteRate(Rate(sourceSymbol, destSymbol, BigDecimal.ZERO), securityContext.authentication.name)
     }
 
     @GetMapping("/rate")
@@ -91,9 +103,12 @@ class CurrencyRatesController(
         message = "OK",
         code = 200,
     )
-    suspend fun addForbiddenPair(@RequestBody request: CurrencyPair) {
+    suspend fun addForbiddenPair(
+        @RequestBody request: CurrencyPair,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ) {
         request.validate()
-        rateService.addForbiddenPair(ForbiddenPair(request.sourceSymbol, request.destSymbol))
+        rateService.addForbiddenPair(ForbiddenPair(request.sourceSymbol, request.destSymbol), securityContext.authentication.name)
     }
 
     @DeleteMapping("/forbidden-pairs/{sourceSymbol}/{destSymbol}")
@@ -103,9 +118,10 @@ class CurrencyRatesController(
     )
     suspend fun deleteForbiddenPair(
         @PathVariable sourceSymbol: String,
-        @PathVariable destSymbol: String
+        @PathVariable destSymbol: String,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): ForbiddenPairs {
-        return rateService.deleteForbiddenPair(ForbiddenPair(sourceSymbol, destSymbol))
+        return rateService.deleteForbiddenPair(ForbiddenPair(sourceSymbol, destSymbol), securityContext.authentication.name)
     }
 
     @GetMapping("/forbidden-pairs")
@@ -129,9 +145,12 @@ class CurrencyRatesController(
         message = "OK",
         code = 200,
     )
-    suspend fun addForbiddenSwapPair(@RequestBody request: CurrencyPair) {
+    suspend fun addForbiddenSwapPair(
+        @RequestBody request: CurrencyPair,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ) {
         request.validate()
-        rateService.addForbiddenSwapPair(ForbiddenSwapPair(request.sourceSymbol, request.destSymbol))
+        rateService.addForbiddenSwapPair(ForbiddenSwapPair(request.sourceSymbol, request.destSymbol), securityContext.authentication.name)
     }
 
     @DeleteMapping("/forbidden-swap-pairs/{sourceSymbol}/{destSymbol}")
@@ -141,9 +160,10 @@ class CurrencyRatesController(
     )
     suspend fun deleteForbiddenSwapPair(
         @PathVariable sourceSymbol: String,
-        @PathVariable destSymbol: String
+        @PathVariable destSymbol: String,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): ForbiddenSwapPairs {
-        return rateService.deleteForbiddenSwapPair(ForbiddenSwapPair(sourceSymbol, destSymbol))
+        return rateService.deleteForbiddenSwapPair(ForbiddenSwapPair(sourceSymbol, destSymbol), securityContext.authentication.name)
     }
 
     @GetMapping("/forbidden-swap-pairs")
@@ -167,8 +187,11 @@ class CurrencyRatesController(
         message = "OK",
         code = 200,
     )
-    suspend fun addTransitiveSymbols(@RequestBody symbols: Symbols) {
-        rateService.addTransitiveSymbols(symbols)
+    suspend fun addTransitiveSymbols(
+        @RequestBody symbols: Symbols,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ) {
+        rateService.addTransitiveSymbols(symbols, securityContext.authentication.name)
     }
 
     @DeleteMapping("/transitive-symbols/{symbol}")
@@ -176,8 +199,11 @@ class CurrencyRatesController(
         message = "OK",
         code = 200,
     )
-    suspend fun deleteTransitiveSymbols(@PathVariable symbol: String): Symbols {
-        return rateService.deleteTransitiveSymbols(Symbols(listOf(symbol)))
+    suspend fun deleteTransitiveSymbols(
+        @PathVariable symbol: String,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): Symbols {
+        return rateService.deleteTransitiveSymbols(Symbols(listOf(symbol)), securityContext.authentication.name)
     }
 
     @DeleteMapping("/transitive-symbols")
@@ -185,8 +211,11 @@ class CurrencyRatesController(
         message = "OK",
         code = 200,
     )
-    suspend fun deleteTransitiveSymbols(@RequestBody symbols: Symbols): Symbols {
-        return rateService.deleteTransitiveSymbols(symbols)
+    suspend fun deleteTransitiveSymbols(
+        @RequestBody symbols: Symbols,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): Symbols {
+        return rateService.deleteTransitiveSymbols(symbols, securityContext.authentication.name)
     }
 
     @GetMapping("/transitive-symbols")

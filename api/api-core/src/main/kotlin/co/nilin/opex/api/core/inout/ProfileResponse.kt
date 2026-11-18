@@ -16,7 +16,7 @@ data class ProfileResponse(
     var status: ProfileStatus? = null,
     var createDate: Long? = null,
     var lastUpdateDate: Long? = null,
-    var creator: String? = null,
+    var applicator: String? = null,
     var kycLevel: KycLevel? = null,
     var mobileIdentityMatch: Boolean? = null,
     var personalIdentityMatch: Boolean? = null

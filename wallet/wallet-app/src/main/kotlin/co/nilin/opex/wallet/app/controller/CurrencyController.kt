@@ -9,6 +9,8 @@ import co.nilin.opex.wallet.core.inout.*
 import co.nilin.opex.wallet.core.model.QuoteCurrency
 import co.nilin.opex.wallet.core.spi.GatewayTerminalManager
 import co.nilin.opex.wallet.core.spi.QuoteCurrencyManager
+import org.springframework.security.core.annotation.CurrentSecurityContext
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -20,16 +22,23 @@ class CurrencyController(
 ) {
 
     @PostMapping("")
-    suspend fun addCurrency(@RequestBody request: CurrencyDto): CurrencyDto? {
-        return currencyService.createNewCurrency(request)
+    suspend fun addCurrency(
+        @RequestBody request: CurrencyDto,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): CurrencyDto? {
+        return currencyService.createNewCurrency(request, securityContext.authentication.name)
     }
 
     @PutMapping("/{currencySymbol}")
     suspend fun updateCurrency(
         @PathVariable("currencySymbol") currencySymbol: String,
         @RequestBody request: UpdateCurrencyRequest,
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): CurrencyDto? {
-        return currencyService.updateCurrency(request.apply { symbol = currencySymbol }.toCurrencyDto())
+        return currencyService.updateCurrency(
+            request.apply { symbol = currencySymbol }.toCurrencyDto(),
+            securityContext.authentication.name
+        )
     }
 
 
@@ -69,10 +78,11 @@ class CurrencyController(
     suspend fun addGateway2Currency(
         @PathVariable("currencySymbol") currencySymbol: String,
         @RequestBody request: CurrencyGatewayCommand,
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): CurrencyGatewayCommand? {
         return currencyService.addGateway2Currency(request.apply {
             this.currencySymbol = currencySymbol
-        })
+        }, securityContext.authentication.name)
     }
 
     @PutMapping("/{currencySymbol}/gateway/{gatewayUuid}")
@@ -80,11 +90,12 @@ class CurrencyController(
         @PathVariable("gatewayUuid") gatewayUuid: String,
         @PathVariable("currencySymbol") currencySymbol: String,
         @RequestBody request: CurrencyGatewayCommand,
+        @CurrentSecurityContext securityContext: SecurityContext,
     ): CurrencyGatewayCommand? {
         return currencyService.updateGateway(request.apply {
             this.currencySymbol = currencySymbol
             this.gatewayUuid = gatewayUuid
-        })
+        }, securityContext.authentication.name)
     }
 
     @GetMapping("/{currencySymbol}/gateway/{gatewayUuid}")
@@ -99,8 +110,9 @@ class CurrencyController(
     suspend fun deleteGateway(
         @PathVariable("gatewayUuid") gatewayUuid: String,
         @PathVariable("currencySymbol") currencySymbol: String,
+        @CurrentSecurityContext securityContext: SecurityContext,
     ) {
-        currencyService.deleteGateway(gatewayUuid, currencySymbol)
+        currencyService.deleteGateway(gatewayUuid, currencySymbol, securityContext.authentication.name)
     }
 
 
@@ -121,8 +133,9 @@ class CurrencyController(
     suspend fun assignTerminalToGateway(
         @PathVariable("gatewayUuid") gatewayUuid: String,
         @RequestBody terminal: List<String>,
+        @CurrentSecurityContext securityContext: SecurityContext,
     ) {
-        return gatewayTerminalManager.assignTerminalsToGateway(gatewayUuid, terminal)
+        return gatewayTerminalManager.assignTerminalsToGateway(gatewayUuid, terminal, securityContext.authentication.name)
     }
 
 
@@ -137,8 +150,9 @@ class CurrencyController(
     suspend fun revokeTerminalFromGateway(
         @PathVariable("gatewayUuid") gatewayUuid: String,
         @RequestBody terminal: List<String>,
+        @CurrentSecurityContext securityContext: SecurityContext,
     ) {
-        return gatewayTerminalManager.revokeTerminalsToGateway(gatewayUuid, terminal)
+        return gatewayTerminalManager.revokeTerminalsToGateway(gatewayUuid, terminal, securityContext.authentication.name)
     }
 
     @GetMapping("/quotes")
@@ -153,8 +167,9 @@ class CurrencyController(
         @PathVariable("currency") currency: String,
         @RequestParam isReference: Boolean,
         @RequestParam displayOrder: Int,
+        @CurrentSecurityContext securityContext: SecurityContext,
     ) {
-        quoteCurrencyManager.update(currency, isReference, displayOrder)
+        quoteCurrencyManager.update(currency, isReference, displayOrder, securityContext.authentication.name)
     }
 
     @GetMapping("/{currency}/localization")
@@ -166,14 +181,18 @@ class CurrencyController(
     @PostMapping("/{currency}/localization")
     suspend fun saveCurrencyLocalizations(
         @PathVariable("currency") currency: String,
-        @RequestBody currencyLocalizations: List<CurrencyLocalizationCommand>
+        @RequestBody currencyLocalizations: List<CurrencyLocalizationCommand>,
+        @CurrentSecurityContext securityContext: SecurityContext
     ): CurrencyLocalizationResponse {
-        val localizations = currencyService.saveCurrencyLocalizations(currency, currencyLocalizations)
+        val localizations = currencyService.saveCurrencyLocalizations(currency, currencyLocalizations, securityContext.authentication.name)
         return CurrencyLocalizationResponse(currency, localizations)
     }
 
     @DeleteMapping("/localization/{id}")
-    suspend fun deleteCurrencyLocalization(@PathVariable("id") id: Long) {
-        currencyService.deleteCurrencyLocalization(id)
+    suspend fun deleteCurrencyLocalization(
+        @PathVariable("id") id: Long,
+        @CurrentSecurityContext securityContext: SecurityContext
+    ) {
+        currencyService.deleteCurrencyLocalization(id, securityContext.authentication.name)
     }
 }

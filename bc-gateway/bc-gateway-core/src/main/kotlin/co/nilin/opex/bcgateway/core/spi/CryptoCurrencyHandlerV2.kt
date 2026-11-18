@@ -11,7 +11,7 @@ interface CryptoCurrencyHandlerV2 {
 
     suspend fun updateOnChainGateway(request: CryptoCurrencyCommand): CryptoCurrencyCommand?
 
-    suspend fun deleteOnChainGateway(gatewayUuid: String, currency: String): Void?
+    suspend fun deleteOnChainGateway(gatewayUuid: String, currency: String,applicator: String): Void?
 
     suspend fun fetchCurrencyOnChainGateways(data: FetchGateways? = null): List<CryptoCurrencyCommand>?
 
@@ -29,10 +29,11 @@ interface CryptoCurrencyHandlerV2 {
 
     suspend fun saveOnChainGatewayLocalization(
         gatewayUuid: String,
-        localizations: List<CurrencyOnChainGatewayLocalizationCommand>
+        localizations: List<CurrencyOnChainGatewayLocalizationCommand>,
+        applicator: String
     ): List<CurrencyOnChainGatewayLocalizationCommand>
 
     suspend fun fetchOnChainGatewayLocalizations(gatewayUuid: String): List<CurrencyOnChainGatewayLocalizationCommand>
-    suspend fun deleteOnChainGatewayLocalizations(id: Long)
+    suspend fun deleteOnChainGatewayLocalizations(id: Long, applicator: String)
 
 }

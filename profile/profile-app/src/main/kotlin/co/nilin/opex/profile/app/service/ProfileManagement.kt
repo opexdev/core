@@ -52,7 +52,7 @@ class ProfileManagement(
                     status = ProfileStatus.CREATED,
                     createDate = LocalDateTime.now(),
                     lastUpdateDate = LocalDateTime.now(),
-                    creator = "system",
+                    applicator = "system",
                     kycLevel = KycLevel.LEVEL_1,
                     personType = personType
                 )
@@ -223,12 +223,12 @@ class ProfileManagement(
         kycLevelUpdatedPublisher.publish(
             KycLevelUpdatedEvent(userId, KycLevel.LEVEL_2, LocalDateTime.now())
         )
-        return profilePersister.updateStatus(userId, ProfileStatus.SYSTEM_APPROVED)
+        return profilePersister.updateStatus(userId, ProfileStatus.SYSTEM_APPROVED, applicator = "system")
     }
 
     private suspend fun requestAdminApproval(userId: String): Profile {
         saveProfileApprovalRequest(userId)
-        return profilePersister.updateStatus(userId, ProfileStatus.PENDING_ADMIN_APPROVAL)
+        return profilePersister.updateStatus(userId, ProfileStatus.PENDING_ADMIN_APPROVAL, applicator = "system")
     }
 
     suspend fun updateProfile(

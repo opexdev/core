@@ -4,8 +4,6 @@ import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.CurrencyExchangeRate
 import co.nilin.opex.wallet.core.inout.CurrencyCommand
 import co.nilin.opex.wallet.core.inout.CurrencyPrice
-import co.nilin.opex.wallet.core.model.otc.ForbiddenPair
-import co.nilin.opex.wallet.core.model.otc.ForbiddenSwapPair
 import co.nilin.opex.wallet.core.model.otc.Rate
 import co.nilin.opex.wallet.core.service.otc.RateService
 import co.nilin.opex.wallet.core.spi.CurrencyServiceManager
@@ -41,13 +39,14 @@ class GraphService(
         val forbiddenSet = rateService
             .getForbiddenSwapPairs()
             .forbiddenSwapPairs
+            ?.map { it.sourceSymbol to it.destinationSymbol }
             ?.toSet()
             ?: emptySet()
 
         val routes = buildRoutes(source, dest)
 
         val exchangeRates = routes.map { route ->
-            val isSwappable = ForbiddenSwapPair(route.getSourceSymbol(), route.getDestSymbol()) !in forbiddenSet
+            val isSwappable = (route.getSourceSymbol() to route.getDestSymbol()) !in forbiddenSet
             CurrencyExchangeRate(
                 sourceSymbol = route.getSourceSymbol(),
                 destSymbol = route.getDestSymbol(),
@@ -160,12 +159,9 @@ class GraphService(
     ) {
 
         val route = Route(currentRoute.toList());
-        if ((rateService.getForbiddenPairs().forbiddenPairs?.contains(
-                ForbiddenPair(
-                    route.getSourceSymbol(),
-                    route.getDestSymbol()
-                )
-            ) == false)
+        if ((rateService.getForbiddenPairs().forbiddenPairs?.any {
+                it.sourceSymbol == route.getSourceSymbol() && it.destinationSymbol == route.getDestSymbol()
+            } == false)
             && (dest == null || route.getDestSymbol() == dest)
         )
             routesWithMax2Step.add(route)

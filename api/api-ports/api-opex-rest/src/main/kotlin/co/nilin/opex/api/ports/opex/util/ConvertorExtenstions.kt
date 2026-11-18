@@ -42,7 +42,7 @@ fun Profile.toProfileResponse(): ProfileResponse {
         status = this.status,
         createDate = this.createDate?.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
         lastUpdateDate = this.lastUpdateDate?.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
-        creator = this.creator,
+        applicator = this.applicator,
         kycLevel = this.kycLevel,
         mobileIdentityMatch = this.mobileIdentityMatch,
         personalIdentityMatch = this.personalIdentityMatch

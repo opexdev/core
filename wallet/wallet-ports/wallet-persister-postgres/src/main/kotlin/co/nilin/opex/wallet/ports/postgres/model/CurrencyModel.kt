@@ -24,4 +24,5 @@ data class CurrencyModel(
     @Column("display_order")
     var displayOrder: Int? = null,
     var maxOrder : BigDecimal? = null,
+    var applicator: String? = null,
 )

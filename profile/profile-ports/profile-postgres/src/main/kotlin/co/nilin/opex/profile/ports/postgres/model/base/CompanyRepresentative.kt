@@ -6,5 +6,5 @@ open class CompanyRepresentative {
     var companyId: Long = 0
     lateinit var uuid: String
     lateinit var createDate: LocalDateTime
-    var creator: String? = null
+    var applicator: String? = null
 }

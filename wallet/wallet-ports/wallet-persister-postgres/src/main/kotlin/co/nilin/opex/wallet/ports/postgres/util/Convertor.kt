@@ -27,7 +27,8 @@ fun CurrencyCommand.toView(): CurrencyView {
         shortDescription,
         externalUrl,
         displayOrder,
-        maxOrder
+        maxOrder,
+        applicator
     )
 }
 
@@ -42,7 +43,8 @@ fun CurrencyView.toModel(): CurrencyModel {
         sign,
         externalUrl,
         displayOrder,
-        maxOrder
+        maxOrder,
+        applicator
     )
 }
 
@@ -57,7 +59,8 @@ fun CurrencyCommand.toModel(): CurrencyModel {
         sign,
         externalUrl,
         displayOrder,
-        maxOrder
+        maxOrder,
+        applicator
     )
 }
 
@@ -81,7 +84,8 @@ fun CurrencyView.toCommand(): CurrencyCommand {
         null,
         null,
         displayOrder,
-        maxOrder
+        maxOrder,
+        applicator
     )
 }
 
@@ -93,7 +97,8 @@ fun CurrencyLocalizationModel.toCommand(): CurrencyLocalizationCommand {
         alias,
         description,
         shortDescription,
-        language
+        language,
+        applicator
     )
 }
 
@@ -116,7 +121,8 @@ fun Deposit.toModel(): DepositModel {
         attachment,
         depositType,
         createDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
-        transferMethod
+        transferMethod,
+        applicator
     )
 }
 
@@ -138,7 +144,8 @@ fun DepositModel.toDto(): Deposit {
         attachment,
         Date.from(createDate.atZone(ZoneId.systemDefault())?.toInstant()),
         id,
-        transferMethod
+        transferMethod,
+        applicator
     )
 }
 
@@ -159,7 +166,8 @@ fun OffChainGatewayView.toDto(): CurrencyGatewayCommand {
         withdrawMax,
         depositDescription,
         withdrawDescription,
-        displayOrder
+        displayOrder,
+        applicator
     )
 
 }
@@ -178,7 +186,8 @@ fun OffChainGatewayCommand.toModel(): OffChainGatewayModel {
         transferMethod.name,
         isDepositActive,
         isWithdrawActive,
-        displayOrder
+        displayOrder,
+        applicator
     )
 }
 
@@ -188,6 +197,7 @@ fun OffChainGatewayLocalizationModel.toCommand(): OffChainGatewayLocalizationCom
         depositDescription = depositDescription,
         withdrawDescription = withdrawDescription,
         language = language,
+        applicator = applicator,
     )
 }
 
@@ -195,7 +205,7 @@ fun TerminalCommand.toModel(): TerminalModel {
     return TerminalModel(
         null,
         uuid,
-        identifier, active, metaData, displayOrder
+        identifier, active, metaData, displayOrder, applicator
     )
 }
 
@@ -203,7 +213,7 @@ fun TerminalView.toModel(): TerminalModel {
     return TerminalModel(
         id,
         uuid,
-        identifier, active, metaData, displayOrder
+        identifier, active, metaData, displayOrder, applicator
     )
 }
 
@@ -211,7 +221,7 @@ fun TerminalView.toCommand(): TerminalCommand {
     return TerminalCommand(
         uuid,
         owner,
-        identifier, active, metaData, description, displayOrder
+        identifier, active, metaData, description, displayOrder, applicator
     )
 }
 
@@ -220,7 +230,8 @@ fun TerminalLocalizationModel.toCommand(): TerminalLocalizationCommand {
         id,
         description,
         owner,
-        language
+        language,
+        applicator
     )
 }
 
@@ -241,6 +252,7 @@ fun CurrencyView.toCurrencyData(): CurrencyData {
         externalUrl,
         displayOrder,
         maxOrder,
+        applicator,
     )
 }
 

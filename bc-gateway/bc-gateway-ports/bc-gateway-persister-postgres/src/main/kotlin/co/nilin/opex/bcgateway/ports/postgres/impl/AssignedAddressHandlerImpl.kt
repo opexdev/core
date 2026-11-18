@@ -43,7 +43,7 @@ class AssignedAddressHandlerImpl(
         addressLifeTime = 7200
         if (addressTypes.isEmpty()) return emptyList()
         val addressTypeMap = addressTypeRepository.findAll().map { aam ->
-            AddressType(aam.id!!, aam.type, aam.addressRegex, aam.memoRegex)
+            AddressType(aam.id!!, aam.type, aam.addressRegex, aam.memoRegex, aam.applicator)
         }.collectMap { it.id }.awaitFirst()
         return assignedAddressRepository.findByUuidAndAddressTypeAndStatus(
             user, addressTypes.map(AddressType::id), AddressStatus.Assigned
@@ -67,7 +67,8 @@ class AssignedAddressHandlerImpl(
                         ?: null),
                 assignedAddress.id?.let { assignedAddress.assignedDate } ?: LocalDateTime.now(),
                 null,
-                assignedAddress.status
+                assignedAddress.status,
+                assignedAddress.applicator
             )
         ).awaitFirstOrNull()
     }
@@ -85,7 +86,8 @@ class AssignedAddressHandlerImpl(
                 assignedAddress.expTime,
                 assignedAddress.assignedDate,
                 assignedAddress.revokedDate,
-                assignedAddress.status
+                assignedAddress.status,
+                assignedAddress.applicator
             )
         ).awaitFirst()
 
@@ -99,7 +101,7 @@ class AssignedAddressHandlerImpl(
     override suspend fun fetchExpiredAssignedAddresses(): List<AssignedAddress>? {
         val now = LocalDateTime.now()
         val addressTypeMap = addressTypeRepository.findAll().map { aam ->
-            AddressType(aam.id!!, aam.type, aam.addressRegex, aam.memoRegex)
+            AddressType(aam.id!!, aam.type, aam.addressRegex, aam.memoRegex, aam.applicator)
         }.collectMap { it.id }.awaitFirst()
         //for having significant margin : (minus(5 mints)
         return assignedAddressRepository.findPotentialExpAddress(
@@ -137,7 +139,8 @@ class AssignedAddressHandlerImpl(
                     assignedAddress.expTime,
                     assignedAddress.assignedDate ?: LocalDateTime.now(),
                     null,
-                    assignedAddress.status
+                    assignedAddress.status,
+                    assignedAddress.applicator
                 )
             ).awaitFirstOrNull() ?: throw OpexError.BadRequest.exception("Failed to save address assignment")
         } catch (e: DataIntegrityViolationException) {
@@ -181,18 +184,18 @@ class AssignedAddressHandlerImpl(
         return model.toRecord(addressTypes())
     }
 
-    override suspend fun revokeById(id: Long, revokedAt: LocalDateTime): AddressAssignmentRecord {
+    override suspend fun revokeById(id: Long, revokedAt: LocalDateTime, applicator: String): AddressAssignmentRecord {
         val model = assignedAddressRepository.findById(id).awaitFirstOrNull()
             ?: throw OpexError.IdentifierNotFound.exception()
         val revoked = assignedAddressRepository.save(
-            model.copy(status = AddressStatus.Revoked, revokedDate = revokedAt)
+            model.copy(status = AddressStatus.Revoked, revokedDate = revokedAt, applicator = applicator)
         ).awaitFirstOrNull() ?: throw OpexError.BadRequest.exception("Failed to revoke assignment $id")
         return revoked.toRecord(addressTypes())
     }
 
     private suspend fun addressTypes(): Map<Long, AddressType> {
         return addressTypeRepository.findAll()
-            .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex) }
+            .map { AddressType(it.id!!, it.type, it.addressRegex, it.memoRegex, it.applicator) }
             .collectMap { it.id }
             .awaitFirst()
     }
@@ -213,7 +216,8 @@ class AssignedAddressHandlerImpl(
             this.assignedDate,
             this.revokedDate,
             this.status,
-            null
+            null,
+            applicator = this.applicator
         )
     }
 }

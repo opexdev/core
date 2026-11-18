@@ -30,7 +30,8 @@ interface OffChainGatewayRepository : ReactiveCrudRepository<OffChainGatewayMode
        g.is_withdraw_active,
        gl.deposit_description,
        gl.withdraw_description,
-       g.display_order
+       g.display_order,
+       g.applicator
     from currency_off_chain_gateway g
              left join currency_off_chain_gateway_localization gl on g.id = gl.gateway_id and gl.language = :language
     where g.currency_symbol = :currencySymbol and g.gateway_uuid = :gatewayUuid
@@ -59,7 +60,8 @@ interface OffChainGatewayRepository : ReactiveCrudRepository<OffChainGatewayMode
        g.is_withdraw_active,
        gl.deposit_description,
        gl.withdraw_description,
-       g.display_order
+       g.display_order,
+       g.applicator
     from currency_off_chain_gateway g
              left join currency_off_chain_gateway_localization gl on g.id = gl.gateway_id and gl.language = :lang
     where (:currencySymbol is null or g.currency_symbol = :currencySymbol)

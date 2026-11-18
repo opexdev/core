@@ -14,6 +14,7 @@ import co.nilin.opex.wallet.ports.postgres.model.TerminalModel
 import co.nilin.opex.wallet.ports.postgres.util.toCommand
 import co.nilin.opex.wallet.ports.postgres.util.toModel
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.transaction.reactive.TransactionalOperator
 import org.springframework.transaction.reactive.executeAndAwait
@@ -25,7 +26,9 @@ class TerminalManagerImpl(
     private val transactionalOperator: TransactionalOperator
 
 ) : TerminalManager {
-    override suspend fun save(terminalCommand: TerminalCommand): TerminalCommand? {
+    private val logger = LoggerFactory.getLogger(TerminalManagerImpl::class.java)
+
+    override suspend fun save(terminalCommand: TerminalCommand, applicator: String): TerminalCommand? {
         return transactionalOperator.executeAndAwait {
 
             terminalRepository.findByIdentifier(terminalCommand.identifier)
@@ -33,7 +36,7 @@ class TerminalManagerImpl(
                 ?.let { throw OpexError.TerminalIsExist.exception() }
 
             val terminal = terminalRepository
-                .save(terminalCommand.toModel())
+                .save(terminalCommand.copy(applicator = applicator).toModel())
                 .awaitSingleOrNull()
                 ?: return@executeAndAwait null
 
@@ -46,19 +49,23 @@ class TerminalManagerImpl(
                         terminalId = terminalId,
                         description = terminalCommand.description,
                         owner = terminalCommand.owner,
-                        language = getDefaultUserLanguage()
+                        language = getDefaultUserLanguage(),
+                        applicator = applicator
                     )
                 ).awaitSingleOrNull()
             }
 
-            terminalCommand.apply { uuid = terminal.uuid }
+            terminalCommand.apply {
+                uuid = terminal.uuid
+                this.applicator = terminal.applicator
+            }
         }
     }
 
-    override suspend fun update(terminalCommand: TerminalCommand): TerminalCommand? {
+    override suspend fun update(terminalCommand: TerminalCommand, applicator: String): TerminalCommand? {
         loadTerminal(terminalCommand.uuid!!)?.let {
             val terminal = terminalRepository
-                .save(terminalCommand.toModel().apply { id = it.id })
+                .save(terminalCommand.copy(applicator = applicator).toModel().apply { id = it.id })
                 .awaitSingleOrNull()
                 ?: return null
             return terminalRepository.findByUuid(terminal.uuid!!, getDefaultUserLanguage())
@@ -67,12 +74,10 @@ class TerminalManagerImpl(
         } ?: throw OpexError.TerminalNotFound.exception()
     }
 
-    override suspend fun delete(uuid: String) {
-        val terminal = loadTerminal(uuid)
-        if (terminal != null)
-            terminalRepository.deleteById(terminal.id!!).awaitSingleOrNull()
-        else
-            throw OpexError.TerminalNotFound.exception()
+    override suspend fun delete(uuid: String, applicator: String) {
+        val terminal = loadTerminal(uuid) ?: throw OpexError.TerminalNotFound.exception()
+        terminalRepository.deleteById(terminal.id!!).awaitSingleOrNull()
+        logger.info("Admin {} deleted terminal {}", applicator, uuid)
     }
 
     override suspend fun fetchTerminal(): List<TerminalCommand>? {
@@ -92,7 +97,8 @@ class TerminalManagerImpl(
 
     override suspend fun saveTerminalLocalizations(
         terminalUuid: String,
-        terminalLocalizations: List<TerminalLocalizationCommand>
+        terminalLocalizations: List<TerminalLocalizationCommand>,
+        applicator: String
     ): List<TerminalLocalizationCommand> {
 
         return transactionalOperator.executeAndAwait {
@@ -106,7 +112,8 @@ class TerminalManagerImpl(
                         terminalId = terminal.id!!,
                         description = t.description,
                         owner = t.owner,
-                        language = UserLanguage.safeValueOf(t.language).toString()
+                        language = UserLanguage.safeValueOf(t.language).toString(),
+                        applicator = applicator
                     ).awaitSingleOrNull()
             }
 
@@ -128,8 +135,9 @@ class TerminalManagerImpl(
             ?: emptyList()
     }
 
-    override suspend fun deleteTerminalLocalizations(id: Long) {
+    override suspend fun deleteTerminalLocalizations(id: Long, applicator: String) {
         terminalLocalizationsRepository.deleteById(id).awaitSingleOrNull()
+        logger.info("Admin {} deleted terminal localization {}", applicator, id)
     }
 
     private suspend fun loadTerminal(uuid: String): TerminalModel? {

@@ -19,4 +19,5 @@ data class CurrencyView(
     var externalUrl: String? = null,
     var displayOrder: Int? = null,
     var maxOrder: BigDecimal? = null,
+    var applicator: String? = null,
 )

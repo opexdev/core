@@ -5,4 +5,5 @@ data class TerminalLocalizationCommand(
     var description: String?=null,
     var owner: String?=null,
     var language: String,
+    var applicator: String? = null,
 )

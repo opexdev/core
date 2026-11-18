@@ -5,33 +5,33 @@ import java.time.LocalDateTime
 
 interface RateService {
 
-    suspend fun addRate(rate: Rate, ignoreIfExist: Boolean? = false)
+    suspend fun addRate(rate: Rate, ignoreIfExist: Boolean? = false, applicator: String)
 
-    suspend fun deleteRate(rate: Rate): Rates
+    suspend fun deleteRate(rate: Rate, applicator: String): Rates
 
     suspend fun getRate(): Rates
 
     suspend fun getRate(sourceSymbol: String, destinationSymbol: String): Rate?
 
-    suspend fun updateRate(rate: Rate): Rates
+    suspend fun updateRate(rate: Rate, applicator: String): Rates
 
     suspend fun upsertRate(rate: Rate): Rate
 
-    suspend fun addForbiddenPair(forbiddenPair: ForbiddenPair)
+    suspend fun addForbiddenPair(forbiddenPair: ForbiddenPair, applicator: String)
 
-    suspend fun deleteForbiddenPair(forbiddenPair: ForbiddenPair): ForbiddenPairs
+    suspend fun deleteForbiddenPair(forbiddenPair: ForbiddenPair, applicator: String): ForbiddenPairs
 
     suspend fun getForbiddenPairs(): ForbiddenPairs
 
-    suspend fun addForbiddenSwapPair(forbiddenPair: ForbiddenSwapPair)
+    suspend fun addForbiddenSwapPair(forbiddenPair: ForbiddenSwapPair, applicator: String)
 
-    suspend fun deleteForbiddenSwapPair(forbiddenPair: ForbiddenSwapPair): ForbiddenSwapPairs
+    suspend fun deleteForbiddenSwapPair(forbiddenPair: ForbiddenSwapPair, applicator: String): ForbiddenSwapPairs
 
     suspend fun getForbiddenSwapPairs(): ForbiddenSwapPairs
 
-    suspend fun addTransitiveSymbols(symbols: Symbols)
+    suspend fun addTransitiveSymbols(symbols: Symbols, applicator: String)
 
-    suspend fun deleteTransitiveSymbols(symbols: Symbols): Symbols
+    suspend fun deleteTransitiveSymbols(symbols: Symbols, applicator: String): Symbols
 
     suspend fun getTransitiveSymbols(): Symbols
 

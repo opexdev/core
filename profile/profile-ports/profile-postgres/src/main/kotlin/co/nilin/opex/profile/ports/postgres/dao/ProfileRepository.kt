@@ -140,9 +140,9 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
     @Query(
         """
         INSERT INTO profile (user_id, email, mobile, first_name, last_name, identifier,
-                             person_type, kyc_level, status, create_date, last_update_date, creator)
+                             person_type, kyc_level, status, create_date, last_update_date, applicator)
         VALUES (:userId, :email, :mobile, :firstName, :lastName, :identifier,
-                :personType, :kycLevel, :status, now(), now(), :creator)
+                :personType, :kycLevel, :status, now(), now(), :applicator)
         ON CONFLICT (user_id) DO UPDATE
             SET email            = EXCLUDED.email,
                 mobile           = EXCLUDED.mobile,
@@ -152,6 +152,7 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
                 person_type      = EXCLUDED.person_type,
                 kyc_level        = EXCLUDED.kyc_level,
                 status           = EXCLUDED.status,
+                applicator       = EXCLUDED.applicator,
                 last_update_date = now()
     """
     )
@@ -165,7 +166,7 @@ interface ProfileRepository : ReactiveCrudRepository<ProfileModel, Long> {
         personType: String,
         kycLevel: String,
         status: String,
-        creator: String
+        applicator: String
     ): Mono<Void>
 
 }

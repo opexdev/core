@@ -7,6 +7,6 @@ data class ProfileApprovalRequest(
     var status: ProfileApprovalRequestStatus? = ProfileApprovalRequestStatus.PENDING,
     var createDate: LocalDateTime? = null,
     var updateDate: LocalDateTime? = null,
-    var updater: String? = null,
+    var applicator: String? = null,
     var description: String?=null
 )

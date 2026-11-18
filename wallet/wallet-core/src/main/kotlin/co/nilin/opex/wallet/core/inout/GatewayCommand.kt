@@ -33,6 +33,7 @@ open abstract class CurrencyGatewayCommand(
     open var depositDescription: String? = null,
     open var withdrawDescription: String? = null,
     open var displayOrder: Int? = null,
+    open var applicator: String? = null,
 )
 
 data class OffChainGatewayCommand(
@@ -51,6 +52,7 @@ data class OffChainGatewayCommand(
     override var depositDescription: String? = null,
     override var withdrawDescription: String? = null,
     override var displayOrder: Int? = null,
+    override var applicator: String? = null,
 ) : CurrencyGatewayCommand(
     currencySymbol,
     gatewayUuid,
@@ -65,7 +67,8 @@ data class OffChainGatewayCommand(
     withdrawMax,
     depositDescription,
     withdrawDescription,
-    displayOrder
+    displayOrder,
+    applicator
 )
 
 data class OnChainGatewayCommand(
@@ -90,6 +93,7 @@ data class OnChainGatewayCommand(
     override var depositDescription: String? = null,
     override var withdrawDescription: String? = null,
     override var displayOrder: Int? = null,
+    override var applicator: String? = null,
 ) : CurrencyGatewayCommand(
     currencySymbol,
     gatewayUuid,
@@ -104,7 +108,8 @@ data class OnChainGatewayCommand(
     withdrawMax,
     depositDescription,
     withdrawDescription,
-    displayOrder
+    displayOrder,
+    applicator
 )
 
 

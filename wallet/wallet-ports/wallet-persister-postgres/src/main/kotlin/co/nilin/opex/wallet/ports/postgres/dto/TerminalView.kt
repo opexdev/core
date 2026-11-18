@@ -8,5 +8,6 @@ data class TerminalView(
     val active: Boolean,
     val metaData: String,
     val displayOrder: Int?,
-    val description: String?
+    val description: String?,
+    val applicator: String? = null
 )

@@ -14,7 +14,8 @@ fun PairSettingModel.toPairSetting(): PairSetting {
         updateDate,
         internalChart,
         globalChart,
-        categories
+        categories,
+        applicator
     )
 }
 

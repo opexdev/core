@@ -13,5 +13,5 @@ data class BankAccount(
     var status: BankAccountStatus,
     var createDate: LocalDateTime,
     var updateDate: LocalDateTime? = null,
-    var creator: String? = null,
+    var applicator: String? = null,
 )

@@ -14,5 +14,5 @@ data class BankAccountAdminResponse(
     val status: BankAccountStatus,
     val createDate: LocalDateTime?,
     val updateDate: LocalDateTime?,
-    val creator: String?
+    val applicator: String?
 )
