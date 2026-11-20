@@ -25,6 +25,8 @@ class LoginService(
     private val tempTokenService: TempTokenService,
     @Value("\${app.pre-auth-client-secret}")
     private val preAuthClientSecretKey: String,
+    @Value("\${app.name}")
+    private val appName: String,
 ) {
     private val logger by LoggerDelegate()
 
@@ -92,7 +94,7 @@ class LoginService(
             OTPType.TOTP -> {
                 TokenResponse(
                     token = token,
-                    otp = RequiredOTP(OTPType.TOTP, user.id),
+                    otp = RequiredOTP(OTPType.TOTP, user.totpLabel(appName)),
                     otpCode = null,
                     mustChangePassword = user.mustChangePassword
                 )
@@ -128,7 +130,7 @@ class LoginService(
 
             OTPType.TOTP -> {
                 ResendOtpResponse(
-                    otp = RequiredOTP(OTPType.TOTP, user.id),
+                    otp = RequiredOTP(OTPType.TOTP, user.totpLabel(appName)),
                     otpCode = null
                 )
             }
