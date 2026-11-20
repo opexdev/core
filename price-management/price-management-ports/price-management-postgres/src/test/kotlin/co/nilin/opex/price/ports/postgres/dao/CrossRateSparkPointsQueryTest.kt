@@ -143,6 +143,39 @@ class CrossRateSparkPointsQueryTest {
     }
 
     @Test
+    fun `sampling keeps the latest tick through each bucket boundary`(): Unit = runBlocking {
+        val start = LocalDateTime.of(2026, 1, 1, 12, 0)
+        val midpoint = start.plusHours(1)
+        val end = start.plusHours(2)
+        seed("BTC-USDT", "90", start.minusMinutes(10))
+        seed("BTC-USDT", "100", start)
+        seed("BTC-USDT", "110", midpoint.minusMinutes(10))
+        seed("BTC-USDT", "120", midpoint)
+        seed("BTC-USDT", "125", midpoint.plusNanos(1_000))
+        seed("BTC-USDT", "130", end)
+
+        val btc = query("USDT", "USDT", start, end, 3).bySymbol("BTC-USDT")
+
+        assertThat(btc.map { it.price }).containsExactly(
+            BigDecimal("100"), BigDecimal("120"), BigDecimal("130")
+        )
+    }
+
+    @Test
+    fun `latest prices include every historically recorded symbol once`(): Unit = runBlocking {
+        val now = LocalDateTime.of(2026, 1, 1, 12, 0)
+        seed("BTC-USDT", "105", now)
+        seed("ETH-USDT", "40", now.minusDays(10))
+        seed("BTC-USDT", "100", now.minusHours(1))
+
+        val latest = rateHistoryRepository.findLatestForAllSymbols().collectList().awaitSingle()
+
+        assertThat(latest.map { it.symbol to it.price }).containsExactly(
+            "BTC-USDT" to BigDecimal("105"), "ETH-USDT" to BigDecimal("40")
+        )
+    }
+
+    @Test
     fun `a directly tracked pair against ref is returned even with no bridge to the hub`(): Unit = runBlocking {
         val now = LocalDateTime.now()
         val start = now.minusHours(2)

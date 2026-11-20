@@ -18,7 +18,25 @@ interface RateHistoryRepository : ReactiveCrudRepository<RateHistoryModel, Long>
     @Query("SELECT * FROM rate_history WHERE symbol = :symbol ORDER BY created_date DESC LIMIT 1")
     fun findLatestBySymbol(symbol: String): Mono<RateHistoryModel>
 
-    @Query("SELECT DISTINCT ON (symbol) * FROM rate_history ORDER BY symbol, created_date DESC")
+    // Seek directly to the next symbol in the (symbol, created_date DESC) index.
+    @Query(
+        """
+        WITH RECURSIVE latest AS (
+            (SELECT * FROM rate_history ORDER BY symbol, created_date DESC LIMIT 1)
+            UNION ALL
+            SELECT next_rate.*
+            FROM latest
+            CROSS JOIN LATERAL (
+                SELECT *
+                FROM rate_history
+                WHERE symbol > latest.symbol
+                ORDER BY symbol, created_date DESC
+                LIMIT 1
+            ) next_rate
+        )
+        SELECT * FROM latest ORDER BY symbol
+        """
+    )
     fun findLatestForAllSymbols(): Flux<RateHistoryModel>
 
     @Query(
@@ -49,109 +67,101 @@ interface RateHistoryRepository : ReactiveCrudRepository<RateHistoryModel, Long>
      * `<asset>-<refCurrency> = (asset in hub) / (ref in hub)`). Both sources share the same
      * bucket/carry-forward machinery, partitioned by (asset, source).
      *
-     * Pipeline (all computed in this one query):
-     *   rate_history -> normalize (asset, source, t, px) for direct-ref and hub pairs
-     *   -> generate N buckets -> union buckets + ticks per (asset, source)
-     *   -> window carry-forward (count-based gaps-and-islands), carry-backward via earliest tick
-     *   -> keep bucket rows -> direct rows pass through, hub rows self-join against ref on bucket
-     *      time and divide, direct-sourced assets take precedence over hub-derived ones
-     *   -> per-symbol first/last -> change % and trend.
+     * For each matching history symbol, index lookups supply the latest tick at or before
+     * each bucket (carry-forward), or the earliest tick in the look-back window when none
+     * precedes it. The query merges direct and inverse histories, then derives bridged rates
+     * and calculates the first-to-last change.
      */
     @Query(
         """
-        WITH p AS (
+        WITH RECURSIVE p AS (
             SELECT upper(trim(:refCurrency)) AS ref,
                    upper(trim(:hub))         AS hub,
                    CAST(:startTime AS timestamp) AS ts_start,
                    CAST(:endTime   AS timestamp) AS ts_end,
                    GREATEST(CAST(:points AS int), 2) AS n
         ),
-        -- 1+2: normalize once. asset = the other side of the pair, px = asset priced in that source unit.
-        normalized AS (
-            -- hub-bridged: asset priced in hub
-            SELECT CASE WHEN sp.q = p.hub THEN sp.b ELSE sp.q END AS asset,
-                   'hub' AS source,
-                   rh.created_date AS t,
-                   CASE WHEN sp.q = p.hub THEN rh.price ELSE 1.0 / rh.price END AS px
-            FROM rate_history rh
-            CROSS JOIN p
-            CROSS JOIN LATERAL (
-                SELECT split_part(upper(rh.symbol), '-', 1) AS b,
-                       split_part(upper(rh.symbol), '-', 2) AS q
-            ) sp
-            WHERE rh.price <> 0
-              AND rh.created_date <= p.ts_end
-              -- one extra period of look-back to seed the carry-forward at the first bucket
-              AND rh.created_date >= p.ts_start - (p.ts_end - p.ts_start)
-              AND (sp.b = p.hub OR sp.q = p.hub)
-
+        -- Use the index to skip the historical rows between distinct symbols.
+        symbols(symbol) AS (
+            (SELECT symbol FROM rate_history ORDER BY symbol LIMIT 1)
             UNION ALL
-
-            -- direct: asset already priced in ref, no bridging needed - takes precedence later
-            SELECT CASE WHEN sp.q = p.ref THEN sp.b ELSE sp.q END AS asset,
-                   'direct' AS source,
-                   rh.created_date AS t,
-                   CASE WHEN sp.q = p.ref THEN rh.price ELSE 1.0 / rh.price END AS px
-            FROM rate_history rh
-            CROSS JOIN p
+            SELECT next_symbol.symbol
+            FROM symbols s
             CROSS JOIN LATERAL (
-                SELECT split_part(upper(rh.symbol), '-', 1) AS b,
-                       split_part(upper(rh.symbol), '-', 2) AS q
+                SELECT symbol FROM rate_history
+                WHERE symbol > s.symbol ORDER BY symbol LIMIT 1
+            ) next_symbol
+        ),
+        candidates AS (
+            SELECT s.symbol, u.source,
+                   CASE WHEN sp.q = u.currency THEN sp.b ELSE sp.q END AS asset,
+                   sp.q = u.currency AS is_forward,
+                   p.ts_start - (p.ts_end - p.ts_start) AS seed_start,
+                   p.ts_end
+            FROM symbols s CROSS JOIN p
+            CROSS JOIN LATERAL (
+                VALUES (p.hub, 'hub'), (p.ref, 'direct')
+            ) u(currency, source)
+            CROSS JOIN LATERAL (
+                SELECT split_part(upper(s.symbol), '-', 1) AS b,
+                       split_part(upper(s.symbol), '-', 2) AS q
             ) sp
-            WHERE rh.price <> 0
-              AND rh.created_date <= p.ts_end
-              AND rh.created_date >= p.ts_start - (p.ts_end - p.ts_start)
-              AND (sp.b = p.ref OR sp.q = p.ref)
-              AND p.ref <> p.hub -- ref==hub is already fully covered by the hub-bridged branch
-
-            UNION ALL
-
-            -- the hub itself: 1 unit of hub is worth 1 hub (so hub-<ref> is derivable by division)
-            SELECT p.hub AS asset, 'hub' AS source, p.ts_start AS t, 1.0 AS px FROM p
+            WHERE (u.source = 'hub' OR p.ref <> p.hub)
+              AND (sp.b = u.currency OR sp.q = u.currency)
+        ),
+        seeds AS MATERIALIZED (
+            SELECT c.*, seed.created_date AS seed_time, seed.price AS seed_price
+            FROM candidates c
+            CROSS JOIN LATERAL (
+                SELECT created_date, price
+                FROM rate_history
+                WHERE symbol = c.symbol AND price <> 0
+                  AND created_date BETWEEN c.seed_start AND c.ts_end
+                ORDER BY created_date
+                LIMIT 1
+            ) seed
         ),
         direct_assets AS (
-            SELECT DISTINCT asset FROM normalized WHERE source = 'direct'
+            SELECT DISTINCT asset FROM seeds WHERE source = 'direct'
         ),
-        asset_sources AS (
-            SELECT DISTINCT asset, source FROM normalized
-        ),
-        -- 3: evenly spaced buckets
         buckets AS (
             SELECT p.ts_start
                    + (p.ts_end - p.ts_start) * (g.i::float8 / GREATEST(p.n - 1, 1)::float8) AS b
             FROM p, generate_series(0, p.n - 1) AS g(i)
         ),
-        -- 4: one row per (asset, source, tick) and per (asset, source, bucket)
-        events AS (
-            SELECT as2.asset, as2.source, bk.b AS t, NULL::numeric AS px
-            FROM asset_sources as2 CROSS JOIN buckets bk
+        samples AS (
+            SELECT s.asset, s.source, bk.b AS t,
+                   COALESCE(tick.created_date, s.seed_time) AS tick_time,
+                   CASE WHEN s.is_forward THEN COALESCE(tick.price, s.seed_price)
+                        ELSE 1.0 / COALESCE(tick.price, s.seed_price) END AS price
+            FROM seeds s
+            CROSS JOIN buckets bk
+            LEFT JOIN LATERAL (
+                SELECT created_date, price
+                FROM rate_history
+                WHERE symbol = s.symbol AND price <> 0
+                  AND created_date BETWEEN s.seed_start AND bk.b
+                ORDER BY created_date DESC
+                FETCH FIRST 1 ROW WITH TIES
+            ) tick ON s.seed_time <= bk.b
+
             UNION ALL
-            SELECT n.asset, n.source, n.t, n.px FROM normalized n
+
+            SELECT p.hub, 'hub', bk.b, p.ts_start, 1.0
+            FROM p CROSS JOIN buckets bk
         ),
-        -- 5: carry-forward. count() over an ordered window increments only on ticks, so rows
-        -- between two ticks share a group; max(px) in that group is the carried value.
-        carried AS (
-            SELECT asset, source, t, px,
-                   max(px) OVER (PARTITION BY asset, source, grp) AS cf
-            FROM (
-                SELECT asset, source, t, px,
-                       count(px) OVER (PARTITION BY asset, source ORDER BY t) AS grp
-                FROM events
-            ) g
-        ),
-        earliest AS (
-            SELECT DISTINCT ON (asset, source) asset, source, px AS first_price
-            FROM normalized
-            ORDER BY asset, source, t ASC
-        ),
-        -- 6: price for every (asset, source, bucket); carry-backward with the earliest known tick
+        -- Prefer the latest tick through the bucket, or the earliest future tick if no
+        -- previous tick exists. Multiple pairs can represent the same asset and source.
         bucket_price AS (
-            SELECT c.asset, c.source, c.t, COALESCE(c.cf, e.first_price) AS price
-            FROM carried c
-            JOIN earliest e ON e.asset = c.asset AND e.source = c.source
-            WHERE c.px IS NULL
+            SELECT DISTINCT ON (asset, source, t) asset, source, t, price
+            FROM samples
+            ORDER BY asset, source, t,
+                     (tick_time > t),
+                     CASE WHEN tick_time <= t THEN tick_time END DESC,
+                     CASE WHEN tick_time > t THEN tick_time END,
+                     price DESC
         ),
-        ref_bucket AS (
+        ref_bucket AS MATERIALIZED (
             SELECT bp.t, bp.price
             FROM bucket_price bp CROSS JOIN p
             WHERE bp.asset = p.ref AND bp.source = 'hub'

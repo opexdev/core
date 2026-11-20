@@ -52,6 +52,27 @@ Allowed values:
         return ResponseEntity.ok().body(otpResponse)
     }
 
+    @PostMapping("/register/resend-otp")
+    @Operation(
+        summary = "Resend registration OTP",
+        description = "Public endpoint. Requires `username` and `clientId`.",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = TempOtpResponse::class)
+                )]
+            )
+        ]
+    )
+    suspend fun resendRegistrationOtp(
+        @Valid @RequestBody request: ResendOtpRequest
+    ): ResponseEntity<TempOtpResponse> {
+        return ResponseEntity.ok(authProxy.resendRegistrationOtp(request))
+    }
+
     @PostMapping("/register/verify")
     @Operation(
         summary = "Verify registration OTP",
@@ -148,6 +169,25 @@ Allowed values:
     suspend fun forgetPassword(@RequestBody request: ForgotPasswordRequest): ResponseEntity<TempOtpResponse> {
         val otpResponse = authProxy.forgetPassword(request)
         return ResponseEntity.ok().body(otpResponse)
+    }
+
+    @PostMapping("/forget/resend-otp")
+    @Operation(
+        summary = "Resend forgot-password OTP",
+        description = "Public endpoint. Requires `username` and `clientId`.",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = TempOtpResponse::class)
+                )]
+            )
+        ]
+    )
+    suspend fun resendForgetOtp(@Valid @RequestBody request: ResendOtpRequest): ResponseEntity<TempOtpResponse> {
+        return ResponseEntity.ok(authProxy.resendForgetOtp(request))
     }
 
     @PostMapping("/forget/verify")

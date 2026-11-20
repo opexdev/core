@@ -5,8 +5,10 @@ import co.nilin.opex.common.utils.minutes
 import co.nilin.opex.price.app.data.SparkLineDataResponse
 import co.nilin.opex.price.app.utils.CacheHelper
 import co.nilin.opex.price.app.utils.createLineChart
-import co.nilin.opex.price.core.dto.CrossRateSparkline
 import co.nilin.opex.price.core.service.CrossRateService
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -44,26 +46,29 @@ class OtcController(
                 }"
             )
 
-        val cacheKey = "crossRateSparkline:ref:${refCurrency.lowercase()}:${period.code}"
-        val sparklines: List<CrossRateSparkline> =
-            cacheHelper.getTimeBasedOrElse(cacheKey, period.cacheTtlMinutes.minutes()) {
-                val endTime = LocalDateTime.now()
-                val startTime = endTime.minusDays(period.days)
-                runCatching {
-                    crossRateService.sparklinesAgainst(refCurrency, startTime, endTime, period.points)
-                }.getOrElse { e ->
-                    logger.error("Failed to build sparklines for refCurrency=$refCurrency period=${period.code}", e)
-                    emptyList()
-                }
+        val cacheKey = "crossRateSparkline:rendered:ref:${refCurrency.trim().lowercase()}:${period.code}"
+        return cacheHelper.getTimeBasedOrElse(cacheKey, period.cacheTtlMinutes.minutes()) {
+            val endTime = LocalDateTime.now()
+            val startTime = endTime.minusDays(period.days)
+            val sparklines = try {
+                crossRateService.sparklinesAgainst(refCurrency, startTime, endTime, period.points)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                logger.error("Failed to load sparklines for refCurrency=$refCurrency period=${period.code}", e)
+                return@getTimeBasedOrElse emptyList()
             }
 
-        return sparklines.map { s ->
-            SparkLineDataResponse(
-                symbol = s.symbol,
-                isTrendUp = s.isTrendUp,
-                changePercent = s.changePercent,
-                svgData = createLineChart(s.prices, s.times),
-            )
+            withContext(Dispatchers.Default) {
+                sparklines.map { sparkline ->
+                    SparkLineDataResponse(
+                        symbol = sparkline.symbol,
+                        isTrendUp = sparkline.isTrendUp,
+                        changePercent = sparkline.changePercent,
+                        svgData = createLineChart(sparkline.prices, sparkline.times),
+                    )
+                }
+            }
         }
     }
 }
