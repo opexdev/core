@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*
 )
 class UserConfigController(private val configProxy: ConfigProxy) {
 
-    @GetMapping("/app-config")
+    @GetMapping("/app/config")
     @Operation(
         summary = "Get app configuration",
         description = """GET /opex/v1/app-config.
