@@ -36,14 +36,14 @@ class PublicAuthController(
         description = """POST /opex/v1/user/public/register.
 Security: Public endpoint. No Bearer token is required.
 
-Behavior: Starts the registration flow and sends OTP if required.
+Behavior: Starts registration and returns a temporary `resendToken`. CAPTCHA is validated when enabled.
 Allowed values:
 - captchaType: INTERNAL, ARCAPTCHA, HCAPTCHA.""",
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(mediaType = "application/json", schema = Schema(type = "object"))]
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = TempOtpResponse::class))]
             )
         ]
     )
@@ -55,7 +55,7 @@ Allowed values:
     @PostMapping("/register/resend-otp")
     @Operation(
         summary = "Resend registration OTP",
-        description = "Public endpoint. Requires `username` and `clientId`.",
+        description = "Public endpoint. Requires `username`, `clientId`, and the `resendToken` from the registration response.",
         responses = [
             ApiResponse(
                 responseCode = "200",
@@ -64,7 +64,8 @@ Allowed values:
                     mediaType = "application/json",
                     schema = Schema(implementation = TempOtpResponse::class)
                 )]
-            )
+            ),
+            ApiResponse(responseCode = "400", description = "CaptchaRequired or OTPAlreadyRequested.")
         ]
     )
     suspend fun resendRegistrationOtp(
@@ -155,14 +156,14 @@ Response body: No response body.""",
         description = """POST /opex/v1/user/public/forget.
 Security: Public endpoint. No Bearer token is required.
 
-Behavior: Starts password-recovery flow and sends OTP if required.
+Behavior: Starts password recovery and returns a temporary `resendToken`. CAPTCHA is validated when enabled.
 Allowed values:
 - captchaType: INTERNAL, ARCAPTCHA, HCAPTCHA.""",
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(mediaType = "application/json", schema = Schema(type = "object"))]
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = TempOtpResponse::class))]
             )
         ]
     )
@@ -174,7 +175,7 @@ Allowed values:
     @PostMapping("/forget/resend-otp")
     @Operation(
         summary = "Resend forgot-password OTP",
-        description = "Public endpoint. Requires `username` and `clientId`.",
+        description = "Public endpoint. Requires `username`, `clientId`, and the `resendToken` from the password-recovery response.",
         responses = [
             ApiResponse(
                 responseCode = "200",
@@ -183,7 +184,8 @@ Allowed values:
                     mediaType = "application/json",
                     schema = Schema(implementation = TempOtpResponse::class)
                 )]
-            )
+            ),
+            ApiResponse(responseCode = "400", description = "CaptchaRequired or OTPAlreadyRequested.")
         ]
     )
     suspend fun resendForgetOtp(@Valid @RequestBody request: ResendOtpRequest): ResponseEntity<TempOtpResponse> {

@@ -23,6 +23,7 @@ class LoginService(
     private val captchaProxy: CaptchaProxy,
     private val authEventProducer: AuthEventProducer,
     private val tempTokenService: TempTokenService,
+    private val otpResendService: OtpResendService,
     @Value("\${app.pre-auth-client-secret}")
     private val preAuthClientSecretKey: String,
     @Value("\${app.name}")
@@ -33,7 +34,7 @@ class LoginService(
     private val PRE_AUTH_CLIENT_ID = "pre-auth-client"
 
     suspend fun requestGetToken(request: PasswordFlowTokenRequest): TokenResponse {
-        captchaProxy.validateCaptcha(
+        val captchaAcceptedAt = captchaProxy.validateCaptcha(
             request.captchaCode,
             request.captchaType ?: CaptchaType.INTERNAL
         )
@@ -80,14 +81,16 @@ class LoginService(
                     else -> null
                 } ?: throw OpexError.BadRequest.exception()
 
-                val requiredOtpTypes = listOf(OTPReceiver(destination, otpType))
-                val res = otpProxy.requestOTP(destination, requiredOtpTypes, OTPAction.LOGIN)
+                val receiver = OTPReceiver(destination, otpType)
+                val resendToken = otpResendService.issue(OTPAction.LOGIN, receiver, captchaAcceptedAt, user.id)
+                val res = otpProxy.requestOTP(destination, listOf(receiver), OTPAction.LOGIN)
 
                 TokenResponse(
                     token = token,
                     otp = RequiredOTP(otpType, destination),
                     otpCode = res.otp,
-                    mustChangePassword = user.mustChangePassword
+                    mustChangePassword = user.mustChangePassword,
+                    resendToken = resendToken,
                 )
             }
 
@@ -104,38 +107,24 @@ class LoginService(
         }
     }
 
-    suspend fun resendLoginOtp(request: ResendOtpRequest, uuid: String): ResendOtpResponse {
+    suspend fun resendLoginOtp(request: ResendOtpRequest,uuid: String): ResendOtpResponse {
+        if (request.resendToken.isBlank()) throw OpexError.CaptchaRequired.exception()
         val username = Username.create(request.username)
         val user = keycloakProxy.findUserByUsername(username)
             ?: throw OpexError.UserNotFound.exception()
-
         if (user.id != uuid) throw OpexError.UnAuthorized.exception()
 
-        return when (val otpType = user.currentOtpMethod) {
-            OTPType.EMAIL, OTPType.SMS -> {
-                val destination = when (otpType) {
-                    OTPType.EMAIL -> user.email
-                    OTPType.SMS -> user.mobile
-                    else -> null
-                } ?: throw OpexError.BadRequest.exception()
+        val otpType = user.currentOtpMethod
+        val destination = when (otpType) {
+            OTPType.EMAIL -> user.email
+            OTPType.SMS -> user.mobile
+            else -> null
+        } ?: throw OpexError.CaptchaRequired.exception()
 
-                val requiredOtpTypes = listOf(OTPReceiver(destination, otpType))
-                val res = otpProxy.requestOTP(destination, requiredOtpTypes, OTPAction.LOGIN)
-
-                ResendOtpResponse(
-                    otp = RequiredOTP(otpType, destination),
-                    otpCode = res.otp
-                )
-            }
-
-            OTPType.TOTP -> {
-                ResendOtpResponse(
-                    otp = RequiredOTP(OTPType.TOTP, user.totpLabel(appName)),
-                    otpCode = null
-                )
-            }
-
-            OTPType.NONE -> throw OpexError.InvalidOTPType.exception()
+        val receiver = OTPReceiver(destination, otpType)
+        return otpResendService.resend(OTPAction.LOGIN, receiver, request.resendToken, user.id) {
+            val res = otpProxy.requestOTP(destination, listOf(receiver), OTPAction.LOGIN)
+            ResendOtpResponse(otp = RequiredOTP(otpType, destination), otpCode = res.otp)
         }
     }
 

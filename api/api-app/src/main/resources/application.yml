@@ -82,6 +82,7 @@ logbook:
       - password
     json-body-fields:
       - password
+      - resendToken
     replacement: "***"
   write:
     max-body-size: 10_000 #kb
