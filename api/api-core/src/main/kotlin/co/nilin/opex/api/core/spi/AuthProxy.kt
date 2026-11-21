@@ -16,10 +16,12 @@ interface AuthProxy {
     suspend fun getToken(request: ExternalIdpTokenRequest): TokenResponse
     suspend fun refreshToken(request: RefreshTokenRequest): TokenResponse
     suspend fun registerUser(request: RegisterUserRequest): TempOtpResponse
+    suspend fun resendRegistrationOtp(request: ResendOtpRequest): TempOtpResponse
     suspend fun verifyRegister(request: VerifyOTPRequest): OTPActionTokenResponse
     suspend fun confirmRegister(request: ConfirmRegisterRequest): Token
     suspend fun registerExternalIdpUser(request: ExternalIdpUserRegisterRequest): TokenResponse
     suspend fun forgetPassword(request: ForgotPasswordRequest): TempOtpResponse
+    suspend fun resendForgetOtp(request: ResendOtpRequest): TempOtpResponse
     suspend fun verifyForget(request: VerifyOTPRequest): OTPActionTokenResponse
     suspend fun confirmForget(request: ConfirmForgetRequest)
     suspend fun logout(token: String)

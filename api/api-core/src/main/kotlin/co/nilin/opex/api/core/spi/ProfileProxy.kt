@@ -5,6 +5,7 @@ import co.nilin.opex.api.core.inout.ContactUpdateConfirmRequest
 import co.nilin.opex.api.core.inout.ContactUpdateRequest
 import co.nilin.opex.api.core.inout.ProfileApprovalRequestUser
 import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.api.core.inout.auth.TempOtpResponse
 
 import java.util.UUID
 

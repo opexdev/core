@@ -5,6 +5,7 @@ import co.nilin.opex.api.core.inout.ContactUpdateConfirmRequest
 import co.nilin.opex.api.core.inout.ContactUpdateRequest
 import co.nilin.opex.api.core.inout.ProfileApprovalRequestUser
 import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.api.core.inout.auth.TempOtpResponse
 import co.nilin.opex.api.core.spi.ProfileProxy
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.common.utils.LoggerDelegate

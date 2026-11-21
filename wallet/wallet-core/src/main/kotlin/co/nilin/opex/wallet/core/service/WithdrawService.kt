@@ -142,7 +142,7 @@ class WithdrawService(
             receivers = listOf(OTPReceiver(receiver, otpType)),
             action = OTPAction.WITHDRAW.name
         )
-        return otpProxy.requestOTP(request).apply { receivers = listOf(OTPReceiver(receiver, otpType)) }
+        return otpProxy.requestOTP(request).apply { otpReceiver = OTPReceiver(receiver, otpType) }
     }
 
     suspend fun verifyOTP(token: String, withdrawId: String, otpType: OTPType, otpCode: String): WithdrawActionResult {

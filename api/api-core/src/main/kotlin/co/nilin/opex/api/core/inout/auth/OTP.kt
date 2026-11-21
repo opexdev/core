@@ -22,7 +22,11 @@ data class OTPVerifyResponse(
     val type: OTPResultType
 )
 
-data class TempOtpResponse(val otp: String?, val otpReceiver: OTPReceiver?)
+data class TempOtpResponse(
+    val otp: String?,
+    val otpReceiver: OTPReceiver?,
+    val resendToken: String? = null,
+)
 
 enum class OTPAction {
     REGISTER, FORGET, NONE

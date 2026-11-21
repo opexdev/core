@@ -1,5 +1,6 @@
 package co.nilin.opex.api.ports.opex.controller
 
+import co.nilin.opex.api.core.inout.AppConfig
 import co.nilin.opex.api.core.inout.UpdateUserConfigRequest
 import co.nilin.opex.api.core.inout.UserWebConfig
 import co.nilin.opex.api.core.spi.ConfigProxy
@@ -25,6 +26,26 @@ import org.springframework.web.bind.annotation.*
     description = "Web and user configuration operations."
 )
 class UserConfigController(private val configProxy: ConfigProxy) {
+
+    @GetMapping("/app/config")
+    @Operation(
+        summary = "Get app configuration",
+        description = """GET /opex/v1/app-config.
+Security: Public endpoint. No Bearer token is required.
+
+Returns the application configuration including API methods and account types.""",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = AppConfig::class))]
+            ),
+            ApiResponse(responseCode = "400", description = "Failed to retrieve app configuration.", content = [Content()])
+        ]
+    )
+    suspend fun getAppConfig(): AppConfig {
+        return configProxy.getAppConfig()
+    }
 
     @GetMapping("/web/config")
     @Operation(

@@ -51,6 +51,8 @@ data class KeycloakUser(
 ) {
     val mobile: String? = attributes?.get(Attributes.MOBILE)?.get(0)
     val mustChangePassword: Boolean = attributes?.get(Attributes.MUST_CHANGE_PASSWORD)?.firstOrNull().toBoolean()
+
+    internal fun totpLabel(appName: String): String = "$appName : $username"
 }
 
 data class ConfirmForgetRequest(

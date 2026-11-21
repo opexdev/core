@@ -404,6 +404,8 @@ services:
       - KEYCLOAK_BASE_URL=${KEYCLOAK_BASE_URL:-http://keycloak:8080}
       - OTP_URL=${OTP_URL:-http://otp:8080/v1}
       - CAPTCHA_ENABLED=${CAPTCHA_ENABLED}
+      - OTP_RESEND_LIMIT=${OTP_RESEND_LIMIT:-3}
+      - OTP_RESEND_WINDOW_SECONDS=${OTP_RESEND_WINDOW_SECONDS:-300}
       - CUSTOM_MESSAGE_URL=${CUSTOM_MESSAGE_URL:-http://config:8080/messages}
       - CUSTOM_MESSAGE_ENABLED=${CUSTOM_MESSAGE_ENABLED}
       - CUSTOM_USER_LANGUAGE_ENABLED=${CUSTOM_USER_LANGUAGE_ENABLED}
@@ -426,6 +428,7 @@ services:
       - auth-gateway-keys:/app/keys
     depends_on:
       - keycloak
+      - redis-cache
     networks:
       - default
     labels:

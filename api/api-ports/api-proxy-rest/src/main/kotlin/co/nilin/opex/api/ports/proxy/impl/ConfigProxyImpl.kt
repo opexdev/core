@@ -221,5 +221,27 @@ class ConfigProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClien
             .onStatus({ it.isError }) { it.createException() }
             .awaitBodilessEntity()
     }
+
+    override suspend fun getAppConfig(): AppConfig {
+        return webClient.get()
+            .uri("$baseUrl/v1/app-config")
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<AppConfig>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to get app config") }
+    }
+
+    override suspend fun updateAppConfig(token: String, config: AppConfig): AppConfig {
+        return webClient.post()
+            .uri("$baseUrl/v1/app-config")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(config))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<AppConfig>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to update app config") }
+    }
 }
 

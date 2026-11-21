@@ -132,6 +132,7 @@ class SecurityConfig(
                     .pathMatchers("/opex/v1/referral/**").authenticated()
                     .pathMatchers("/opex/v1/support/**").authenticated()
                     .pathMatchers("/opex/v1/web/config/**").permitAll()
+                    .pathMatchers("/opex/v1/app/config/**").permitAll()
                     .pathMatchers("/opex/v1/user-level/config/**").permitAll()
                     .pathMatchers("/opex/v1/page-messages/**").permitAll()
                     .pathMatchers("/opex/v1/user/config/**").authenticated()

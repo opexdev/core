@@ -21,7 +21,7 @@ class TwoFactorConfigService(
         val user = getUserByUuid(uuid)
         val method = user.currentOtpMethod
         val receiver = when (method) {
-            OTPType.TOTP -> user.totpLabel
+            OTPType.TOTP -> user.totpLabel(appName)
             else -> user.destinationFor(method)
         }
         return TwoFactorConfigResponse(otpConfig = method, receiver = receiver)
@@ -42,7 +42,7 @@ class TwoFactorConfigService(
                 if (!totpConfig.isActivated || !totpConfig.isEnabled) {
                     throw OpexError.TOTPSetupIncomplete.exception()
                 }
-                TwoFactorResponse(otp = null, otpReceiver = OTPReceiver(user.totpLabel, OTPType.TOTP))
+                TwoFactorResponse(otp = null, otpReceiver = OTPReceiver(user.totpLabel(appName), OTPType.TOTP))
             }
 
             OTPType.NONE -> throw OpexError.InvalidOTPType.exception()
@@ -68,7 +68,7 @@ class TwoFactorConfigService(
         }
         return when (method) {
             OTPType.EMAIL, OTPType.SMS -> sendOtpRequest(user, method)
-            OTPType.TOTP -> TwoFactorResponse(otp = null, otpReceiver = OTPReceiver(user.totpLabel, OTPType.TOTP))
+            OTPType.TOTP -> TwoFactorResponse(otp = null, otpReceiver = OTPReceiver(user.totpLabel(appName), OTPType.TOTP))
             OTPType.NONE -> throw OpexError.InvalidOTPType.exception()
         }
     }
@@ -91,7 +91,7 @@ class TwoFactorConfigService(
         return when {
             !totpResponse.isEnabled && !totpResponse.isActivated -> otpProxy.setupTOTP(
                 uuid,
-                user.totpLabel
+                user.totpLabel(appName)
             )
 
             totpResponse.isEnabled -> SetupTOTPResponse(totpResponse.uri)
@@ -183,9 +183,6 @@ class TwoFactorConfigService(
             ?.firstOrNull()
             ?.let { runCatching { OTPType.valueOf(it) }.getOrNull() }
             ?: OTPType.NONE
-
-    private val KeycloakUser.totpLabel: String
-        get() = "$appName : $username"
 
     private fun KeycloakUser.destinationFor(method: OTPType): String? = when (method) {
         OTPType.EMAIL -> email

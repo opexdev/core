@@ -5,6 +5,10 @@ server:
 spring:
   application:
     name: opex-auth-gateway
+  data:
+    redis:
+      host: ${REDIS_HOST:redis-cache}
+      port: ${REDIS_PORT:6379}
   kafka:
     bootstrap-servers: ${KAFKA_IP_PORT:localhost:9092}
     consumer:
@@ -44,6 +48,7 @@ logbook:
       - password
     json-body-fields:
       - password
+      - resendToken
     replacement: "***"
   write:
     max-body-size: 500 #kb
@@ -72,6 +77,9 @@ app:
     url: ${CONFIG_URL:http://opex-config}
   otp:
     url: ${OTP_URL:http://opex-otp/v1}
+    resend:
+      limit: ${OTP_RESEND_LIMIT:3}
+      window-seconds: ${OTP_RESEND_WINDOW_SECONDS:600}
   captcha:
     url: ${CAPTCHA_URL:http://opex-captcha}
     enabled: ${CAPTCHA_ENABLED:true}

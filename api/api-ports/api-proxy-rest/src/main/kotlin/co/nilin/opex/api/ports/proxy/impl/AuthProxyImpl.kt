@@ -100,6 +100,17 @@ class AuthProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient)
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to register user") }
     }
 
+    override suspend fun resendRegistrationOtp(request: ResendOtpRequest): TempOtpResponse {
+        return webClient.post()
+            .uri("$baseUrl/v1/user/public/register/resend-otp")
+            .accept(MediaType.APPLICATION_JSON)
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TempOtpResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to resend registration OTP") }
+    }
+
     override suspend fun verifyRegister(request: VerifyOTPRequest): OTPActionTokenResponse {
         return webClient.post()
             .uri("$baseUrl/v1/user/public/register/verify")
@@ -142,6 +153,17 @@ class AuthProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClient)
             .onStatus({ t -> t.isError }, { it.createException() })
             .bodyToMono<TempOtpResponse>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to forget password") }
+    }
+
+    override suspend fun resendForgetOtp(request: ResendOtpRequest): TempOtpResponse {
+        return webClient.post()
+            .uri("$baseUrl/v1/user/public/forget/resend-otp")
+            .accept(MediaType.APPLICATION_JSON)
+            .body(Mono.just(request))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<TempOtpResponse>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to resend forgot-password OTP") }
     }
 
     override suspend fun verifyForget(request: VerifyOTPRequest): OTPActionTokenResponse {
