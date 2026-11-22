@@ -2,6 +2,7 @@ package co.nilin.opex.api.core.spi
 
 import co.nilin.opex.api.core.inout.*
 import co.nilin.opex.api.core.inout.analytics.DailyAmount
+import co.nilin.opex.api.core.inout.auth.TempOtpResponse
 import java.math.BigDecimal
 
 interface WalletProxy {

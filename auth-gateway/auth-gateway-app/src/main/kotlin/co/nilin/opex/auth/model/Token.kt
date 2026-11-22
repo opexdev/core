@@ -1,6 +1,7 @@
 package co.nilin.opex.auth.model
 
 import co.nilin.opex.auth.data.Device
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class PasswordFlowTokenRequest(
@@ -24,7 +25,8 @@ data class ConfirmPasswordFlowTokenRequest(
 
 data class ResendOtpRequest(
     val username: String,
-    val clientId: String
+    val clientId: String,
+    val resendToken: String,
 )
 
 
@@ -74,6 +76,8 @@ data class TokenResponse(
     //TODO IMPORTANT: remove in production
     val otpCode: String?,
     val mustChangePassword: Boolean = false,
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    val resendToken: String? = null,
 )
 
 data class RequiredOTP(

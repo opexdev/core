@@ -1,8 +1,11 @@
 package co.nilin.opex.auth.proxy
 
 import co.nilin.opex.auth.model.*
+import co.nilin.opex.common.OpexError
+import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
@@ -27,6 +30,13 @@ class OTPProxy(@Qualifier("otpWebClient") private val webClient: WebClient) {
             .contentType(MediaType.APPLICATION_JSON)
             .body(BodyInserters.fromValue(request))
             .retrieve()
+            .onStatus({ it == HttpStatus.BAD_REQUEST }) { response ->
+                response.createException().map { error ->
+                    val code = runCatching { error.getResponseBodyAs(JsonNode::class.java)?.path("code")?.asInt() }
+                        .getOrNull()
+                    if (code == OpexError.OTPAlreadyRequested.code) OpexError.OTPAlreadyRequested.exception() else error
+                }
+            }
             .awaitBody()
     }
 

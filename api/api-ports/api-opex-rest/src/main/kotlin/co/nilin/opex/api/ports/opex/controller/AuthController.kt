@@ -36,6 +36,7 @@ class AuthController(private val authProxy: AuthProxy, private val manualRateLim
 Security: Public endpoint. No Bearer token is required.
 
 Behavior: Starts password-flow login. If OTP is required, the response contains OTP metadata instead of a final access token.
+For email or SMS OTP, the response also contains a temporary `resendToken`.
 Allowed values:
 - captchaType: INTERNAL, ARCAPTCHA, HCAPTCHA.""",
         responses = [
@@ -91,10 +92,10 @@ Behavior: Completes password-flow login after OTP verification.""",
     @Operation(
         summary = "Resend login OTP",
         description = """POST /opex/v1/oauth/protocol/openid-connect/token/resend-otp.
-Security: Bearer pre-auth token required.
+Security: Requires the pre-auth access token as a Bearer token.
 
-Behavior: Resends the OTP for an in-progress login flow.
-Source of values: Use the pre-auth token returned by the token request flow.""",
+Behavior: Resends the email or SMS OTP for an in-progress login.
+Send the `resendToken` from the same login response in the request body.""",
         security = [SecurityRequirement(name = "bearerAuth")],
         responses = [
             ApiResponse(

@@ -1,12 +1,6 @@
 package co.nilin.opex.auth.controller
 
-import co.nilin.opex.auth.model.ConfirmPasswordFlowTokenRequest
-import co.nilin.opex.auth.model.ExternalIdpTokenRequest
-import co.nilin.opex.auth.model.PasswordFlowTokenRequest
-import co.nilin.opex.auth.model.RefreshTokenRequest
-import co.nilin.opex.auth.model.ResendOtpRequest
-import co.nilin.opex.auth.model.ResendOtpResponse
-import co.nilin.opex.auth.model.TokenResponse
+import co.nilin.opex.auth.model.*
 import co.nilin.opex.auth.service.LoginService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -39,13 +33,17 @@ class AuthController(private val loginService: LoginService) {
 Security: Public endpoint. No Bearer token is required.
 
 Behavior: Starts password-flow login. If OTP is required, the response contains OTP metadata instead of a final access token.
+For email or SMS OTP, the response also contains a temporary `resendToken`.
 Allowed values:
 - captchaType: INTERNAL, ARCAPTCHA, HCAPTCHA.""",
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(mediaType = "application/json", schema = Schema(implementation = TokenResponse::class))]
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = TokenResponse::class)
+                )]
             )
         ]
     )
@@ -70,7 +68,10 @@ Behavior: Completes password-flow login after OTP verification.""",
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(mediaType = "application/json", schema = Schema(implementation = TokenResponse::class))]
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = TokenResponse::class)
+                )]
             )
         ]
     )
@@ -87,7 +88,7 @@ Behavior: Completes password-flow login after OTP verification.""",
     @Operation(
         summary = "Resend login OTP",
         description = """POST /v1/oauth/protocol/openid-connect/token/resend-otp.
-Security: Bearer pre-auth token required.
+Security: Security: Bearer pre-auth token required.Public endpoint. Send `resendToken` from the initial login response in the request body.
 
 Behavior: Resends the OTP for an in-progress login flow.
 Source of values: Use the pre-auth token returned by the token request flow.""",
@@ -96,9 +97,20 @@ Source of values: Use the pre-auth token returned by the token request flow.""",
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(mediaType = "application/json", schema = Schema(implementation = ResendOtpResponse::class))]
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ResendOtpResponse::class)
+                )]
             ),
-            ApiResponse(responseCode = "401", description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.", content = [Content()])
+            ApiResponse(
+                responseCode = "400",
+                description = "Invalid request, CaptchaRequired, or OTPAlreadyRequested."
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            )
         ]
     )
     suspend fun resendOtp(
@@ -121,7 +133,10 @@ Behavior: Exchanges an external identity-provider token for an Opex token. OTP v
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(mediaType = "application/json", schema = Schema(implementation = TokenResponse::class))]
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = TokenResponse::class)
+                )]
             )
         ]
     )
@@ -142,7 +157,10 @@ Behavior: Issues a new access token from a valid refresh token.""",
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(mediaType = "application/json", schema = Schema(implementation = TokenResponse::class))]
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = TokenResponse::class)
+                )]
             )
         ]
     )

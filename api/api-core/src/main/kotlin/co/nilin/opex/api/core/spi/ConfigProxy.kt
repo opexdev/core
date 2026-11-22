@@ -21,5 +21,7 @@ interface ConfigProxy {
     suspend fun getPageMessage(token: String, page: UiPage): PageMessage?
     suspend fun createOrUpdatePageMessage(token: String, request: UpdatePageMessageRequest): PageMessage
     suspend fun deletePageMessage(token: String, page: UiPage)
+    suspend fun getAppConfig(): AppConfig
+    suspend fun updateAppConfig(token: String, config: AppConfig): AppConfig
 
 }

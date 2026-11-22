@@ -1,6 +1,7 @@
 package co.nilin.opex.api.ports.opex.controller
 
 import co.nilin.opex.api.core.inout.*
+import co.nilin.opex.api.core.inout.auth.TempOtpResponse
 import co.nilin.opex.api.core.spi.WalletProxy
 import co.nilin.opex.api.ports.opex.util.jwtAuthentication
 import co.nilin.opex.api.ports.opex.util.tokenValue

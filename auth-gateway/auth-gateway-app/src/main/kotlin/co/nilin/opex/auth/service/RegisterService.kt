@@ -21,29 +21,33 @@ class RegisterService(
     private val captchaProxy: CaptchaProxy,
     private val googleProxy: GoogleProxy,
     private val authProducer: AuthEventProducer,
-    private val tempTokenService: TempTokenService
+    private val tempTokenService: TempTokenService,
+    private val otpResendService: OtpResendService,
 
 ) {
     //TODO IMPORTANT: remove in production
     suspend fun registerUser(request: RegisterUserRequest): TempOtpResponse {
-        captchaProxy.validateCaptcha(
+        val captchaAcceptedAt = captchaProxy.validateCaptcha(
             request.captchaCode,
             request.captchaType ?: CaptchaType.INTERNAL
         )
         val username = Username.create(request.username)
         val otpType = username.type.otpType
         val otpReceiver = OTPReceiver(request.username, otpType)
+        val resendToken = otpResendService.issue(OTPAction.REGISTER, otpReceiver, captchaAcceptedAt)
         val res = otpProxy.requestOTP(request.username, listOf(otpReceiver), OTPAction.REGISTER)
-        return TempOtpResponse(res.otp, otpReceiver)
+        return TempOtpResponse(res.otp, otpReceiver, resendToken)
     }
 
     suspend fun resendRegistrationOtp(request: ResendOtpRequest): TempOtpResponse {
         val username = Username.create(request.username)
-        isUserDuplicate(username)
         val otpType = username.type.otpType
         val otpReceiver = OTPReceiver(request.username, otpType)
-        val res = otpProxy.requestOTP(request.username, listOf(otpReceiver), OTPAction.REGISTER)
-        return TempOtpResponse(res.otp, otpReceiver)
+        return otpResendService.resend(OTPAction.REGISTER, otpReceiver, request.resendToken) {
+            isUserDuplicate(username)
+            val res = otpProxy.requestOTP(request.username, listOf(otpReceiver), OTPAction.REGISTER)
+            TempOtpResponse(res.otp, otpReceiver)
+        }
     }
 
     suspend fun verifyRegister(request: VerifyOTPRequest): String {

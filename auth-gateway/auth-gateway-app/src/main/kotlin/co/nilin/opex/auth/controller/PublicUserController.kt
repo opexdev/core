@@ -34,7 +34,7 @@ class PublicUserController(
         description = """POST /v1/user/public/register.
 Security: Public endpoint. No Bearer token is required.
 
-Behavior: Starts the registration flow and sends OTP if required.
+Behavior: Starts registration and returns a temporary `resendToken`. CAPTCHA is validated when enabled.
 Allowed values:
 - captchaType: INTERNAL, ARCAPTCHA, HCAPTCHA.""",
         responses = [
@@ -56,7 +56,7 @@ Allowed values:
         description = """POST /v1/user/public/register/resend-otp.
 Security: Public endpoint. No Bearer token is required.
 
-Behavior: Resends the registration OTP.""",
+Behavior: Resends the registration OTP. Send `resendToken` from the registration response.""",
         responses = [
             ApiResponse(
                 responseCode = "200",
@@ -149,7 +149,7 @@ Response body: No response body.""",
         description = """POST /v1/user/public/forget.
 Security: Public endpoint. No Bearer token is required.
 
-Behavior: Starts password-recovery flow and sends OTP if required.
+Behavior: Starts password recovery and returns a temporary `resendToken`. CAPTCHA is validated when enabled.
 Allowed values:
 - captchaType: INTERNAL, ARCAPTCHA, HCAPTCHA.""",
         responses = [
@@ -171,7 +171,7 @@ Allowed values:
         description = """POST /v1/user/public/forget/resend-otp.
 Security: Public endpoint. No Bearer token is required.
 
-Behavior: Resends the forgot-password OTP.""",
+Behavior: Resends the forgot-password OTP. Send `resendToken` from the password-recovery response.""",
         responses = [
             ApiResponse(
                 responseCode = "200",

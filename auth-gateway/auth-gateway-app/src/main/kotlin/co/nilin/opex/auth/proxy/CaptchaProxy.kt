@@ -11,6 +11,7 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
+import java.time.Instant
 
 @Component
 class CaptchaProxy(
@@ -18,7 +19,7 @@ class CaptchaProxy(
     @Qualifier("captchaWebClient") private val webClient: WebClient,
 ) {
 
-    suspend fun validateCaptcha(proof: String, type: CaptchaType) {
+    suspend fun validateCaptcha(proof: String, type: CaptchaType): Instant {
         if (captchaEnabled) {
             val statusCode = webClient.get().uri("/verify") {
                 it.queryParam("type", type)
@@ -28,10 +29,11 @@ class CaptchaProxy(
                 .exchangeToMono { response -> Mono.just(response.statusCode()) }.awaitFirstOrNull()
 
             when (statusCode) {
-                HttpStatus.NO_CONTENT -> return
+                HttpStatus.NO_CONTENT -> Unit
                 HttpStatus.BAD_REQUEST -> throw OpexError.InvalidCaptcha.exception()
                 else -> throw OpexError.BadRequest.exception("Error in verify captcha")
             }
         }
+        return Instant.now()
     }
 }

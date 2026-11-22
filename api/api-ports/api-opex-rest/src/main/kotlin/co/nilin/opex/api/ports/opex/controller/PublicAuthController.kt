@@ -36,20 +36,42 @@ class PublicAuthController(
         description = """POST /opex/v1/user/public/register.
 Security: Public endpoint. No Bearer token is required.
 
-Behavior: Starts the registration flow and sends OTP if required.
+Behavior: Starts registration and returns a temporary `resendToken`. CAPTCHA is validated when enabled.
 Allowed values:
 - captchaType: INTERNAL, ARCAPTCHA, HCAPTCHA.""",
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(mediaType = "application/json", schema = Schema(type = "object"))]
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = TempOtpResponse::class))]
             )
         ]
     )
     suspend fun registerUser(@Valid @RequestBody request: RegisterUserRequest): ResponseEntity<TempOtpResponse> {
         val otpResponse = authProxy.registerUser(request)
         return ResponseEntity.ok().body(otpResponse)
+    }
+
+    @PostMapping("/register/resend-otp")
+    @Operation(
+        summary = "Resend registration OTP",
+        description = "Public endpoint. Requires `username`, `clientId`, and the `resendToken` from the registration response.",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = TempOtpResponse::class)
+                )]
+            ),
+            ApiResponse(responseCode = "400", description = "CaptchaRequired or OTPAlreadyRequested.")
+        ]
+    )
+    suspend fun resendRegistrationOtp(
+        @Valid @RequestBody request: ResendOtpRequest
+    ): ResponseEntity<TempOtpResponse> {
+        return ResponseEntity.ok(authProxy.resendRegistrationOtp(request))
     }
 
     @PostMapping("/register/verify")
@@ -134,20 +156,40 @@ Response body: No response body.""",
         description = """POST /opex/v1/user/public/forget.
 Security: Public endpoint. No Bearer token is required.
 
-Behavior: Starts password-recovery flow and sends OTP if required.
+Behavior: Starts password recovery and returns a temporary `resendToken`. CAPTCHA is validated when enabled.
 Allowed values:
 - captchaType: INTERNAL, ARCAPTCHA, HCAPTCHA.""",
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Successful response.",
-                content = [Content(mediaType = "application/json", schema = Schema(type = "object"))]
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = TempOtpResponse::class))]
             )
         ]
     )
     suspend fun forgetPassword(@RequestBody request: ForgotPasswordRequest): ResponseEntity<TempOtpResponse> {
         val otpResponse = authProxy.forgetPassword(request)
         return ResponseEntity.ok().body(otpResponse)
+    }
+
+    @PostMapping("/forget/resend-otp")
+    @Operation(
+        summary = "Resend forgot-password OTP",
+        description = "Public endpoint. Requires `username`, `clientId`, and the `resendToken` from the password-recovery response.",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = TempOtpResponse::class)
+                )]
+            ),
+            ApiResponse(responseCode = "400", description = "CaptchaRequired or OTPAlreadyRequested.")
+        ]
+    )
+    suspend fun resendForgetOtp(@Valid @RequestBody request: ResendOtpRequest): ResponseEntity<TempOtpResponse> {
+        return ResponseEntity.ok(authProxy.resendForgetOtp(request))
     }
 
     @PostMapping("/forget/verify")

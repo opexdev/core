@@ -3,6 +3,7 @@ package co.nilin.opex.wallet.core.service
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.utility.error.data.OpexException
 import co.nilin.opex.wallet.core.inout.*
+import co.nilin.opex.wallet.core.inout.otp.OTPReceiver
 import co.nilin.opex.wallet.core.inout.otp.OTPResultType
 import co.nilin.opex.wallet.core.inout.otp.OTPType
 import co.nilin.opex.wallet.core.inout.otp.OTPVerifyResponse
@@ -591,7 +592,7 @@ class WithdrawServiceTest {
         fun `should request SMS OTP successfully`() = runBlocking {
             val withdraw = createWithdraw()
             val profile = createProfile()
-            val otpResponse = TempOtpResponse(VALID_OTP, listOf())
+            val otpResponse = TempOtpResponse(VALID_OTP)
 
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
             coEvery { withdrawOtpPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns emptyList()
@@ -601,6 +602,7 @@ class WithdrawServiceTest {
             val result = withdrawService.requestOTP(TOKEN, USER_UUID, WITHDRAW_UUID, OTPType.SMS)
 
             Assertions.assertEquals(VALID_OTP, result.otp)
+            Assertions.assertEquals(OTPReceiver(MOBILE, OTPType.SMS), result.otpReceiver)
             coVerify { otpProxy.requestOTP(match { it.userId == MOBILE }) }
         }
 
@@ -608,7 +610,7 @@ class WithdrawServiceTest {
         fun `should request EMAIL OTP successfully`() = runBlocking {
             val withdraw = createWithdraw()
             val profile = createProfile()
-            val otpResponse = TempOtpResponse(VALID_OTP, listOf())
+            val otpResponse = TempOtpResponse(VALID_OTP)
 
             coEvery { withdrawPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns withdraw
             coEvery { withdrawOtpPersister.findByWithdrawUuid(WITHDRAW_UUID) } returns emptyList()
@@ -618,6 +620,7 @@ class WithdrawServiceTest {
             val result = withdrawService.requestOTP(TOKEN, USER_UUID, WITHDRAW_UUID, OTPType.EMAIL)
 
             Assertions.assertEquals(VALID_OTP, result.otp)
+            Assertions.assertEquals(OTPReceiver(EMAIL, OTPType.EMAIL), result.otpReceiver)
             coVerify { otpProxy.requestOTP(match { it.userId == EMAIL }) }
         }
     }
