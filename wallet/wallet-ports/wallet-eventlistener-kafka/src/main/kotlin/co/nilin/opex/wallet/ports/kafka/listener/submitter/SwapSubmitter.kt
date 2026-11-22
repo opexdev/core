@@ -47,7 +47,17 @@ class SwapSubmitter(
         sourceSenderWalletType: String?,
         sourceReceiverWalletType: String?,
         destinationSenderWalletType: String?,
-        destinationReceiverWalletType: String?
+        destinationReceiverWalletType: String?,
+        reservationId: Long?,
+        reservationReference: String?,
+        quotedRate: BigDecimal?,
+        quotedAt: LocalDateTime?,
+        quoteExpiresAt: LocalDateTime?,
+        transferCategory: String?,
+        reservedBy: String?,
+        executedBy: String?,
+        description: String?,
+        status: String?
     ) {
         retryTemplate.execute<Unit, Exception> {
             try {
@@ -75,7 +85,17 @@ class SwapSubmitter(
                         sourceReceiverWalletType = sourceReceiverWalletType,
                         destinationSenderWalletType = destinationSenderWalletType,
                         destinationReceiverWalletType = destinationReceiverWalletType,
-                        createDate = createDate
+                        createDate = createDate,
+                        reservationId = reservationId,
+                        reservationReference = reservationReference,
+                        quotedRate = quotedRate,
+                        quotedAt = quotedAt,
+                        quoteExpiresAt = quoteExpiresAt,
+                        transferCategory = transferCategory,
+                        reservedBy = reservedBy,
+                        executedBy = executedBy,
+                        description = description,
+                        status = status
                     )
                 ).get()
                 logger.info("Swap event sent txId={} userId={}", txId, uuid)

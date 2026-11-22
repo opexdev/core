@@ -17,15 +17,26 @@ interface UserTransactionRepository : ReactiveCrudRepository<UserTransactionMode
 
     @Query(
         """
-        select ut.uuid as id, o.uuid as user_id,split_part(o.title, '|', 2) as owner_name, currency, balance, balance_change, category, description, date 
+        select ut.uuid as id, o.uuid as user_id,split_part(o.title, '|', 2) as owner_name, currency, balance, balance_change, category, description, date, ut.tx_id as wallet_transaction_id, ut.operation_id, ut.financial_action_id
         from user_transaction ut
         join wallet_owner o on o.id = ut.owner_id
+        left join lateral (
+            select min(related.date) as operation_date, min(related.tx_id) as operation_sequence
+            from user_transaction related
+            where ut.operation_id is not null
+                and related.owner_id = ut.owner_id
+                and related.operation_id = ut.operation_id
+        ) operation on true
         where (:userId is null or o.uuid = :userId)
             and (:currency is null or currency = :currency)
             and (:category is null or category = :category)
             and (:startTime is null or date > :startTime)
             and (:endTime is null or date <= :endTime)
-        order by date
+        order by coalesce(operation.operation_date, ut.date) asc,
+            coalesce(operation.operation_sequence, ut.tx_id) asc,
+            coalesce(ut.operation_id, ut.uuid) asc,
+            case when ut.category = 'FEE' then 1 else 0 end,
+            ut.date asc, ut.tx_id asc, ut.id asc
         limit :limit
         offset :offset
     """
@@ -42,15 +53,26 @@ interface UserTransactionRepository : ReactiveCrudRepository<UserTransactionMode
 
     @Query(
         """
-        select ut.uuid as id, o.uuid as user_id,split_part(o.title, '|', 2) as owner_name, currency, balance, balance_change, category, description, date
+        select ut.uuid as id, o.uuid as user_id,split_part(o.title, '|', 2) as owner_name, currency, balance, balance_change, category, description, date, ut.tx_id as wallet_transaction_id, ut.operation_id, ut.financial_action_id
         from user_transaction ut
         join wallet_owner o on o.id = ut.owner_id
+        left join lateral (
+            select min(related.date) as operation_date, min(related.tx_id) as operation_sequence
+            from user_transaction related
+            where ut.operation_id is not null
+                and related.owner_id = ut.owner_id
+                and related.operation_id = ut.operation_id
+        ) operation on true
         where (:userId is null or o.uuid = :userId)
             and (:currency is null or currency = :currency)
             and (:category is null or category = :category)
             and (:startTime is null or date > :startTime)
             and (:endTime is null or date <= :endTime)
-        order by date desc
+        order by coalesce(operation.operation_date, ut.date) desc,
+            coalesce(operation.operation_sequence, ut.tx_id) desc,
+            coalesce(ut.operation_id, ut.uuid) desc,
+            case when ut.category = 'FEE' then 1 else 0 end,
+            ut.date asc, ut.tx_id asc, ut.id asc
         limit :limit
         offset :offset
     """

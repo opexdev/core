@@ -24,7 +24,7 @@ class AccountingTransactionLogPersisterRoundTripIT {
     private lateinit var persister: AccountingTransactionLogPersister
 
     @Test
-    fun `postgres round-trip keeps replay idempotent despite scale and timestamp precision differences`() = runBlocking {
+    fun `postgres round-trip keeps replay idempotent despite scale and timestamp precision differences`() = runBlocking<Unit> {
         val base = LocalDateTime.parse("2026-11-16T10:11:12.123456789")
         val first = baseEvent(
             amount = BigDecimal("20.00"),

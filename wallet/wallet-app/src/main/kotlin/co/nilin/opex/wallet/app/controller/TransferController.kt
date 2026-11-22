@@ -18,7 +18,8 @@ class TransferController(
     data class TransferBody(
         val description: String?,
         val transferRef: String?,
-        val transferCategory: TransferCategory
+        val transferCategory: TransferCategory,
+        val operationId: String? = null
     )
 
     @PostMapping("/v2/transfer/{amount}_{symbol}/from/{senderUuid}_{senderWalletType}/to/{receiverUuid}_{receiverWalletType}")
@@ -51,6 +52,7 @@ class TransferController(
             transferBody.description,
             transferBody.transferRef,
             transferBody.transferCategory,
+            operationId = transferBody.operationId,
         ).transferResult
     }
 
@@ -85,7 +87,8 @@ class TransferController(
             amount,
             description,
             transferRef,
-            transferBody.transferCategory
+            transferBody.transferCategory,
+            operationId = transferBody.operationId
         ).transferResult
     }
 

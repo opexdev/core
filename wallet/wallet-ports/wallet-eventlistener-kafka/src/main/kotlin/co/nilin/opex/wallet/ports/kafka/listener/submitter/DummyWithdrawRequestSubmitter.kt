@@ -29,7 +29,28 @@ class DummyWithdrawRequestSubmitter(
         createDate: LocalDateTime,
         lifecycleTransitionDate: LocalDateTime?,
         completionDate: LocalDateTime?,
-        counterpartyReferenceId: String?
+        counterpartyReferenceId: String?,
+        transferMethod: String?,
+        operationType: String?,
+        applicator: String?,
+        gatewayId: String?,
+        network: String?,
+        note: String?,
+        attachment: String?,
+        senderPartyId: String?,
+        receiverPartyId: String?,
+        senderWalletId: String?,
+        receiverWalletId: String?,
+        senderWalletType: String?,
+        receiverWalletType: String?,
+        destinationAddress: String?,
+        destinationAsset: String?,
+        destinationAmount: BigDecimal?,
+        statusReason: String?,
+        requestTransactionId: String?,
+        finalizedTransactionId: String?,
+        operationWalletId: String?,
+        otpRequired: Int?
     ) {
 
     }

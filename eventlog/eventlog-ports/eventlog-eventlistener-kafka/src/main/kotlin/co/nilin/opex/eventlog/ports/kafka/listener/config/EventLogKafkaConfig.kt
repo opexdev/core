@@ -7,7 +7,6 @@ import co.nilin.opex.eventlog.ports.kafka.listener.consumer.OrderKafkaListener
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.AccountingTransactionKafkaListener
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.PublishedEventKafkaListener
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.SwapKafkaListener
-import co.nilin.opex.eventlog.ports.kafka.listener.consumer.TradeKafkaListener
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.WithdrawRequestKafkaListener
 import co.nilin.opex.eventlog.ports.kafka.listener.inout.AccountingTransactionKafkaEvent
 import co.nilin.opex.eventlog.ports.kafka.listener.inout.DepositEvent
@@ -122,19 +121,6 @@ class EventLogKafkaConfig {
     @Bean("publishedEventConsumerFactory")
     fun publishedEventConsumerFactory(@Qualifier("publishedEventConsumerConfig") configs: Map<String, Any>): ConsumerFactory<String, String> {
         return DefaultKafkaConsumerFactory(configs)
-    }
-
-    @Autowired
-    @ConditionalOnBean(TradeKafkaListener::class)
-    fun configureTradeListener(
-        tradeListener: TradeKafkaListener,
-        @Qualifier("eventLogConsumerFactory") consumerFactory: ConsumerFactory<String, CoreEvent>
-    ) {
-        val containerProps = ContainerProperties(Pattern.compile("trades_.*"))
-        containerProps.messageListener = tradeListener
-        val container = ConcurrentMessageListenerContainer(consumerFactory, containerProps)
-        container.setBeanName("TradeKafkaListenerContainer")
-        container.start()
     }
 
     @Autowired

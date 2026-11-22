@@ -24,6 +24,7 @@ data class Deposit(
     val id: Long? = null,
     var transferMethod: TransferMethod?,
     var applicator: String? = null,
+    val gatewayUuid: String? = null,
 )
 
 data class Deposits(var deposits: List<Deposit>)

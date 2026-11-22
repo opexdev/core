@@ -13,5 +13,7 @@ data class UserTransaction(
     val category: UserTransactionCategory,
     val description: String? = null,
     val uuid: String = UUID.randomUUID().toString(),
-    val date: LocalDateTime = LocalDateTime.now()
+    val date: LocalDateTime = LocalDateTime.now(),
+    val operationId: String? = null,
+    val financialActionId: String? = null
 )

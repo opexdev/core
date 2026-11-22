@@ -55,5 +55,9 @@ data class AccountingTransactionEvent(
     val operationCreatedAt: LocalDateTime? = null,
     val lifecycleTransitionAt: LocalDateTime? = null,
     val completedAt: LocalDateTime? = null,
-    val occurredAt: LocalDateTime = LocalDateTime.now()
+    val occurredAt: LocalDateTime = LocalDateTime.now(),
+    val transferMethod: String? = null,
+    val applicator: String? = null,
+    val depositStatus: String? = null,
+    val operationType: String? = null
 )

@@ -36,7 +36,8 @@ class WalletProxyImpl(
     data class TransferBody(
         val description: String?,
         val transferRef: String?,
-        val transferCategory: String
+        val transferCategory: String,
+        val operationId: String? = null
     )
 
     override suspend fun transfer(
@@ -48,13 +49,14 @@ class WalletProxyImpl(
         amount: BigDecimal,
         description: String?,
         transferRef: String?,
-        transferCategory: String
+        transferCategory: String,
+        operationId: String?
     ) {
         withTransientRetry {
             webClient.post()
                 .uri("$walletBaseUrl/v2/transfer/${amount}_$symbol/from/${senderUuid}_$senderWalletType/to/${receiverUuid}_$receiverWalletType")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(TransferBody(description, transferRef, transferCategory))
+                .bodyValue(TransferBody(description, transferRef, transferCategory, operationId))
                 .retrieve()
                 .onStatus({ t -> t.isError }, { it.createException() })
                 .bodyToMono<TransferResult>()

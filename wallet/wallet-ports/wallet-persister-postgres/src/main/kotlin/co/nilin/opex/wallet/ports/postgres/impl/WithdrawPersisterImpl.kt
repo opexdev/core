@@ -46,7 +46,8 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
                 withdraw.createDate,
                 withdraw.lastUpdateDate,
                 withdraw.transferMethod,
-                withdraw.otpRequired
+                withdraw.otpRequired,
+                gatewayUuid = withdraw.gatewayUuid
             )
         ).awaitFirst().asWithdraw()
     }
@@ -226,7 +227,8 @@ class WithdrawPersisterImpl(private val withdrawRepository: WithdrawRepository) 
             createDate,
             lastUpdateDate,
             transferMethod,
-            otpRequired
+            otpRequired,
+            gatewayUuid = gatewayUuid
         )
     }
 

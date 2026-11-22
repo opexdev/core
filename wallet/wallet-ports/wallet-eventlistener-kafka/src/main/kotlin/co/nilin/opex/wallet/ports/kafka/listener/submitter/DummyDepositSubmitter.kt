@@ -26,7 +26,24 @@ class DummyDepositSubmitter(
         status: String?,
         createDate: LocalDateTime?,
         lifecycleTransitionDate: LocalDateTime?,
-        completionDate: LocalDateTime?
+        completionDate: LocalDateTime?,
+        depositId: Long?,
+        transferMethod: String?,
+        operationType: String?,
+        applicator: String?,
+        gatewayId: String?,
+        network: String?,
+        note: String?,
+        attachment: String?,
+        senderPartyId: String?,
+        receiverPartyId: String?,
+        senderWalletId: String?,
+        receiverWalletId: String?,
+        senderWalletType: String?,
+        receiverWalletType: String?,
+        acceptedFee: BigDecimal?,
+        sourceSymbol: String?,
+        sourceAddress: String?
     ) {
 
     }

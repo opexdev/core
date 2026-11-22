@@ -1,5 +1,6 @@
 package co.nilin.opex.eventlog.app.listeners
 
+import co.nilin.opex.eventlog.core.funding.*
 import co.nilin.opex.eventlog.core.accounting.AccountingTransactionEvent
 import co.nilin.opex.eventlog.core.accounting.AccountingTransactionLogWriter
 import co.nilin.opex.eventlog.ports.kafka.listener.inout.AccountingTransactionKafkaEvent
@@ -145,8 +146,13 @@ class EventlogWithdrawLifecycleListenerTest {
     }
 }
 
-private class RecordingWriter : AccountingTransactionLogWriter {
+private class RecordingWriter : AccountingTransactionLogWriter, FundingLogWriter {
     val saved = mutableListOf<AccountingTransactionEvent>()
+
+    override suspend fun save(record: FundingRecord, topic: String, partition: Int, offset: Long): FundingRecord {
+        saved.add(record.toAccountingEvent())
+        return record
+    }
 
     override suspend fun save(transaction: AccountingTransactionEvent): AccountingTransactionEvent {
         saved.add(transaction)

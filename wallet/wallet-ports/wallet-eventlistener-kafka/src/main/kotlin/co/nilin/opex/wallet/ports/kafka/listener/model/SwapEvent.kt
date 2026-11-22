@@ -24,5 +24,15 @@ data class SwapEvent(
     val sourceReceiverWalletType: String? = null,
     val destinationSenderWalletType: String? = null,
     val destinationReceiverWalletType: String? = null,
+    val reservationId: Long? = null,
+    val reservationReference: String? = null,
+    val quotedRate: BigDecimal? = null,
+    val quotedAt: LocalDateTime? = null,
+    val quoteExpiresAt: LocalDateTime? = null,
+    val transferCategory: String? = null,
+    val reservedBy: String? = null,
+    val executedBy: String? = null,
+    val description: String? = null,
+    val status: String? = null,
     val createDate: LocalDateTime = LocalDateTime.now()
 )

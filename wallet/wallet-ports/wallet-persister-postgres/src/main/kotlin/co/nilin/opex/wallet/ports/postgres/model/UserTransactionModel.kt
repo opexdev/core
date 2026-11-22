@@ -19,5 +19,7 @@ data class UserTransactionModel(
     val uuid: String = UUID.randomUUID().toString(),
     val date: LocalDateTime = LocalDateTime.now(),
     @Id
-    val id: Long? = null
+    val id: Long? = null,
+    val operationId: String? = null,
+    val financialActionId: String? = null
 )

@@ -167,6 +167,7 @@ class DepositService(
                 gatewayUuid = null,
                 transferMethod = TransferMethod.BANK_DEPOSIT,
                 applicator = null,
+                sourceAddress = sourceIban ?: sourceDepositNumber,
             )
         }
         return DepositWebhookResponse(request.referenceNumber, DepositStatus.DONE.name, false)
@@ -192,6 +193,7 @@ class DepositService(
         gatewayUuid: String?,
         transferMethod: TransferMethod?,
         applicator: String?,
+        sourceAddress: String? = null,
     ): TransferResult? {
 
         logger.info(
@@ -203,6 +205,8 @@ class DepositService(
             depositUuid = UUID.randomUUID().toString(),
             currency = symbol,
             amount = amount,
+            sourceSymbol = symbol,
+            sourceAddress = sourceAddress,
             note = description,
             transactionRef = transferRef,
             status = DepositStatus.DONE,
@@ -210,7 +214,8 @@ class DepositService(
             network = chain,
             attachment = attachment,
             transferMethod = transferMethod,
-            applicator = applicator
+            applicator = applicator,
+            gatewayUuid = gatewayUuid
         )
 
         val gatewayData = fetchDepositData(
@@ -233,10 +238,11 @@ class DepositService(
         }
 
         if (!isValid) {
-            traceDepositService.saveDepositInNewTransaction(depositCommand)
+            val invalidDeposit = traceDepositService.saveDepositInNewTransaction(depositCommand)
+            publishDepositEvent(invalidDeposit, lifecycleTransitionDate = LocalDateTime.now())
             return null
         }
-        depositPersister.persist(depositCommand)
+        val persistedDeposit = depositPersister.persist(depositCommand)
 
         logger.info(
             "Going to charge wallet on a ${depositType.name} deposit event :" +
@@ -263,14 +269,18 @@ class DepositService(
             amount = amount,
             description = description,
             transferRef = transferRef,
-            transferCategory = transferCategory
+            transferCategory = transferCategory,
+            operationId = depositCommand.depositUuid,
+            transferMethod = depositCommand.transferMethod,
+            applicator = depositCommand.applicator
         )
 
         publishDepositEvent(
-            deposit = depositCommand,
+            deposit = persistedDeposit,
             walletTransactionRef = transferResultDetailed.tx,
             transferCategory = transferCategory,
-            lifecycleTransitionDate = LocalDateTime.now()
+            lifecycleTransitionDate = LocalDateTime.now(),
+            movement = transferResultDetailed.transferResult
         )
         return transferResultDetailed.transferResult
     }
@@ -411,6 +421,7 @@ class DepositService(
     // Payment Deposit
     // -------------------------------------------------------------------------
 
+    @Transactional
     suspend fun commitPaymentDeposit(
         request: PaymentDepositRequest
     ): PaymentDepositResponse {
@@ -428,17 +439,6 @@ class DepositService(
         val receiverOwner = getOrCreateWalletOwner(request.userId)
         val receiverWallet = getOrCreateMainWallet(receiverOwner, currency)
 
-        val transferResultDetailed = transferManager.transfer(
-            TransferCommand(
-                sourceWallet,
-                receiverWallet,
-                Amount(currency, request.amount),
-                request.description,
-                request.reference,
-                TransferCategory.DEPOSIT
-            )
-        )
-
         val deposit = Deposit(
             ownerUuid = receiverOwner.uuid,
             depositUuid = UUID.randomUUID().toString(),
@@ -454,12 +454,26 @@ class DepositService(
 
         )
 
-        traceDepositService.saveDepositInNewTransaction(deposit)
+        val transferResultDetailed = transferManager.transfer(
+            TransferCommand(
+                sourceWallet,
+                receiverWallet,
+                Amount(currency, request.amount),
+                request.description,
+                request.reference,
+                TransferCategory.DEPOSIT,
+                operationId = deposit.depositUuid,
+                transferMethod = request.transferMethod
+            )
+        )
+
+        val persistedDeposit = depositPersister.persist(deposit)
         publishDepositEvent(
-            deposit = deposit,
+            deposit = persistedDeposit,
             walletTransactionRef = transferResultDetailed.tx,
             transferCategory = TransferCategory.DEPOSIT,
-            lifecycleTransitionDate = LocalDateTime.now()
+            lifecycleTransitionDate = LocalDateTime.now(),
+            movement = transferResultDetailed.transferResult
         )
 
         return PaymentDepositResponse(true)
@@ -473,7 +487,8 @@ class DepositService(
         deposit: Deposit,
         walletTransactionRef: String? = null,
         transferCategory: TransferCategory? = null,
-        lifecycleTransitionDate: LocalDateTime? = null
+        lifecycleTransitionDate: LocalDateTime? = null,
+        movement: TransferResult? = null
     ) {
         if (depositSnapshotEnabled) {
             val creationDate = LocalDateTime.ofInstant(deposit.createDate.toInstant(), ZoneId.systemDefault())
@@ -497,7 +512,24 @@ class DepositService(
                 status = status,
                 createDate = creationDate,
                 lifecycleTransitionDate = transition,
-                completionDate = completionDate
+                completionDate = completionDate,
+                depositId = deposit.id,
+                transferMethod = deposit.transferMethod?.name,
+                operationType = deposit.depositType.name,
+                applicator = deposit.applicator,
+                gatewayId = deposit.gatewayUuid,
+                network = deposit.network,
+                sourceAddress = deposit.sourceAddress,
+                sourceSymbol = deposit.sourceSymbol,
+                acceptedFee = deposit.acceptedFee,
+                note = deposit.note,
+                attachment = deposit.attachment,
+                senderPartyId = movement?.sourceUuid,
+                receiverPartyId = movement?.destUuid ?: deposit.ownerUuid,
+                senderWalletId = movement?.sourceWallet?.toString(),
+                receiverWalletId = movement?.destWallet?.toString(),
+                senderWalletType = movement?.sourceWalletType?.name,
+                receiverWalletType = movement?.destWalletType?.name
             )
         }
     }

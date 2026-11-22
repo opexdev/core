@@ -41,7 +41,24 @@ class DepositSubmitter(
         status: String?,
         createDate: LocalDateTime?,
         lifecycleTransitionDate: LocalDateTime?,
-        completionDate: LocalDateTime?
+        completionDate: LocalDateTime?,
+        depositId: Long?,
+        transferMethod: String?,
+        operationType: String?,
+        applicator: String?,
+        gatewayId: String?,
+        network: String?,
+        note: String?,
+        attachment: String?,
+        senderPartyId: String?,
+        receiverPartyId: String?,
+        senderWalletId: String?,
+        receiverWalletId: String?,
+        senderWalletType: String?,
+        receiverWalletType: String?,
+        acceptedFee: BigDecimal?,
+        sourceSymbol: String?,
+        sourceAddress: String?
     ) {
         retryTemplate.execute<Unit, Exception> {
             try {
@@ -61,7 +78,24 @@ class DepositSubmitter(
                     status = status,
                     createDate = createDate,
                     lifecycleTransitionDate = lifecycleTransitionDate,
-                    completionDate = completionDate
+                    completionDate = completionDate,
+                    depositId = depositId,
+                    transferMethod = transferMethod,
+                    operationType = operationType,
+                    applicator = applicator,
+                    gatewayId = gatewayId,
+                    network = network,
+                    note = note,
+                    attachment = attachment,
+                    senderPartyId = senderPartyId,
+                    receiverPartyId = receiverPartyId,
+                    senderWalletId = senderWalletId,
+                    receiverWalletId = receiverWalletId,
+                    senderWalletType = senderWalletType,
+                    receiverWalletType = receiverWalletType,
+                    acceptedFee = acceptedFee,
+                    sourceSymbol = sourceSymbol,
+                    sourceAddress = sourceAddress
                 )
                 val messageKey = lifecycleEventId ?: "deposit:${depositUuid ?: depositRef ?: uuid}:${status ?: "UNKNOWN"}"
                 template.send(

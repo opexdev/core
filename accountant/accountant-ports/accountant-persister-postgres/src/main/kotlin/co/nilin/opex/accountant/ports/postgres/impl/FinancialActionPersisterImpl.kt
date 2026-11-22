@@ -51,7 +51,8 @@ class FinancialActionPersisterImpl(
                 it.category,
                 "",
                 "",
-                it.createDate
+                it.createDate,
+                operationId = it.operationId
             )
         }).collectList().awaitSingle()
         return financialActions
@@ -76,7 +77,8 @@ class FinancialActionPersisterImpl(
                     "",
                     "",
                     createDate,
-                    status
+                    status,
+                    operationId = operationId
                 )
             }
         ).awaitSingle()

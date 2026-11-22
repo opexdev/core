@@ -122,7 +122,8 @@ fun Deposit.toModel(): DepositModel {
         depositType,
         createDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
         transferMethod,
-        applicator
+        applicator,
+        gatewayUuid = gatewayUuid
     )
 }
 
@@ -145,7 +146,8 @@ fun DepositModel.toDto(): Deposit {
         Date.from(createDate.atZone(ZoneId.systemDefault())?.toInstant()),
         id,
         transferMethod,
-        applicator
+        applicator,
+        gatewayUuid = gatewayUuid
     )
 }
 

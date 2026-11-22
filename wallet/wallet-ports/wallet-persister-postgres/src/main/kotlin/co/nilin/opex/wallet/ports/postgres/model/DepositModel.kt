@@ -30,4 +30,5 @@ data class DepositModel(
     val createDate: LocalDateTime = LocalDateTime.now(),
     var transferMethod: TransferMethod?,
     var applicator: String? = null,
+    val gatewayUuid: String? = null,
     )

@@ -71,7 +71,11 @@ class EventlogAccountingTransactionListener(
                     operationCreatedAt = event.operationCreatedAt,
                     lifecycleTransitionAt = event.lifecycleTransitionAt,
                     completedAt = event.completedAt,
-                    occurredAt = event.occurredAt
+                    occurredAt = event.occurredAt,
+            transferMethod = event.transferMethod,
+            applicator = event.applicator,
+            depositStatus = event.depositStatus,
+            operationType = event.operationType
                 )
             )
         }

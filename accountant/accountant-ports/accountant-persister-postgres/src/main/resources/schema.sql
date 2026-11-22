@@ -113,6 +113,10 @@ CREATE TABLE IF NOT EXISTS fi_actions_archive
     archived_at          TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+ALTER TABLE fi_actions ADD COLUMN IF NOT EXISTS operation_id VARCHAR(128);
+ALTER TABLE fi_actions_archive ADD COLUMN IF NOT EXISTS operation_id VARCHAR(128);
+CREATE INDEX IF NOT EXISTS idx_fi_actions_operation_id ON fi_actions (operation_id);
+
 CREATE INDEX IF NOT EXISTS idx_fi_actions_archive_create_date ON fi_actions_archive (create_date);
 
 CREATE TABLE IF NOT EXISTS fi_action_retry_archive

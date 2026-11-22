@@ -29,6 +29,7 @@ data class Withdraw(
     var lastUpdateDate: LocalDateTime? = null,
     var transferMethod: TransferMethod? = null,
     val otpRequired: Int? = null,
+    val gatewayUuid: String? = null,
 ) {
 
     fun canBeAccepted(): Boolean {

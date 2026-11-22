@@ -12,8 +12,8 @@ class TraceDepositService(private val depositPersister: DepositPersister) {
     private val logger = LoggerFactory.getLogger(TraceDepositService::class.java)
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    suspend fun saveDepositInNewTransaction(deposit: Deposit) {
+    suspend fun saveDepositInNewTransaction(deposit: Deposit): Deposit {
         logger.info("Going to save a deposit command ...")
-        depositPersister.persist(deposit)  // Saves outside  the main transaction context
+        return depositPersister.persist(deposit)  // Saves outside the main transaction context
     }
 }

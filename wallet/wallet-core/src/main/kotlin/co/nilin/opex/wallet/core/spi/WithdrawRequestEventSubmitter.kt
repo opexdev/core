@@ -23,6 +23,27 @@ interface WithdrawRequestEventSubmitter {
         createDate: LocalDateTime,
         lifecycleTransitionDate: LocalDateTime? = null,
         completionDate: LocalDateTime? = null,
-        counterpartyReferenceId: String? = null
+        counterpartyReferenceId: String? = null,
+        transferMethod: String? = null,
+        operationType: String? = null,
+        applicator: String? = null,
+        gatewayId: String? = null,
+        network: String? = null,
+        note: String? = null,
+        attachment: String? = null,
+        senderPartyId: String? = null,
+        receiverPartyId: String? = null,
+        senderWalletId: String? = null,
+        receiverWalletId: String? = null,
+        senderWalletType: String? = null,
+        receiverWalletType: String? = null,
+        destinationAddress: String? = null,
+        destinationAsset: String? = null,
+        destinationAmount: BigDecimal? = null,
+        statusReason: String? = null,
+        requestTransactionId: String? = null,
+        finalizedTransactionId: String? = null,
+        operationWalletId: String? = null,
+        otpRequired: Int? = null
     )
 }

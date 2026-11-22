@@ -36,5 +36,6 @@ data class WithdrawModel(
     val createDate: LocalDateTime = LocalDateTime.now(),
     val lastUpdateDate: LocalDateTime? = null,
     var transferMethod: TransferMethod?,
-    val otpRequired: Int? = null
+    val otpRequired: Int? = null,
+    val gatewayUuid: String? = null
 )

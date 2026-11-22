@@ -71,7 +71,8 @@ class FinancialActionLoaderImpl(
                 fim.categoryName,
                 fim.status,
                 fim.uuid,
-                fim.id
+                fim.id,
+                operationId = fim.operationId
             )
         }
         return null
@@ -99,7 +100,8 @@ class FinancialActionLoaderImpl(
             financialAction.categoryName,
             financialAction.status,
             financialAction.uuid,
-            financialAction.id
+            financialAction.id,
+            operationId = financialAction.operationId
         )
     }
 }

@@ -32,7 +32,8 @@ class FinancialActionJobManagerImpl(
                         it.amount,
                         it.eventType + it.pointer,
                         "accountant:fiActions:${it.uuid}",
-                        it.category.toString()
+                        it.category.toString(),
+                        operationId = it.operationId
                     )
                     financialActionPersister.updateStatusNewTx(it, FinancialActionStatus.PROCESSED)
 
@@ -64,7 +65,8 @@ class FinancialActionJobManagerImpl(
                         it.amount,
                         it.eventType + it.pointer,
                         "accountant:fiActions:${it.uuid}",
-                        it.category.toString()
+                        it.category.toString(),
+                        operationId = it.operationId
                     )
                     with(financialActionPersister) {
                         updateStatusNewTx(it, FinancialActionStatus.PROCESSED)

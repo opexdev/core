@@ -28,7 +28,8 @@ class ReservedTransferImpl(
     override suspend fun fetchValidReserve(reserveNumber: String): ReservedTransfer? {
         return reservedTransferRepository.findByReserveNumber(reserveNumber)?.awaitSingleOrNull()
             ?.takeIf {
-                it.expDate?.let { it > LocalDateTime.now() } ?: true && it.status == ReservedStatus.Created
+                it.status == ReservedStatus.Created &&
+                    (it.expDate?.let { expiry -> expiry > LocalDateTime.now() } ?: true)
             }?.toDto()
     }
 

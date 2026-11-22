@@ -22,12 +22,14 @@ class TransferAccountingPerspectiveTest {
         coEvery { wallets.isDepositAllowed(any(), any()) } returns true
         coEvery { wallets.findWalletById(any()) } returns VALID.SOURCE_WALLET
         coEvery { wallets.findWallet(any(), any(), any()) } returns null
+        coEvery { transactions.findTransactionByTransferRef(any()) } returns null
         coEvery { transactions.save(any()) } returns 42L
         coEvery { submitter.send(capture(events)) } returns Unit
         val manager = TransferManagerImpl(wallets, mockk(relaxed = true), owners, transactions,
             mockk(relaxed = true), submitter)
         val scenarios = listOf(
             TransferCategory.TRADE to "TRADE",
+            TransferCategory.FEE to "FEE",
             TransferCategory.PURCHASE_FINALIZED to "SWAP",
             TransferCategory.IMPERSONATED_PURCHASE_FINALIZED to "SWAP",
             TransferCategory.REFERRAL_COMMISSION to "REFERRAL",
@@ -44,13 +46,20 @@ class TransferAccountingPerspectiveTest {
         )
         scenarios.forEach { (category, expected) ->
             events.clear()
-            manager.transfer(VALID.TRANSFER_COMMAND.copy(transferCategory = category))
+            manager.transfer(VALID.TRANSFER_COMMAND.copy(transferCategory = category,
+                transferRef = "accountant:fiActions:${category.name}-action",
+                operationId = "accountant-trade:execution-1"))
             if (expected == null) {
                 assertThat(events).describedAs(category.name).isEmpty()
             } else {
                 assertThat(events).describedAs(category.name).hasSize(1)
+                assertThat(events.single().operationId).isEqualTo("accountant-trade:execution-1")
                 assertThat(events.single().type).isEqualTo(expected)
                 assertThat(events.single().transferCategory).isEqualTo(category.name)
+                assertThat(events.single().financialActionId).isEqualTo("${category.name}-action")
+                assertThat(events.single().walletTransactionRef).isEqualTo("42")
+                if (expected == "FEE") assertThat(events.single().recordRole).isEqualTo("FEE_SETTLEMENT")
+                if (expected == "TRADE") assertThat(events.single().recordRole).isEqualTo("TRADE_SETTLEMENT")
                 if (expected == "REFERRAL" || expected == "REWARD") {
                     assertThat(events.single().userId).isEqualTo(VALID.DEST_WALLET_OWNER.uuid)
                     assertThat(events.single().side).isEqualTo("IN")

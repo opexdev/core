@@ -6,15 +6,15 @@ import co.nilin.opex.eventlog.app.listeners.EventlogDepositListener
 import co.nilin.opex.eventlog.app.listeners.EventlogEventListener
 import co.nilin.opex.eventlog.app.listeners.EventlogPublishedEventListener
 import co.nilin.opex.eventlog.app.listeners.EventlogSwapListener
-import co.nilin.opex.eventlog.app.listeners.EventlogTradeListener
 import co.nilin.opex.eventlog.app.listeners.EventlogWithdrawRequestListener
 import co.nilin.opex.eventlog.app.listeners.OrderListener
 import co.nilin.opex.eventlog.core.spi.DeadLetterPersister
 import co.nilin.opex.eventlog.core.spi.EventPersister
 import co.nilin.opex.eventlog.core.spi.OrderPersister
 import co.nilin.opex.eventlog.core.spi.PublishedEventPersister
-import co.nilin.opex.eventlog.core.spi.TradePersister
 import co.nilin.opex.eventlog.core.accounting.AccountingTransactionLogWriter
+import co.nilin.opex.eventlog.core.swap.SwapLogWriter
+import co.nilin.opex.eventlog.core.funding.FundingLogWriter
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.AccountingTransactionKafkaListener
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.DLTKafkaListener
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.DepositKafkaListener
@@ -22,7 +22,6 @@ import co.nilin.opex.eventlog.ports.kafka.listener.consumer.EventKafkaListener
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.OrderKafkaListener
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.PublishedEventKafkaListener
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.SwapKafkaListener
-import co.nilin.opex.eventlog.ports.kafka.listener.consumer.TradeKafkaListener
 import co.nilin.opex.eventlog.ports.kafka.listener.consumer.WithdrawRequestKafkaListener
 import kotlinx.coroutines.asCoroutineDispatcher
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,11 +35,6 @@ class AppConfig {
     @Bean
     fun orderListener(orderPersister: OrderPersister): OrderListener {
         return OrderListener(orderPersister)
-    }
-
-    @Bean
-    fun eventlogTradeListener(tradePersister: TradePersister): EventlogTradeListener {
-        return EventlogTradeListener(tradePersister)
     }
 
     @Bean
@@ -64,18 +58,18 @@ class AppConfig {
     }
 
     @Bean
-    fun eventlogDepositListener(logWriter: AccountingTransactionLogWriter): EventlogDepositListener {
-        return EventlogDepositListener(logWriter)
+    fun eventlogDepositListener(fundingLog: FundingLogWriter): EventlogDepositListener {
+        return EventlogDepositListener(fundingLog)
     }
 
     @Bean
-    fun eventlogWithdrawRequestListener(logWriter: AccountingTransactionLogWriter): EventlogWithdrawRequestListener {
-        return EventlogWithdrawRequestListener(logWriter)
+    fun eventlogWithdrawRequestListener(fundingLog: FundingLogWriter): EventlogWithdrawRequestListener {
+        return EventlogWithdrawRequestListener(fundingLog)
     }
 
     @Bean
-    fun eventlogSwapListener(logWriter: AccountingTransactionLogWriter): EventlogSwapListener {
-        return EventlogSwapListener(logWriter)
+    fun eventlogSwapListener(logWriter: AccountingTransactionLogWriter, swapLog: SwapLogWriter): EventlogSwapListener {
+        return EventlogSwapListener(logWriter, swapLog)
     }
 
     @Bean
@@ -86,11 +80,6 @@ class AppConfig {
     @Autowired
     fun configureOrderListener(orderKafkaListener: OrderKafkaListener, orderListener: OrderListener) {
         orderKafkaListener.addOrderListener(orderListener)
-    }
-
-    @Autowired
-    fun configureTradeListener(tradeKafkaListener: TradeKafkaListener, eventlogTradeListener: EventlogTradeListener) {
-        tradeKafkaListener.addTradeListener(eventlogTradeListener)
     }
 
     @Autowired

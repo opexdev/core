@@ -1,12 +1,15 @@
 package co.nilin.opex.eventlog.app.listeners
 
+import co.nilin.opex.eventlog.core.funding.*
 import co.nilin.opex.eventlog.core.accounting.AccountingTransactionEvent
 import co.nilin.opex.eventlog.core.accounting.AccountingTransactionLogWriter
 import co.nilin.opex.eventlog.ports.kafka.listener.inout.DepositEvent
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 class EventlogDepositListenerTest {
 
@@ -49,10 +52,37 @@ class EventlogDepositListenerTest {
         assertThat(saved.side).isEqualTo("IN")
         assertThat(saved.occurredAt).isEqualTo(transitionedAt)
     }
+
+    @Test
+    fun `falls back to kafka timestamp when lifecycle timestamps are absent`() {
+        val writer = DepositRecordingWriter()
+        val listener = EventlogDepositListener(writer)
+        val kafkaTimestamp = 1_700_000_000_000L
+
+        listener.onEvent(
+            DepositEvent(
+                uuid = "user-1",
+                depositRef = "bank-ref-2",
+                currency = "USDT",
+                amount = BigDecimal("10.00")
+            ),
+            partition = 0,
+            offset = 11,
+            timestamp = kafkaTimestamp
+        )
+
+        val saved = writer.saved.single()
+        assertThat(saved.occurredAt).isEqualTo(LocalDateTime.ofInstant(Instant.ofEpochMilli(kafkaTimestamp), ZoneOffset.UTC))
+    }
 }
 
-private class DepositRecordingWriter : AccountingTransactionLogWriter {
+private class DepositRecordingWriter : AccountingTransactionLogWriter, FundingLogWriter {
     val saved = mutableListOf<AccountingTransactionEvent>()
+
+    override suspend fun save(record: FundingRecord, topic: String, partition: Int, offset: Long): FundingRecord {
+        saved.add(record.toAccountingEvent())
+        return record
+    }
 
     override suspend fun save(transaction: AccountingTransactionEvent): AccountingTransactionEvent {
         saved.add(transaction)

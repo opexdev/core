@@ -18,7 +18,7 @@ import java.time.LocalDateTime
 class AccountingTransactionLogPersisterTest {
 
     @Test
-    fun `returns persisted event on duplicate with identical payload`() = runBlocking {
+    fun `returns persisted event on duplicate with identical payload`() = runBlocking<Unit> {
         val repository = mockk<AccountingTransactionRepository>()
         val persister = AccountingTransactionLogPersister(repository)
         val event = sampleEvent()
@@ -35,7 +35,7 @@ class AccountingTransactionLogPersisterTest {
     }
 
     @Test
-    fun `throws on duplicate with conflicting payload`() = runBlocking {
+    fun `throws on duplicate with conflicting payload`() = runBlocking<Unit> {
         val repository = mockk<AccountingTransactionRepository>()
         val persister = AccountingTransactionLogPersister(repository)
         val incoming = sampleEvent()

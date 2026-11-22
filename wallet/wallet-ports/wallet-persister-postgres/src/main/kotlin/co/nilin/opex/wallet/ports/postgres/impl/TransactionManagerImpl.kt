@@ -34,7 +34,11 @@ class TransactionManagerImpl(
                 transaction.destAmount,
                 transaction.description,
                 transaction.transferRef,
-                transaction.transferCategory
+                transaction.transferCategory,
+                transactionDate = transaction.transactionDate,
+                operationId = transaction.operationId,
+                transferMethod = transaction.transferMethod,
+                applicator = transaction.applicator
             )
         ).awaitSingle().id!!
     }
@@ -54,7 +58,10 @@ class TransactionManagerImpl(
                 transaction.description,
                 transaction.transferRef,
                 transaction.transferCategory,
-                transaction.transactionDate
+                transaction.transactionDate,
+                operationId = transaction.operationId,
+                transferMethod = transaction.transferMethod,
+                applicator = transaction.applicator
             )
         )
     }

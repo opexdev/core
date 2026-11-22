@@ -34,8 +34,10 @@ class FinancialActionSubmitter(
                     receiver,
                     receiverWalletType,
                     createDate,
-                    null,
-                    eventType + pointer
+                    "accountant:fiActions:$uuid",
+                    eventType + pointer,
+                    transferCategory = category.name,
+                    operationId = operationId
                 )
             }
         )

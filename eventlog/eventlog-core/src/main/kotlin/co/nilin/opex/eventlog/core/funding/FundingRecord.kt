@@ -1,0 +1,51 @@
+package co.nilin.opex.eventlog.core.funding
+
+import java.math.BigDecimal
+import java.time.LocalDateTime
+
+/** Immutable deposit/withdrawal lifecycle snapshot; actual movements remain linked facts. */
+data class FundingRecord(
+    val eventId: String,
+    val operationId: String,
+    val type: String,
+    val userId: String,
+    val operationDatabaseId: Long? = null,
+    val currency: String,
+    val amount: BigDecimal,
+    val principalAmount: BigDecimal? = null,
+    val appliedCustomerFee: BigDecimal? = null,
+    val feeAsset: String? = null,
+    val acceptedFee: BigDecimal? = null,
+    val status: String,
+    val transferCategory: String? = null,
+    val transferMethod: String? = null,
+    val operationType: String? = null,
+    val applicator: String? = null,
+    val gatewayId: String? = null,
+    val network: String? = null,
+    val businessReference: String? = null,
+    val counterpartyReferenceId: String? = null,
+    val walletTransactionRef: String? = null,
+    val requestTransactionId: String? = null,
+    val finalizedTransactionId: String? = null,
+    val operationWalletId: String? = null,
+    val senderPartyId: String? = null,
+    val receiverPartyId: String? = null,
+    val senderWalletId: String? = null,
+    val receiverWalletId: String? = null,
+    val senderWalletType: String? = null,
+    val receiverWalletType: String? = null,
+    val sourceSymbol: String? = null,
+    val sourceAddress: String? = null,
+    val destinationAddress: String? = null,
+    val destinationAsset: String? = null,
+    val destinationAmount: BigDecimal? = null,
+    val note: String? = null,
+    val statusReason: String? = null,
+    val attachment: String? = null,
+    val otpRequired: Int? = null,
+    val operationCreatedAt: LocalDateTime? = null,
+    val lifecycleTransitionAt: LocalDateTime? = null,
+    val completedAt: LocalDateTime? = null,
+    val occurredAt: LocalDateTime
+)

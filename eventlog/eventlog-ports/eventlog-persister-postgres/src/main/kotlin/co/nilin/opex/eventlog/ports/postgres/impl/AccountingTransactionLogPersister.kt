@@ -117,7 +117,11 @@ class AccountingTransactionLogPersister(
             lifecycleTransitionAt = normalized.lifecycleTransitionAt,
             completedAt = normalized.completedAt,
             occurredAt = normalized.occurredAt,
-            createDate = LocalDateTime.now()
+            createDate = LocalDateTime.now(),
+            transferMethod = normalized.transferMethod,
+            applicator = normalized.applicator,
+            depositStatus = normalized.depositStatus,
+            operationType = normalized.operationType
         )
     }
 
@@ -174,7 +178,11 @@ class AccountingTransactionLogPersister(
             operationCreatedAt = operationCreatedAt,
             lifecycleTransitionAt = lifecycleTransitionAt,
             completedAt = completedAt,
-            occurredAt = occurredAt
+            occurredAt = occurredAt,
+            transferMethod = transferMethod,
+            applicator = applicator,
+            depositStatus = depositStatus,
+            operationType = operationType
         )
     }
 
@@ -226,6 +234,10 @@ class AccountingTransactionLogPersister(
             feeActionId == other.feeActionId &&
             expectedFee.numericallyEquals(other.expectedFee) &&
             expectedFeeAsset == other.expectedFeeAsset &&
+            transferMethod == other.transferMethod &&
+            applicator == other.applicator &&
+            depositStatus == other.depositStatus &&
+            operationType == other.operationType &&
             source == other.source &&
             referenceId == other.referenceId &&
             side == other.side &&

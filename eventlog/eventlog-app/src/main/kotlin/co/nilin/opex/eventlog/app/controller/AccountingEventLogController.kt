@@ -49,6 +49,31 @@ class AccountingEventLogController(
         )
     }
 
+    @GetMapping("/transactions/raw")
+    suspend fun getRawTransactions(
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+        from: LocalDateTime?,
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+        to: LocalDateTime?,
+        @RequestParam(defaultValue = "2000")
+        limit: Int
+    ): AccountingEventLogResponse {
+        val resolvedTo = to ?: LocalDateTime.now()
+        val resolvedFrom = from ?: resolvedTo.minusDays(7)
+        val data = accountingEventFeedService.findRawEvents(
+            from = resolvedFrom,
+            to = resolvedTo,
+            limit = limit
+        )
+        return AccountingEventLogResponse(
+            from = resolvedFrom,
+            to = resolvedTo,
+            items = data.map { it.toResponseItem() }
+        )
+    }
+
     @PostMapping("/transactions")
     suspend fun logTransaction(
         @RequestBody request: AccountingTransactionRequest
@@ -138,7 +163,11 @@ class AccountingEventLogController(
             operationCreatedAt = operationCreatedAt,
             lifecycleTransitionAt = lifecycleTransitionAt,
             completedAt = completedAt,
-            occurredAt = occurredAt
+            occurredAt = occurredAt,
+            transferMethod = transferMethod,
+            applicator = applicator,
+            depositStatus = depositStatus,
+            operationType = operationType
         )
     }
 }
@@ -201,7 +230,11 @@ data class AccountingEventLogItem(
     val operationCreatedAt: LocalDateTime?,
     val lifecycleTransitionAt: LocalDateTime?,
     val completedAt: LocalDateTime?,
-    val occurredAt: LocalDateTime
+    val occurredAt: LocalDateTime,
+    val transferMethod: String? = null,
+    val applicator: String? = null,
+    val depositStatus: String? = null,
+    val operationType: String? = null
 )
 
 data class AccountingTransactionRequest(
@@ -256,7 +289,11 @@ data class AccountingTransactionRequest(
     val operationCreatedAt: LocalDateTime? = null,
     val lifecycleTransitionAt: LocalDateTime? = null,
     val completedAt: LocalDateTime? = null,
-    val occurredAt: LocalDateTime
+    val occurredAt: LocalDateTime,
+    val transferMethod: String? = null,
+    val applicator: String? = null,
+    val depositStatus: String? = null,
+    val operationType: String? = null
 ) {
     fun toCore(): AccountingTransactionEvent {
         return AccountingTransactionEvent(
@@ -311,7 +348,11 @@ data class AccountingTransactionRequest(
             operationCreatedAt = operationCreatedAt,
             lifecycleTransitionAt = lifecycleTransitionAt,
             completedAt = completedAt,
-            occurredAt = occurredAt
+            occurredAt = occurredAt,
+            transferMethod = transferMethod,
+            applicator = applicator,
+            depositStatus = depositStatus,
+            operationType = operationType
         )
     }
 }
@@ -391,6 +432,10 @@ private fun AccountingTransactionRequest.toKafkaEvent(): AccountingTransactionKa
         operationCreatedAt = operationCreatedAt,
         lifecycleTransitionAt = lifecycleTransitionAt,
         completedAt = completedAt,
-        occurredAt = occurredAt
+        occurredAt = occurredAt,
+            transferMethod = transferMethod,
+            applicator = applicator,
+            depositStatus = depositStatus,
+            operationType = operationType
     )
 }

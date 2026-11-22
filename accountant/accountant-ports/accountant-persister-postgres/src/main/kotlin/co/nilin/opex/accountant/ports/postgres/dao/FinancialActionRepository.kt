@@ -89,10 +89,10 @@ interface FinancialActionRepository : ReactiveCrudRepository<FinancialActionMode
         moved_actions as (
             insert into fi_actions_archive (
                 id, uuid, parent_id, event_type, pointer, symbol, amount, sender, sender_wallet_type,
-                receiver, receiver_wallet_type, agent, ip, create_date, status, category_name
+                receiver, receiver_wallet_type, agent, ip, create_date, status, category_name, operation_id
             )
             select fa.id, fa.uuid, fa.parent_id, fa.event_type, fa.pointer, fa.symbol, fa.amount, fa.sender, fa.sender_wallet_type,
-                   fa.receiver, fa.receiver_wallet_type, fa.agent, fa.ip, fa.create_date, fa.status, fa.category_name
+                   fa.receiver, fa.receiver_wallet_type, fa.agent, fa.ip, fa.create_date, fa.status, fa.category_name, fa.operation_id
             from fi_actions fa
                      join candidates c on c.id = fa.id
             on conflict (id) do nothing

@@ -19,5 +19,22 @@ data class DepositEvent(
     val status: String? = null,
     val createDate: LocalDateTime? = null,
     val lifecycleTransitionDate: LocalDateTime? = null,
-    val completionDate: LocalDateTime? = null
+    val completionDate: LocalDateTime? = null,
+    val depositId: Long? = null,
+    val transferMethod: String? = null,
+    val operationType: String? = null,
+    val applicator: String? = null,
+    val gatewayId: String? = null,
+    val network: String? = null,
+    val note: String? = null,
+    val attachment: String? = null,
+    val senderPartyId: String? = null,
+    val receiverPartyId: String? = null,
+    val senderWalletId: String? = null,
+    val receiverWalletId: String? = null,
+    val senderWalletType: String? = null,
+    val receiverWalletType: String? = null,
+    val acceptedFee: BigDecimal? = null,
+    val sourceSymbol: String? = null,
+    val sourceAddress: String? = null
 )

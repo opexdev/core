@@ -42,7 +42,9 @@ class AcceptedWithdrawalPublicationTest {
             appliedCustomerFee = BigDecimal("1"), feeAsset = "USDT", transferCategory = null,
             withdrawStatus = WithdrawStatus.ACCEPTED, createDate = withdraw.createDate,
             lifecycleTransitionDate = withdraw.lastUpdateDate, completionDate = null,
-            counterpartyReferenceId = null
+            counterpartyReferenceId = null,
+            operationType = "ON_CHAIN", applicator = "admin", requestTransactionId = "request-tx",
+            operationWalletId = "10", senderPartyId = "customer"
         ) }
         coVerify(exactly = 0) { transfers.transfer(any()) }
     }

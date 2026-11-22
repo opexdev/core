@@ -25,6 +25,16 @@ interface SwapEventSubmitter {
         sourceSenderWalletType: String? = null,
         sourceReceiverWalletType: String? = null,
         destinationSenderWalletType: String? = null,
-        destinationReceiverWalletType: String? = null
+        destinationReceiverWalletType: String? = null,
+        reservationId: Long? = null,
+        reservationReference: String? = null,
+        quotedRate: BigDecimal? = null,
+        quotedAt: LocalDateTime? = null,
+        quoteExpiresAt: LocalDateTime? = null,
+        transferCategory: String? = null,
+        reservedBy: String? = null,
+        executedBy: String? = null,
+        description: String? = null,
+        status: String? = null
     )
 }

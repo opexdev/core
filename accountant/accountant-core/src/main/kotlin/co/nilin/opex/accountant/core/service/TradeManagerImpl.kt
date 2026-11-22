@@ -155,6 +155,9 @@ open class TradeManagerImpl(
             financialActions.add(takerFeeAction)
         }
 
+        val executionReference = "accountant-trade:" + takerTransferAction.uuid
+        financialActions.forEach { it.operationId = executionReference }
+
         val takerPrice = trade.takerPrice.toBigDecimal().multiply(takerOrder.rightSideFraction)
         val makerPrice = trade.makerPrice.toBigDecimal().multiply(makerOrder.rightSideFraction)
 
@@ -184,7 +187,7 @@ open class TradeManagerImpl(
             makerPrice,
             trade.matchedQuantity.toBigDecimal().multiply(makerOrder.leftSideFraction),
             trade.eventDate,
-            executionReference = "accountant-trade:" + takerTransferAction.uuid,
+            executionReference = executionReference,
             baseAsset = trade.pair.leftSideName,
             quoteAsset = trade.pair.rightSideName,
             takerSettlementActionId = takerTransferAction.uuid,

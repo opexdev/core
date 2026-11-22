@@ -96,6 +96,18 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.accountant.core</groupId>
+            <artifactId>accountant-core</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>co.nilin.opex.wallet.ports.kafka.listener</groupId>
+            <artifactId>wallet-eventlistener-kafka</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

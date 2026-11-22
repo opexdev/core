@@ -4,6 +4,7 @@ import co.nilin.opex.wallet.ports.kafka.listener.model.PersonType
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.wallet.app.dto.ReservedTransferResponse
 import co.nilin.opex.wallet.app.service.otc.GraphService
+import co.nilin.opex.wallet.core.inout.TransferMethod
 import co.nilin.opex.wallet.core.inout.TransferCommand
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.inout.TransferResultDetailed
@@ -49,6 +50,9 @@ class TransferService(
         description: String?,
         transferRef: String?,
         transferCategory: TransferCategory = TransferCategory.NO_CATEGORY,
+        operationId: String? = null,
+        transferMethod: TransferMethod? = null,
+        applicator: String? = null,
     ): TransferResultDetailed {
         return _transfer(
             symbol,
@@ -59,7 +63,10 @@ class TransferService(
             amount,
             description,
             transferRef,
-            transferCategory
+            transferCategory,
+            operationId = operationId,
+            transferMethod = transferMethod,
+            applicator = applicator
         )
     }
 
@@ -301,7 +308,7 @@ class TransferService(
             perspectivePartyId = reservations.receiverUuid
         )
 
-        reservedTransferManager.commitReserve(reserveNumber)
+        reservedTransferManager.commitReserve(reserveNumber, applicator)
         swapEventSubmitter.send(
             uuid = reservations.senderUuid,
             txId = operationId,
@@ -322,7 +329,17 @@ class TransferService(
             sourceSenderWalletType = senderResult.transferResult.sourceWalletType.name,
             sourceReceiverWalletType = senderResult.transferResult.destWalletType.name,
             destinationSenderWalletType = receiverResult.transferResult.sourceWalletType.name,
-            destinationReceiverWalletType = receiverResult.transferResult.destWalletType.name
+            destinationReceiverWalletType = receiverResult.transferResult.destWalletType.name,
+            reservationId = reservations.id,
+            reservationReference = reservations.reserveNumber,
+            quotedRate = reservations.rate,
+            quotedAt = reservations.reserveDate,
+            quoteExpiresAt = reservations.expDate,
+            transferCategory = transferCategory.name,
+            reservedBy = reservations.applicator,
+            executedBy = applicator,
+            description = description,
+            status = "COMPLETED"
         )
         val senderTransfer = senderResult.transferResult
         val receiverTransfer = receiverResult.transferResult
@@ -356,6 +373,8 @@ class TransferService(
         destAmount: BigDecimal = amount,
         operationId: String? = null,
         perspectivePartyId: String? = null,
+        transferMethod: TransferMethod? = null,
+        applicator: String? = null,
     ): TransferResultDetailed {
         if (senderWalletType == WalletType.CASHOUT || receiverWalletType == WalletType.CASHOUT)
             throw OpexError.InvalidCashOutUsage.exception()
@@ -399,7 +418,9 @@ class TransferService(
                 transferCategory,
                 Amount(receiverWallet.currency, destAmount),
                 operationId = operationId,
-                perspectivePartyId = perspectivePartyId
+                perspectivePartyId = perspectivePartyId,
+                transferMethod = transferMethod,
+                applicator = applicator
             )
         )
     }

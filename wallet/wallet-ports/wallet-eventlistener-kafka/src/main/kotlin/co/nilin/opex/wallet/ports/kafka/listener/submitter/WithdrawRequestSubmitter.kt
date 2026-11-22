@@ -44,7 +44,28 @@ class WithdrawRequestSubmitter(
         createDate: LocalDateTime,
         lifecycleTransitionDate: LocalDateTime?,
         completionDate: LocalDateTime?,
-        counterpartyReferenceId: String?
+        counterpartyReferenceId: String?,
+        transferMethod: String?,
+        operationType: String?,
+        applicator: String?,
+        gatewayId: String?,
+        network: String?,
+        note: String?,
+        attachment: String?,
+        senderPartyId: String?,
+        receiverPartyId: String?,
+        senderWalletId: String?,
+        receiverWalletId: String?,
+        senderWalletType: String?,
+        receiverWalletType: String?,
+        destinationAddress: String?,
+        destinationAsset: String?,
+        destinationAmount: BigDecimal?,
+        statusReason: String?,
+        requestTransactionId: String?,
+        finalizedTransactionId: String?,
+        operationWalletId: String?,
+        otpRequired: Int?
     ) {
         retryTemplate.execute<Unit, Exception> {
             try {
@@ -65,7 +86,28 @@ class WithdrawRequestSubmitter(
                     createDate = createDate,
                     lifecycleTransitionDate = lifecycleTransitionDate,
                     completionDate = completionDate,
-                    counterpartyReferenceId = counterpartyReferenceId
+                    counterpartyReferenceId = counterpartyReferenceId,
+                    transferMethod = transferMethod,
+                    operationType = operationType,
+                    applicator = applicator,
+                    gatewayId = gatewayId,
+                    network = network,
+                    note = note,
+                    attachment = attachment,
+                    senderPartyId = senderPartyId,
+                    receiverPartyId = receiverPartyId,
+                    senderWalletId = senderWalletId,
+                    receiverWalletId = receiverWalletId,
+                    senderWalletType = senderWalletType,
+                    receiverWalletType = receiverWalletType,
+                    destinationAddress = destinationAddress,
+                    destinationAsset = destinationAsset,
+                    destinationAmount = destinationAmount,
+                    statusReason = statusReason,
+                    requestTransactionId = requestTransactionId,
+                    finalizedTransactionId = finalizedTransactionId,
+                    operationWalletId = operationWalletId,
+                    otpRequired = otpRequired
                 )
                 val messageKey = lifecycleEventId ?: "withdraw:${withdrawId ?: uuid}:${withdrawStatus.name}"
                 template.send(

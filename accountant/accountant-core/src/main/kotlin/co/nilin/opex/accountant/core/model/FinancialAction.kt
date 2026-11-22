@@ -22,7 +22,8 @@ class FinancialAction(
     val category: FinancialActionCategory,
     val status: FinancialActionStatus = FinancialActionStatus.CREATED,
     val uuid: String = UUID.randomUUID().toString(),
-    val id: Long? = null
+    val id: Long? = null,
+    var operationId: String? = null
 ) {
 
     fun isProcessed() = status == FinancialActionStatus.PROCESSED

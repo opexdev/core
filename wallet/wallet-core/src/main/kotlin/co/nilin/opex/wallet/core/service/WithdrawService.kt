@@ -107,9 +107,12 @@ class WithdrawService(
                 status = WithdrawStatus.REQUESTED,
                 withdrawType = withdrawCommand.withdrawType!!,
                 transferMethod = withdrawCommand.transferMethod,
-                otpRequired = otpRequiredCount
+                otpRequired = otpRequiredCount,
+                gatewayUuid = withdrawCommand.gatewayUuid
             )
         )
+
+        publishWithdrawEvent(withdraw, WithdrawStatus.REQUESTED)
 
         return if (otpRequiredCount <= 0) {
             createWithdraw(token, withdraw.withdrawUuid!!)
@@ -192,7 +195,10 @@ class WithdrawService(
                 Amount(currency, withdraw.amount + withdraw.appliedFee),
                 null,
                 withdrawBusinessReference(withdraw.withdrawUuid!!, WithdrawStatus.CREATED),
-                TransferCategory.WITHDRAW_REQUEST
+                TransferCategory.WITHDRAW_REQUEST,
+                operationId = withdraw.withdrawUuid,
+                transferMethod = withdraw.transferMethod,
+                applicator = null
             )
         )
 
@@ -202,11 +208,11 @@ class WithdrawService(
             withdraw.lastUpdateDate = LocalDateTime.now()
         })
 
-        publishWithdrawEvent(withdraw, WithdrawStatus.CREATED)
+        publishWithdrawEvent(withdraw, WithdrawStatus.CREATED, transferResultDetailed.transferResult)
         incrementWithdrawMetric()
     }
 
-    private suspend fun publishWithdrawEvent(withdraw: Withdraw, withdrawStatus: WithdrawStatus) {
+    suspend fun publishWithdrawEvent(withdraw: Withdraw, withdrawStatus: WithdrawStatus, movement: TransferResult? = null) {
         val operationId = withdraw.withdrawUuid ?: withdraw.withdrawId?.toString()
         val lifecycleEventId = "withdraw-lifecycle:${operationId ?: "unknown"}:${withdrawStatus.name}"
         val transitionDate = withdraw.lastUpdateDate ?: withdraw.createDate
@@ -217,7 +223,7 @@ class WithdrawService(
         }
         val transferCategory = when (withdrawStatus) {
             WithdrawStatus.CREATED -> TransferCategory.WITHDRAW_REQUEST
-            WithdrawStatus.DONE -> TransferCategory.WITHDRAW_ACCEPT
+            WithdrawStatus.DONE -> if (withdraw.transferMethod == TransferMethod.MANUALLY) TransferCategory.WITHDRAW_MANUALLY else TransferCategory.WITHDRAW_ACCEPT
             WithdrawStatus.REJECTED -> TransferCategory.WITHDRAW_REJECT
             WithdrawStatus.CANCELED -> TransferCategory.WITHDRAW_CANCEL
             else -> null
@@ -246,7 +252,28 @@ class WithdrawService(
             createDate = withdraw.createDate,
             lifecycleTransitionDate = transitionDate,
             completionDate = completionDate,
-            counterpartyReferenceId = withdraw.destTransactionRef
+            counterpartyReferenceId = withdraw.destTransactionRef,
+            transferMethod = withdraw.transferMethod?.name,
+            operationType = withdraw.withdrawType.name,
+            applicator = withdraw.applicator,
+            gatewayId = withdraw.gatewayUuid,
+            network = withdraw.destNetwork,
+            destinationAddress = withdraw.destAddress,
+            destinationAsset = withdraw.destSymbol,
+            destinationAmount = withdraw.destAmount,
+            requestTransactionId = withdraw.requestTransaction,
+            finalizedTransactionId = withdraw.finalizedTransaction,
+            operationWalletId = withdraw.wallet.toString(),
+            otpRequired = withdraw.otpRequired,
+            statusReason = withdraw.statusReason,
+            note = withdraw.destNote,
+            attachment = withdraw.attachment,
+            senderPartyId = movement?.sourceUuid ?: withdraw.ownerUuid,
+            receiverPartyId = movement?.destUuid,
+            senderWalletId = movement?.sourceWallet?.toString(),
+            receiverWalletId = movement?.destWallet?.toString(),
+            senderWalletType = movement?.sourceWalletType?.name,
+            receiverWalletType = movement?.destWalletType?.name
         )
     }
 
@@ -344,7 +371,10 @@ class WithdrawService(
                 Amount(currency, withdraw.amount + withdraw.appliedFee),
                 null,
                 withdrawBusinessReference(withdraw.withdrawUuid ?: withdraw.withdrawId?.toString() ?: withdrawId, WithdrawStatus.CANCELED),
-                TransferCategory.WITHDRAW_CANCEL
+                TransferCategory.WITHDRAW_CANCEL,
+                operationId = withdraw.withdrawUuid,
+                transferMethod = withdraw.transferMethod,
+                applicator = null
             )
         )
         val updatedWithdraw = withdrawPersister.persist(
@@ -372,11 +402,12 @@ class WithdrawService(
                 withdraw.createDate,
                 LocalDateTime.now(),
                 withdraw.transferMethod,
-                withdraw.otpRequired
+                withdraw.otpRequired,
+                gatewayUuid = withdraw.gatewayUuid
             )
         )
 
-        publishWithdrawEvent(updatedWithdraw, WithdrawStatus.CANCELED)
+        publishWithdrawEvent(updatedWithdraw, WithdrawStatus.CANCELED, transferResultDetailed.transferResult)
     }
 
     @Transactional
@@ -400,7 +431,10 @@ class WithdrawService(
                 Amount(sourceWallet.currency, withdraw.amount + withdraw.appliedFee),
                 rejectCommand.statusReason,
                 withdrawBusinessReference(withdraw.withdrawUuid ?: withdraw.withdrawId?.toString() ?: rejectCommand.withdrawId, WithdrawStatus.REJECTED),
-                TransferCategory.WITHDRAW_REJECT
+                TransferCategory.WITHDRAW_REJECT,
+                operationId = withdraw.withdrawUuid,
+                transferMethod = withdraw.transferMethod,
+                applicator = rejectCommand.applicator
             )
         )
         val updatedWithdraw = withdrawPersister.persist(
@@ -428,10 +462,11 @@ class WithdrawService(
                 withdraw.createDate,
                 LocalDateTime.now(),
                 withdraw.transferMethod,
-                otpRequired = otpRequiredCount
+                otpRequired = withdraw.otpRequired,
+                gatewayUuid = withdraw.gatewayUuid
             )
         )
-        publishWithdrawEvent(updatedWithdraw, WithdrawStatus.REJECTED)
+        publishWithdrawEvent(updatedWithdraw, WithdrawStatus.REJECTED, transferResultDetailed.transferResult)
 
         return WithdrawActionResult(withdraw.withdrawUuid!!, WithdrawStatus.REJECTED)
     }
@@ -458,7 +493,10 @@ class WithdrawService(
                 Amount(sourceWallet.currency, withdraw.amount + withdraw.appliedFee),
                 null,
                 withdrawBusinessReference(withdraw.withdrawUuid ?: withdraw.withdrawId?.toString() ?: doneCommand.withdrawId, WithdrawStatus.DONE),
-                TransferCategory.WITHDRAW_ACCEPT
+                TransferCategory.WITHDRAW_ACCEPT,
+                operationId = withdraw.withdrawUuid,
+                transferMethod = withdraw.transferMethod,
+                applicator = doneCommand.applicator
             )
         )
 
@@ -487,10 +525,11 @@ class WithdrawService(
                 withdraw.createDate,
                 LocalDateTime.now(),
                 withdraw.transferMethod,
-                otpRequired = otpRequiredCount
+                otpRequired = withdraw.otpRequired,
+                gatewayUuid = withdraw.gatewayUuid
             )
         )
-        publishWithdrawEvent(updateWithdraw, WithdrawStatus.DONE)
+        publishWithdrawEvent(updateWithdraw, WithdrawStatus.DONE, transferResultDetailed.transferResult)
         return WithdrawActionResult(updateWithdraw.withdrawUuid!!, WithdrawStatus.DONE)
     }
 

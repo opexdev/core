@@ -59,6 +59,7 @@ class TransferManagerImpl(
         if (!walletManager.isDepositAllowed(destWallet, amountToTransfer))
             throw OpexError.DepositLimitExceeded.exception()
 
+        val postedAt = LocalDateTime.now()
         val tx = try {
             transactionManager.save(
                 Transaction(
@@ -69,7 +70,10 @@ class TransferManagerImpl(
                     transferCommand.description,
                     transferCommand.transferRef,
                     transferCommand.transferCategory,
-                    LocalDateTime.now()
+                    postedAt,
+                    operationId = transferCommand.operationId,
+                    transferMethod = transferCommand.transferMethod,
+                    applicator = transferCommand.applicator
                 )
             )
         } catch (e: DuplicateKeyException) {
@@ -80,7 +84,7 @@ class TransferManagerImpl(
         walletManager.decreaseBalance(srcWallet, transferCommand.amount.amount)
         walletManager.increaseBalance(destWallet, amountToTransfer)
         //TODO make tx long by default
-        createUserTX(transferCommand, tx)
+        createUserTX(transferCommand, tx, postedAt)
 
         //get the result and add to return result type
         walletListener.onDeposit(destWallet, srcWallet, transferCommand.amount, amountToTransfer, tx.toString())
@@ -126,7 +130,10 @@ class TransferManagerImpl(
             transferCommand.amount == Amount(existingTransaction.sourceWallet.currency, existingTransaction.sourceAmount) &&
             transferCommand.destAmount == Amount(existingTransaction.destWallet.currency, existingTransaction.destAmount) &&
             transferCommand.transferCategory == existingTransaction.transferCategory &&
-            transferCommand.description == existingTransaction.description
+            transferCommand.description == existingTransaction.description &&
+            (existingTransaction.operationId == null || transferCommand.operationId == existingTransaction.operationId) &&
+            (existingTransaction.transferMethod == null || transferCommand.transferMethod == existingTransaction.transferMethod) &&
+            (existingTransaction.applicator == null || transferCommand.applicator == existingTransaction.applicator)
     }
 
     private fun buildIdempotentResult(existingTransaction: Transaction, existingTxId: Long): TransferResultDetailed {
@@ -204,6 +211,8 @@ class TransferManagerImpl(
                 withdrawStatus = withdrawStatus,
                 transferCategory = transferCategory,
                 operationId = operationId,
+                transferMethod = transferCommand.transferMethod?.name,
+                applicator = transferCommand.applicator,
                 financialActionId = transferCommand.transferRef
                     ?.takeIf { it.startsWith("accountant:fiActions:") }
                     ?.removePrefix("accountant:fiActions:"),
@@ -264,7 +273,16 @@ class TransferManagerImpl(
         }
     }
 
-    private suspend fun createUserTX(command: TransferCommand, txId: Long) {
+    private suspend fun createUserTX(command: TransferCommand, txId: Long, postedAt: LocalDateTime) {
+        suspend fun saveHistory(row: UserTransaction) {
+            userTransactionManager.save(row.copy(
+                date = postedAt,
+                operationId = command.operationId,
+                financialActionId = command.transferRef
+                    ?.takeIf { it.startsWith("accountant:fiActions:") }
+                    ?.removePrefix("accountant:fiActions:")
+            ))
+        }
         val currency = command.amount.currency.symbol
         val amount = command.amount.amount
 
@@ -286,7 +304,7 @@ class TransferManagerImpl(
                     -amount,
                     UserTransactionCategory.TRADE
                 )
-                userTransactionManager.save(loserTx)
+                saveHistory(loserTx)
 
                 val gainerTx = UserTransaction(
                     gainerOwner,
@@ -296,7 +314,7 @@ class TransferManagerImpl(
                     amount,
                     UserTransactionCategory.TRADE,
                 )
-                userTransactionManager.save(gainerTx)
+                saveHistory(gainerTx)
             }
 
             TransferCategory.FEE -> {
@@ -308,7 +326,7 @@ class TransferManagerImpl(
                     -amount,
                     UserTransactionCategory.FEE
                 )
-                userTransactionManager.save(tx)
+                saveHistory(tx)
             }
 
             TransferCategory.DEPOSIT -> {
@@ -322,7 +340,7 @@ class TransferManagerImpl(
                     command.description
 
                 )
-                userTransactionManager.save(tx)
+                saveHistory(tx)
             }
 
             TransferCategory.DEPOSIT_MANUALLY -> {
@@ -336,7 +354,7 @@ class TransferManagerImpl(
                     UserTransactionCategory.DEPOSIT,
                     command.description
                 )
-                userTransactionManager.save(tx)
+                saveHistory(tx)
 
                 // TX for admin
                 val adminTx = UserTransaction(
@@ -347,7 +365,7 @@ class TransferManagerImpl(
                     -amount,
                     UserTransactionCategory.DEPOSIT_TO
                 )
-                userTransactionManager.save(adminTx)
+                saveHistory(adminTx)
             }
 
             TransferCategory.WITHDRAW_MANUALLY -> {
@@ -361,7 +379,7 @@ class TransferManagerImpl(
                     UserTransactionCategory.WITHDRAW,
                     command.description
                 )
-                userTransactionManager.save(tx)
+                saveHistory(tx)
 
                 // TX for admin
                 val adminTx = UserTransaction(
@@ -372,7 +390,7 @@ class TransferManagerImpl(
                     amount,
                     UserTransactionCategory.WITHDRAW_FROM
                 )
-                userTransactionManager.save(adminTx)
+                saveHistory(adminTx)
             }
 
             TransferCategory.WITHDRAW_ACCEPT -> {
@@ -386,7 +404,7 @@ class TransferManagerImpl(
                     -amount,
                     UserTransactionCategory.WITHDRAW
                 )
-                userTransactionManager.save(tx)
+                saveHistory(tx)
             }
 
             TransferCategory.PURCHASE_FINALIZED -> {
@@ -399,7 +417,7 @@ class TransferManagerImpl(
                     UserTransactionCategory.SWAP,
                     command.description
                 )
-                userTransactionManager.save(srcTx)
+                saveHistory(srcTx)
 
                 val dstTx = UserTransaction(
                     command.destWallet.owner.id!!,
@@ -409,7 +427,7 @@ class TransferManagerImpl(
                     amount,
                     UserTransactionCategory.SWAP
                 )
-                userTransactionManager.save(dstTx)
+                saveHistory(dstTx)
             }
             TransferCategory.IMPERSONATED_PURCHASE_FINALIZED -> {
                 val srcTx = UserTransaction(
@@ -421,7 +439,7 @@ class TransferManagerImpl(
                     UserTransactionCategory.IMPERSONATED_SWAP,
                     command.description
                 )
-                userTransactionManager.save(srcTx)
+                saveHistory(srcTx)
 
                 val dstTx = UserTransaction(
                     command.destWallet.owner.id!!,
@@ -431,7 +449,7 @@ class TransferManagerImpl(
                     amount,
                     UserTransactionCategory.IMPERSONATED_SWAP
                 )
-                userTransactionManager.save(dstTx)
+                saveHistory(dstTx)
             }
 
             TransferCategory.KYC_ACCEPTED_REWARD -> {
@@ -451,7 +469,7 @@ class TransferManagerImpl(
                     -amount,
                     UserTransactionCategory.KYC_ACCEPTED_REWARD
                 )
-                userTransactionManager.save(loserTx)
+                saveHistory(loserTx)
 
                 val gainerTx = UserTransaction(
                     gainerOwner,
@@ -461,7 +479,7 @@ class TransferManagerImpl(
                     amount,
                     UserTransactionCategory.KYC_ACCEPTED_REWARD,
                 )
-                userTransactionManager.save(gainerTx)
+                saveHistory(gainerTx)
             }
 
             TransferCategory.REFERRAL_COMMISSION -> {
@@ -481,7 +499,7 @@ class TransferManagerImpl(
                     -amount,
                     UserTransactionCategory.REFERRAL_COMMISSION
                 )
-                userTransactionManager.save(loserTx)
+                saveHistory(loserTx)
 
                 val gainerTx = UserTransaction(
                     gainerOwner,
@@ -491,7 +509,7 @@ class TransferManagerImpl(
                     amount,
                     UserTransactionCategory.REFERRAL_COMMISSION,
                 )
-                userTransactionManager.save(gainerTx)
+                saveHistory(gainerTx)
             }
 
             TransferCategory.REFERENT_COMMISSION -> {
@@ -511,7 +529,7 @@ class TransferManagerImpl(
                     -amount,
                     UserTransactionCategory.REFERENT_COMMISSION
                 )
-                userTransactionManager.save(loserTx)
+                saveHistory(loserTx)
 
                 val gainerTx = UserTransaction(
                     gainerOwner,
@@ -521,7 +539,7 @@ class TransferManagerImpl(
                     amount,
                     UserTransactionCategory.REFERENT_COMMISSION,
                 )
-                userTransactionManager.save(gainerTx)
+                saveHistory(gainerTx)
             }
 
             TransferCategory.REFERRAL_KYC_REWARD -> {
@@ -541,7 +559,7 @@ class TransferManagerImpl(
                     -amount,
                     UserTransactionCategory.REFERRAL_KYC_REWARD
                 )
-                userTransactionManager.save(loserTx)
+                saveHistory(loserTx)
 
                 val gainerTx = UserTransaction(
                     gainerOwner,
@@ -551,7 +569,7 @@ class TransferManagerImpl(
                     amount,
                     UserTransactionCategory.REFERRAL_KYC_REWARD,
                 )
-                userTransactionManager.save(gainerTx)
+                saveHistory(gainerTx)
             }
             else -> {
                 // No tx needed for other types

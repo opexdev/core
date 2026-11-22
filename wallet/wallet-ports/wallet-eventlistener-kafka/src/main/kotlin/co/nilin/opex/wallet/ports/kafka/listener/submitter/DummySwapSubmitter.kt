@@ -30,7 +30,17 @@ class DummySwapSubmitter : SwapEventSubmitter {
         sourceSenderWalletType: String?,
         sourceReceiverWalletType: String?,
         destinationSenderWalletType: String?,
-        destinationReceiverWalletType: String?
+        destinationReceiverWalletType: String?,
+        reservationId: Long?,
+        reservationReference: String?,
+        quotedRate: BigDecimal?,
+        quotedAt: LocalDateTime?,
+        quoteExpiresAt: LocalDateTime?,
+        transferCategory: String?,
+        reservedBy: String?,
+        executedBy: String?,
+        description: String?,
+        status: String?
     ) {
     }
 }

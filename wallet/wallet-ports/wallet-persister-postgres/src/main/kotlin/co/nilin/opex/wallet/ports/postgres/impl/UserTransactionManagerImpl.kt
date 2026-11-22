@@ -29,7 +29,11 @@ class UserTransactionManagerImpl(
                 balance,
                 balanceChange,
                 category,
-                description
+                description,
+                uuid = uuid,
+                date = date,
+                operationId = operationId,
+                financialActionId = financialActionId
             )
         }
         repository.save(txModel).awaitSingleOrNull()

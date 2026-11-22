@@ -25,7 +25,8 @@ data class FinancialActionModel(
     val agent: String,
     val ip: String,
     val createDate: LocalDateTime,
-    val status: FinancialActionStatus = FinancialActionStatus.CREATED
+    val status: FinancialActionStatus = FinancialActionStatus.CREATED,
+    val operationId: String? = null
 )
 
 

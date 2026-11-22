@@ -19,6 +19,23 @@ interface DepositEventSubmitter {
         status: String? = null,
         createDate: LocalDateTime? = LocalDateTime.now(),
         lifecycleTransitionDate: LocalDateTime? = null,
-        completionDate: LocalDateTime? = null
+        completionDate: LocalDateTime? = null,
+        depositId: Long? = null,
+        transferMethod: String? = null,
+        operationType: String? = null,
+        applicator: String? = null,
+        gatewayId: String? = null,
+        network: String? = null,
+        note: String? = null,
+        attachment: String? = null,
+        senderPartyId: String? = null,
+        receiverPartyId: String? = null,
+        senderWalletId: String? = null,
+        receiverWalletId: String? = null,
+        senderWalletType: String? = null,
+        receiverWalletType: String? = null,
+        acceptedFee: BigDecimal? = null,
+        sourceSymbol: String? = null,
+        sourceAddress: String? = null
     )
 }

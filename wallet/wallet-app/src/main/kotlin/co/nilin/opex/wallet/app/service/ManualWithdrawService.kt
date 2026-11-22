@@ -7,6 +7,7 @@ import co.nilin.opex.wallet.core.inout.OffChainGatewayCommand
 import co.nilin.opex.wallet.core.inout.TransferMethod
 import co.nilin.opex.wallet.core.inout.TransferResult
 import co.nilin.opex.wallet.core.model.*
+import co.nilin.opex.wallet.core.service.WithdrawService
 import co.nilin.opex.wallet.core.spi.WithdrawPersister
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -20,6 +21,7 @@ class ManualWithdrawService(
     private val transferService: TransferService,
     private val withdrawPersister: WithdrawPersister,
     private val currencyServiceV2: CurrencyServiceV2,
+    private val withdrawService: WithdrawService,
 ) {
     private val logger = LoggerFactory.getLogger(ManualWithdrawService::class.java)
 
@@ -54,6 +56,7 @@ class ManualWithdrawService(
             }
             ?: throw OpexError.GatewayNotFount.exception()
 
+        val operationId = UUID.randomUUID().toString()
         val tx = transferService.transfer(
             symbol,
             WalletType.MAIN,
@@ -64,36 +67,24 @@ class ManualWithdrawService(
             request.description,
             request.ref,
             TransferCategory.WITHDRAW_MANUALLY,
+            operationId = operationId,
+            transferMethod = TransferMethod.MANUALLY,
+            applicator = receiverUuid,
         )
         //todo need to review
 
-        withdrawPersister.persist(
-            Withdraw(
-                null,
-                UUID.randomUUID().toString(),
-                sourceUuid,
-                symbol,
-                tx.transferResult.destWallet!!,
-                amount,
-                //it should be replaced with tx.id
-                tx.tx,
-                tx.tx,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
-                symbol,
-                receiverUuid,
-                null,
-                request.description,
-                request.ref,
-                null,
-                WithdrawStatus.DONE,
-                receiverUuid,
-                WithdrawType.OFF_CHAIN,
-                request.attachment,
-                transferMethod = TransferMethod.MANUALLY,
-                otpRequired = 0
-            )
+        val now = LocalDateTime.now()
+        val withdrawal = withdrawPersister.persist(
+            Withdraw(withdrawUuid = operationId, ownerUuid = sourceUuid, currency = symbol,
+                wallet = tx.transferResult.destWallet!!, amount = amount,
+                requestTransaction = null, finalizedTransaction = tx.tx,
+                appliedFee = BigDecimal.ZERO, destAmount = amount, destSymbol = symbol,
+                destAddress = receiverUuid, destNote = request.description, destTransactionRef = request.ref,
+                status = WithdrawStatus.DONE, applicator = receiverUuid, withdrawType = WithdrawType.OFF_CHAIN,
+                attachment = request.attachment, createDate = now, lastUpdateDate = now,
+                transferMethod = TransferMethod.MANUALLY, otpRequired = 0, gatewayUuid = request.gatewayUuid)
         )
+        withdrawService.publishWithdrawEvent(withdrawal, WithdrawStatus.DONE, tx.transferResult)
         return tx.transferResult;
     }
 

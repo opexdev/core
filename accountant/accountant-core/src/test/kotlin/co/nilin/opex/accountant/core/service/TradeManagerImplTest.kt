@@ -11,6 +11,7 @@ import co.nilin.opex.matching.engine.core.model.OrderDirection
 import co.nilin.opex.matching.engine.core.model.OrderType
 import co.nilin.opex.matching.engine.core.model.Pair
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
@@ -131,6 +132,16 @@ internal class TradeManagerImplTest {
         //when
         val tradeFinancialActions = tradeManager.handleTrade(tradeEvent)
 
+        coVerify { richTradePublisher.publish(match {
+            it.executionReference == "accountant-trade:" + tradeFinancialActions[0].uuid &&
+                it.baseAsset == pair.leftSideName && it.quoteAsset == pair.rightSideName &&
+                it.takerSettlementActionId == tradeFinancialActions[0].uuid &&
+                it.makerSettlementActionId == tradeFinancialActions[1].uuid &&
+                it.makerFeeActionId == tradeFinancialActions[2].uuid &&
+                it.takerFeeActionId == tradeFinancialActions[3].uuid
+        }) }
+
+        assertThat(tradeFinancialActions.map { it.operationId }).containsOnly("accountant-trade:" + tradeFinancialActions[0].uuid)
         assertThat(tradeFinancialActions.size).isEqualTo(4)
         assertThat(tradeFinancialActions[0].category).isEqualTo(FinancialActionCategory.TRADE)
         assertThat(tradeFinancialActions[1].category).isEqualTo(FinancialActionCategory.TRADE)

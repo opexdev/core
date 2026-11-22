@@ -14,5 +14,7 @@ data class FinancialActionEvent(
     val receiverWalletType: WalletType,
     val createDate: LocalDateTime,
     val transferRef: String?,
-    val description: String
+    val description: String,
+    val transferCategory: String? = null,
+    val operationId: String? = null
 )

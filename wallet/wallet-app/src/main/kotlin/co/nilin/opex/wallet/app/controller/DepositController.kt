@@ -86,6 +86,7 @@ class DepositController(
         @RequestParam transferRef: String?,
         @RequestParam gatewayUuid: String?,
         @PathVariable chain: String?,
+        @RequestParam(required = false) sourceAddress: String? = null,
     ): TransferResult? {
         return depositService.deposit(
             symbol,
@@ -100,7 +101,8 @@ class DepositController(
             depositType = DepositType.ON_CHAIN,
             gatewayUuid = gatewayUuid,
             transferMethod = null,
-            applicator = null
+            applicator = null,
+            sourceAddress = sourceAddress
         )
     }
 

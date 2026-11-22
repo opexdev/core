@@ -12,5 +12,8 @@ data class UserTransactionHistory(
     val balanceChange: BigDecimal,
     val category: UserTransactionCategory,
     val description: String?,
-    val date: LocalDateTime
+    val date: LocalDateTime,
+    val walletTransactionId: Long? = null,
+    val operationId: String? = null,
+    val financialActionId: String? = null
 )

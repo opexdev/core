@@ -16,6 +16,7 @@ class FinancialActionEvent {
     lateinit var receiverWalletType: WalletType
     lateinit var createDate: LocalDateTime
     var transferRef: String? = null
+    var operationId: String? = null
     lateinit var transferCategory: TransferCategory
     var additionalData: Map<String, Any>? = null
     lateinit var description: String

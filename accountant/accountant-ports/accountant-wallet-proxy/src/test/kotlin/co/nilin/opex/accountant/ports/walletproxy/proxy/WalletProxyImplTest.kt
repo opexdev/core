@@ -60,7 +60,8 @@ class WalletProxyImplTest {
                         WalletProxyImpl.TransferBody(
                             description,
                             transferRef,
-                            transferCategory
+                            transferCategory,
+                            "accountant-trade:execution-1"
                         )
                     )
                 )
@@ -95,7 +96,8 @@ class WalletProxyImplTest {
                 amount,
                 description,
                 transferRef,
-                transferCategory
+                transferCategory,
+                "accountant-trade:execution-1"
             )
         }
     }

@@ -116,52 +116,6 @@ CREATE TABLE IF NOT EXISTS opex_events
     create_date TIMESTAMP NOT NULL
     );
 
-CREATE TABLE IF NOT EXISTS opex_trades
-(
-    id
-    SERIAL
-    PRIMARY
-    KEY,
-    symbol
-    VARCHAR
-(
-    20
-) NOT NULL,
-    taker_ouid VARCHAR
-(
-    72
-) NOT NULL,
-    taker_uuid VARCHAR
-(
-    72
-) NOT NULL,
-    taker_matching_orderid BIGINT NOT NULL,
-    taker_direction VARCHAR
-(
-    20
-) NOT NULL,
-    taker_price BIGINT NOT NULL,
-    taker_remained_quantity BIGINT NOT NULL,
-    maker_ouid VARCHAR
-(
-    72
-) NOT NULL,
-    maker_uuid VARCHAR
-(
-    72
-) NOT NULL,
-    maker_matching_orderid BIGINT NOT NULL,
-    maker_direction VARCHAR
-(
-    20
-) NOT NULL,
-    maker_price BIGINT NOT NULL,
-    maker_remained_quantity BIGINT NOT NULL,
-    matched_quantity BIGINT NOT NULL,
-    trade_date TIMESTAMP NOT NULL,
-    create_date TIMESTAMP NOT NULL
-    );
-
 CREATE TABLE IF NOT EXISTS dead_letter_events
 (
     id
@@ -299,3 +253,151 @@ ALTER TABLE opex_accounting_transactions ALTER COLUMN source_amount TYPE NUMERIC
 ALTER TABLE opex_accounting_transactions ALTER COLUMN destination_amount TYPE NUMERIC;
 CREATE INDEX IF NOT EXISTS idx_accounting_financial_action ON opex_accounting_transactions (financial_action_id);
 CREATE INDEX IF NOT EXISTS idx_accounting_fee_action ON opex_accounting_transactions (fee_action_id);
+
+-- Authoritative enriched execution source. Existing legacy tables are not dropped.
+CREATE TABLE IF NOT EXISTS opex_rich_trades (
+    id BIGSERIAL PRIMARY KEY,
+    execution_reference TEXT NOT NULL,
+    original_trade_id BIGINT NOT NULL,
+    pair TEXT NOT NULL,
+    taker_ouid TEXT NOT NULL,
+    taker_uuid TEXT NOT NULL,
+    taker_order_id BIGINT NOT NULL,
+    taker_direction TEXT NOT NULL,
+    taker_price NUMERIC NOT NULL,
+    taker_quantity NUMERIC NOT NULL,
+    taker_quote_quantity NUMERIC NOT NULL,
+    taker_remained_quantity NUMERIC NOT NULL,
+    taker_commision NUMERIC NOT NULL,
+    taker_commision_asset TEXT NOT NULL,
+    maker_ouid TEXT NOT NULL,
+    maker_uuid TEXT NOT NULL,
+    maker_order_id BIGINT NOT NULL,
+    maker_direction TEXT NOT NULL,
+    maker_price NUMERIC NOT NULL,
+    maker_quantity NUMERIC NOT NULL,
+    maker_quote_quantity NUMERIC NOT NULL,
+    maker_remained_quantity NUMERIC NOT NULL,
+    maker_commision NUMERIC NOT NULL,
+    maker_commision_asset TEXT NOT NULL,
+    matched_price NUMERIC NOT NULL,
+    matched_quantity NUMERIC NOT NULL,
+    trade_date_time TIMESTAMP NOT NULL,
+    base_asset TEXT NOT NULL,
+    quote_asset TEXT NOT NULL,
+    taker_settlement_action_id TEXT,
+    maker_settlement_action_id TEXT,
+    taker_fee_action_id TEXT,
+    maker_fee_action_id TEXT,
+    source_topic TEXT NOT NULL,
+    source_partition INTEGER NOT NULL,
+    source_offset BIGINT NOT NULL,
+    captured_at TIMESTAMP NOT NULL,
+    UNIQUE (execution_reference),
+    UNIQUE (source_topic, source_partition, source_offset)
+);
+CREATE INDEX IF NOT EXISTS idx_rich_trades_date ON opex_rich_trades (trade_date_time DESC);
+
+-- Authoritative complete OTC operation; leg views are derived on read.
+CREATE TABLE IF NOT EXISTS opex_swaps (
+    id BIGSERIAL PRIMARY KEY,
+    uuid TEXT NOT NULL,
+    tx_id TEXT NOT NULL,
+    source_asset TEXT NOT NULL,
+    source_amount NUMERIC NOT NULL,
+    dest_asset TEXT NOT NULL,
+    dest_amount NUMERIC NOT NULL,
+    source_transaction_id TEXT NOT NULL,
+    destination_transaction_id TEXT NOT NULL,
+    source_reference TEXT,
+    destination_reference TEXT,
+    system_party_id TEXT,
+    receiver_party_id TEXT,
+    source_sender_wallet_id TEXT,
+    source_receiver_wallet_id TEXT,
+    destination_sender_wallet_id TEXT,
+    destination_receiver_wallet_id TEXT,
+    source_sender_wallet_type TEXT,
+    source_receiver_wallet_type TEXT,
+    destination_sender_wallet_type TEXT,
+    destination_receiver_wallet_type TEXT,
+    reservation_id BIGINT,
+    reservation_reference TEXT,
+    quoted_rate NUMERIC,
+    quoted_at TIMESTAMP,
+    quote_expires_at TIMESTAMP,
+    transfer_category TEXT,
+    reserved_by TEXT,
+    executed_by TEXT,
+    description TEXT,
+    status TEXT,
+    create_date TIMESTAMP NOT NULL,
+    source_topic TEXT NOT NULL,
+    source_partition INTEGER NOT NULL,
+    source_offset BIGINT NOT NULL,
+    captured_at TIMESTAMP NOT NULL,
+    UNIQUE (tx_id),
+    UNIQUE (source_topic, source_partition, source_offset)
+);
+CREATE INDEX IF NOT EXISTS idx_swaps_date ON opex_swaps (create_date DESC);
+
+ALTER TABLE opex_accounting_transactions ADD COLUMN IF NOT EXISTS transfer_method TEXT;
+ALTER TABLE opex_accounting_transactions ADD COLUMN IF NOT EXISTS applicator TEXT;
+ALTER TABLE opex_accounting_transactions ADD COLUMN IF NOT EXISTS deposit_status TEXT;
+ALTER TABLE opex_accounting_transactions ADD COLUMN IF NOT EXISTS operation_type TEXT;
+
+-- Complete funding lifecycle snapshots; no overwrite of previous statuses.
+CREATE TABLE IF NOT EXISTS opex_funding_operations (
+    id BIGSERIAL PRIMARY KEY,
+    event_id TEXT NOT NULL,
+    operation_id TEXT NOT NULL,
+    type TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    operation_database_id BIGINT,
+    currency TEXT NOT NULL,
+    amount NUMERIC NOT NULL,
+    principal_amount NUMERIC,
+    applied_customer_fee NUMERIC,
+    fee_asset TEXT,
+    accepted_fee NUMERIC,
+    status TEXT NOT NULL,
+    transfer_category TEXT,
+    transfer_method TEXT,
+    operation_type TEXT,
+    applicator TEXT,
+    gateway_id TEXT,
+    network TEXT,
+    business_reference TEXT,
+    counterparty_reference_id TEXT,
+    wallet_transaction_ref TEXT,
+    request_transaction_id TEXT,
+    finalized_transaction_id TEXT,
+    operation_wallet_id TEXT,
+    sender_party_id TEXT,
+    receiver_party_id TEXT,
+    sender_wallet_id TEXT,
+    receiver_wallet_id TEXT,
+    sender_wallet_type TEXT,
+    receiver_wallet_type TEXT,
+    source_symbol TEXT,
+    source_address TEXT,
+    destination_address TEXT,
+    destination_asset TEXT,
+    destination_amount NUMERIC,
+    note TEXT,
+    status_reason TEXT,
+    attachment TEXT,
+    otp_required INTEGER,
+    operation_created_at TIMESTAMP,
+    lifecycle_transition_at TIMESTAMP,
+    completed_at TIMESTAMP,
+    occurred_at TIMESTAMP NOT NULL,
+    source_topic TEXT NOT NULL,
+    source_partition INTEGER NOT NULL,
+    source_offset BIGINT NOT NULL,
+    captured_at TIMESTAMP NOT NULL,
+    UNIQUE (type, event_id),
+    UNIQUE (source_topic, source_partition, source_offset)
+);
+CREATE INDEX IF NOT EXISTS idx_funding_operation_history ON opex_funding_operations (type, operation_id, occurred_at DESC);
+CREATE INDEX IF NOT EXISTS idx_funding_occurred ON opex_funding_operations (occurred_at DESC);

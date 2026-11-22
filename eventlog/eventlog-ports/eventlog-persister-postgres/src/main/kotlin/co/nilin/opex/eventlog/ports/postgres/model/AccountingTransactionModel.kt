@@ -105,5 +105,9 @@ data class AccountingTransactionModel(
     @Column("occurred_at")
     val occurredAt: LocalDateTime,
     @Column("create_date")
-    val createDate: LocalDateTime
+    val createDate: LocalDateTime,
+    val transferMethod: String? = null,
+    val applicator: String? = null,
+    val depositStatus: String? = null,
+    val operationType: String? = null
 )
