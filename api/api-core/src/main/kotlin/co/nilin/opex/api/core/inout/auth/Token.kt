@@ -83,7 +83,7 @@ data class TokenResponse(
 
 data class RequiredOTP(
     val type: OTPType,
-    val receiver: String?
+    val otpReceiver: String?
 )
 
 data class ResendOtpResponse(
