@@ -30,7 +30,7 @@ class UserConfigController(private val configProxy: ConfigProxy) {
     @GetMapping("/app/config")
     @Operation(
         summary = "Get app configuration",
-        description = """GET /opex/v1/app-config.
+        description = """GET /opex/v1/app/config.
 Security: Public endpoint. No Bearer token is required.
 
 Returns the application configuration including API methods and account types.""",

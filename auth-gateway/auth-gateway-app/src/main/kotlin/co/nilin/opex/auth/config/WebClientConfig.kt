@@ -45,8 +45,17 @@ class WebClientConfig {
 
     @Bean("otpWebClient")
     fun otpWebClient(otpConfig: OTPConfig): WebClient {
+        val provider = ConnectionProvider.builder("otp")
+            .maxConnections(100)
+            .maxIdleTime(Duration.ofSeconds(30))
+            .maxLifeTime(Duration.ofMinutes(2))
+            .pendingAcquireTimeout(Duration.ofSeconds(60))
+            .evictInBackground(Duration.ofMinutes(1))
+            .build()
+
         return WebClient.builder()
             .baseUrl(otpConfig.url)
+            .clientConnector(ReactorClientHttpConnector(HttpClient.create(provider)))
             .filter(languageFilter())
             .build()
     }

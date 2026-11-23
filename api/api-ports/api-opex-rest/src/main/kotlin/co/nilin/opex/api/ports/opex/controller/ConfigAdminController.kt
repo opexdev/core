@@ -29,10 +29,10 @@ import org.springframework.web.bind.annotation.RestController
 class ConfigAdminController(private val configProxy: ConfigProxy) {
 
 
-    @PutMapping("/admin/app-config")
+    @PutMapping("/admin/app/config")
     @Operation(
         summary = "Update app configuration",
-        description = """PUT /opex/v1/admin/app-config.
+        description = """PUT /opex/v1/admin/app/config.
 Security: Bearer admin-token required. Required authority: ROLE_admin.
 
 Updates the application configuration including API methods and account types.""",
