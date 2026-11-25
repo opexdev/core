@@ -134,6 +134,10 @@ class CompanyManagement(
     }
 
     suspend fun searchCompanies(filter: CompanySearchFilter): List<CompanyAdminResponse> {
+        if (filter.companyName.isNullOrBlank() && filter.representativeName.isNullOrBlank() &&
+            filter.nationalId.isNullOrBlank() && filter.registrationNumber.isNullOrBlank() &&
+            filter.createDateFrom == null && filter.createDateTo == null
+        ) throw OpexError.InvalidRequestBody.exception("At least one search criterion must be provided")
         return companyPersister.searchCompanies(filter)
             .map { it.toAdminResponse() }
     }
