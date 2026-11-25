@@ -28,5 +28,31 @@ interface CompanyRepository : ReactiveCrudRepository<CompanyModel, Long> {
     """
     )
     fun findByRepresentativeUuid(uuid: String): Mono<CompanyModel>
+
+    @Query(
+        """
+        select distinct c.*
+        from company c
+                 left join company_representative r on r.company_id = c.id
+        where (:companyName is null or lower(c.name) like lower(concat('%', :companyName, '%')))
+           and (:representativeName is null or lower(concat(r.first_name, ' ', r.last_name)) like lower(concat('%', :representativeName, '%')))
+           and (:nationalId is null or c.national_id = :nationalId)
+           and (:registrationNumber is null or c.registration_number = :registrationNumber)
+           and (:createDateFrom is null or c.create_date >= to_timestamp(:createDateFrom / 1000.0))
+           and (:createDateTo is null or c.create_date <= to_timestamp(:createDateTo / 1000.0))
+        order by c.create_date desc
+        limit :limit offset :offset
+    """
+    )
+    fun searchCompanies(
+        companyName: String?,
+        representativeName: String?,
+        nationalId: String?,
+        registrationNumber: String?,
+        createDateFrom: Long?,
+        createDateTo: Long?,
+        limit: Int,
+        offset: Int
+    ): reactor.core.publisher.Flux<CompanyModel>
 }
 

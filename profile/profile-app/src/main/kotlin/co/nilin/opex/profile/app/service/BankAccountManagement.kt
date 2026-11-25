@@ -119,6 +119,7 @@ class BankAccountManagement(
         if (request.cardNumber.isNullOrBlank() && request.iban.isNullOrBlank())
             throw OpexError.InvalidRequestBody.exception("Either Card Number or IBAN must be provided")
         profilePersister.getProfile(uuid)
+        validateBankAccountOwnership(uuid, request.cardNumber, request.iban)
 
         val saved = bankAccountPersister.save(
             BankAccount(

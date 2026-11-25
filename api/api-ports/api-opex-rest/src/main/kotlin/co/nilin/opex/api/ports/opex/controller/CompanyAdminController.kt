@@ -1,6 +1,7 @@
 package co.nilin.opex.api.ports.opex.controller
 
 import co.nilin.opex.api.core.inout.CompanyAdminResponse
+import co.nilin.opex.api.core.inout.CompanySearchFilter
 import co.nilin.opex.api.core.inout.LegalAccountRegistrationResponse
 import co.nilin.opex.api.core.spi.ProfileProxy
 import co.nilin.opex.api.core.spi.StorageProxy
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
@@ -289,6 +291,45 @@ Response: The updated company, including the storage keys of its documents.""",
                 boardMemberNationalCards = boardMemberNationalCards
             )
         )
+    }
+
+    @PostMapping("/search", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @Operation(
+        summary = "Search companies",
+        description = """POST /opex/v1/admin/company/search.
+Security: Bearer admin-token required. Required authority: ROLE_admin.
+Validation: At least one search criteria must be provided.
+Behavior: Search companies by multiple criteria: company name, representative name, national id, registration number, and date range. Search uses LIKE pattern matching for names (case-insensitive).""",
+        security = [SecurityRequirement(name = "bearerAuth")],
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Successful response.",
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = Array<CompanyAdminResponse>::class))]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "No search criteria provided.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized. Bearer token is missing, invalid, or expired. No response body.",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Forbidden. Required authority is missing: ROLE_admin. No response body.",
+                content = [Content()]
+            )
+        ]
+    )
+    suspend fun searchCompanies(
+        @RequestBody filter: CompanySearchFilter,
+        @Parameter(hidden = true)
+        @CurrentSecurityContext securityContext: SecurityContext
+    ): List<CompanyAdminResponse> {
+        return profileProxy.searchCompanies(securityContext.jwtAuthentication().tokenValue(), filter)
     }
 
     @GetMapping("/document")

@@ -73,7 +73,7 @@ data class Token(
 
 data class TokenResponse(
     val token: Token?,
-    val otp: RequiredOTP?,
+    val otpReceiver: RequiredOTP?,
     //TODO IMPORTANT: remove in production
     val otpCode: String?,
     val mustChangePassword: Boolean = false,
@@ -83,11 +83,11 @@ data class TokenResponse(
 
 data class RequiredOTP(
     val type: OTPType,
-    val otpReceiver: String?
+    val receiver: String?
 )
 
 data class ResendOtpResponse(
-    val otp: RequiredOTP?,
+    val otpReceiver: RequiredOTP?,
     //TODO IMPORTANT: remove in production
     val otpCode: String?,
 )
