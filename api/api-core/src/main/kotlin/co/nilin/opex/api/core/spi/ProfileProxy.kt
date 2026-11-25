@@ -47,6 +47,7 @@ interface ProfileProxy {
     suspend fun getCompanyByUuid(token: String, companyUuid: UUID): CompanyAdminResponse
     suspend fun getCompanyByNationalId(token: String, nationalId: String): CompanyAdminResponse
     suspend fun updateCompany(token: String, companyUuid: UUID, request: UpdateCompanyRequest): CompanyAdminResponse
+    suspend fun searchCompanies(token: String, filter: CompanySearchFilter): List<CompanyAdminResponse>
 
     //Bank Account
     suspend fun addBankAccount(token: String, request: AddBankAccountRequest): BankAccountResponse

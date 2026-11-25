@@ -51,7 +51,7 @@ class LoginService(
             keycloakProxy.checkUserCredentials(user, request.password)
             return TokenResponse(
                 token = changePasswordToken(user.id),
-                otp = null,
+                otpReceiver = null,
                 otpCode = null,
                 mustChangePassword = true
             )
@@ -87,7 +87,7 @@ class LoginService(
 
                 TokenResponse(
                     token = token,
-                    otp = RequiredOTP(otpType, destination),
+                    otpReceiver = RequiredOTP(otpType, destination),
                     otpCode = res.otp,
                     mustChangePassword = user.mustChangePassword,
                     resendToken = resendToken,
@@ -97,7 +97,7 @@ class LoginService(
             OTPType.TOTP -> {
                 TokenResponse(
                     token = token,
-                    otp = RequiredOTP(OTPType.TOTP, user.totpLabel(appName)),
+                    otpReceiver = RequiredOTP(OTPType.TOTP, user.totpLabel(appName)),
                     otpCode = null,
                     mustChangePassword = user.mustChangePassword
                 )
@@ -124,7 +124,7 @@ class LoginService(
         val receiver = OTPReceiver(destination, otpType)
         return otpResendService.resend(OTPAction.LOGIN, receiver, request.resendToken, user.id) {
             val res = otpProxy.requestOTP(destination, listOf(receiver), OTPAction.LOGIN)
-            ResendOtpResponse(otp = RequiredOTP(otpType, destination), otpCode = res.otp)
+            ResendOtpResponse(otpReceiver = RequiredOTP(otpType, destination), otpCode = res.otp)
         }
     }
 
@@ -168,7 +168,7 @@ class LoginService(
         if (user.mustChangePassword)
             return TokenResponse(
                 token = changePasswordToken(user.id),
-                otp = null,
+                otpReceiver = null,
                 otpCode = null,
                 mustChangePassword = true
             )

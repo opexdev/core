@@ -56,4 +56,11 @@ class CompanyAdminController(val companyManagement: CompanyManagement) {
     ): CompanyAdminResponse {
         return companyManagement.updateCompany(companyUuid, request, securityContext.authentication.name)
     }
+
+    @PostMapping("/search")
+    suspend fun searchCompanies(
+        @RequestBody filter: co.nilin.opex.profile.core.data.profile.CompanySearchFilter
+    ): List<CompanyAdminResponse> {
+        return companyManagement.searchCompanies(filter)
+    }
 }

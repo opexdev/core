@@ -1,6 +1,7 @@
 package co.nilin.opex.profile.core.spi
 
 import co.nilin.opex.profile.core.data.profile.Company
+import co.nilin.opex.profile.core.data.profile.CompanySearchFilter
 import java.util.UUID
 import co.nilin.opex.profile.core.data.profile.CompanyUpdate
 import co.nilin.opex.profile.core.data.profile.LegalAccountAvailability
@@ -14,4 +15,5 @@ interface CompanyPersister {
     suspend fun findByCompanyNationalId(nationalId: String): Company?
     suspend fun findByUuid(companyUuid: UUID): Company?
     suspend fun updateByUuid(companyUuid: UUID, update: CompanyUpdate, applicator: String): Company
+    suspend fun searchCompanies(filter: CompanySearchFilter): List<Company>
 }

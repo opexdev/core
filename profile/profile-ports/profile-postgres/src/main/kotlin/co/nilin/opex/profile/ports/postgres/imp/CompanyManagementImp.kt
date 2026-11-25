@@ -3,6 +3,7 @@ package co.nilin.opex.profile.ports.postgres.imp
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.profile.core.data.kyc.KycLevel
 import co.nilin.opex.profile.core.data.profile.Company
+import co.nilin.opex.profile.core.data.profile.CompanySearchFilter
 import co.nilin.opex.profile.core.data.profile.CompanyUpdate
 import co.nilin.opex.profile.core.data.profile.LegalAccountAvailability
 import co.nilin.opex.profile.core.data.profile.LegalAccountRegistration
@@ -142,6 +143,22 @@ class CompanyManagementImp(
         }
 
         return saved.withBoardMembers()
+    }
+
+    override suspend fun searchCompanies(filter: CompanySearchFilter): List<Company> {
+        return companyRepository.searchCompanies(
+            companyName = filter.companyName,
+            representativeName = filter.representativeName,
+            nationalId = filter.nationalId,
+            registrationNumber = filter.registrationNumber,
+            createDateFrom = filter.createDateFrom,
+            createDateTo = filter.createDateTo,
+            limit = filter.limit,
+            offset = filter.offset
+        )
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+            .map { it.withBoardMembers() }
     }
 
     private suspend fun CompanyModel.withBoardMembers(): Company {

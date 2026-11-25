@@ -565,4 +565,19 @@ class ProfileProxyImpl(@Qualifier("nlbWebClient") private val webClient: WebClie
             .bodyToMono<CompanyAdminResponse>()
             .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to update company $companyUuid") }
     }
+
+    override suspend fun searchCompanies(
+        token: String,
+        filter: CompanySearchFilter
+    ): List<CompanyAdminResponse> {
+        return webClient.post()
+            .uri("$baseUrl/admin/company/search")
+            .accept(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+            .body(Mono.just(filter))
+            .retrieve()
+            .onStatus({ t -> t.isError }, { it.createException() })
+            .bodyToMono<List<CompanyAdminResponse>>()
+            .awaitFirstOrElse { throw OpexError.BadRequest.exception("Failed to search companies") }
+    }
 }

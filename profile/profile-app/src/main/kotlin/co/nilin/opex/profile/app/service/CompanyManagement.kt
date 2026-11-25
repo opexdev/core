@@ -9,6 +9,7 @@ import co.nilin.opex.profile.app.dto.UpdateCompanyRequest
 import co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent
 import co.nilin.opex.profile.core.data.kyc.KycLevel
 import co.nilin.opex.profile.core.data.profile.Company
+import co.nilin.opex.profile.core.data.profile.CompanySearchFilter
 import co.nilin.opex.profile.core.data.profile.CompanyUpdate
 import co.nilin.opex.profile.core.data.profile.LegalAccountAvailability
 import co.nilin.opex.profile.core.data.profile.LegalAccountRegistration
@@ -130,6 +131,15 @@ class CompanyManagement(
             throw OpexError.InvalidRequestBody.exception("Fields must not be blank: ${blank.joinToString()}")
 
         return companyPersister.updateByUuid(companyUuid, update, applicator).toAdminResponse()
+    }
+
+    suspend fun searchCompanies(filter: CompanySearchFilter): List<CompanyAdminResponse> {
+        if (filter.companyName.isNullOrBlank() && filter.representativeName.isNullOrBlank() &&
+            filter.nationalId.isNullOrBlank() && filter.registrationNumber.isNullOrBlank() &&
+            filter.createDateFrom == null && filter.createDateTo == null
+        ) throw OpexError.InvalidRequestBody.exception("At least one search criterion must be provided")
+        return companyPersister.searchCompanies(filter)
+            .map { it.toAdminResponse() }
     }
 
     private suspend fun findCompany(uuid: String): Company {
