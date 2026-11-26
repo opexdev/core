@@ -9,6 +9,7 @@ import co.nilin.opex.profile.app.dto.UpdateCompanyRequest
 import co.nilin.opex.profile.core.data.event.KycLevelUpdatedEvent
 import co.nilin.opex.profile.core.data.kyc.KycLevel
 import co.nilin.opex.profile.core.data.profile.Company
+import co.nilin.opex.profile.core.data.profile.CompanyRepresentativeInfo
 import co.nilin.opex.profile.core.data.profile.CompanySearchFilter
 import co.nilin.opex.profile.core.data.profile.CompanyUpdate
 import co.nilin.opex.profile.core.data.profile.LegalAccountAvailability
@@ -163,6 +164,13 @@ class CompanyManagement(
         createDate,
         updateDate,
         companyUuid,
-        applicator
+        applicator,
+        representatives.map { it.toRepresentativeInfo() }
+    )
+
+    private fun CompanyRepresentativeInfo.toRepresentativeInfo() = co.nilin.opex.profile.app.dto.RepresentativeInfo(
+        uuid = uuid,
+        firstName = firstName,
+        lastName = lastName
     )
 }

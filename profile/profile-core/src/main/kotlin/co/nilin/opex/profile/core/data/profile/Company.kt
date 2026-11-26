@@ -16,7 +16,14 @@ data class Company(
     var boardMemberDocumentKeys: List<String> = emptyList(),
     var createDate: LocalDateTime? = null,
     var updateDate: LocalDateTime? = null,
-    var applicator: String? = null
+    var applicator: String? = null,
+    var representatives: List<CompanyRepresentativeInfo> = emptyList()
+)
+
+data class CompanyRepresentativeInfo(
+    val uuid: String,
+    val firstName: String,
+    val lastName: String
 )
 
 data class CompanyRepresentative(

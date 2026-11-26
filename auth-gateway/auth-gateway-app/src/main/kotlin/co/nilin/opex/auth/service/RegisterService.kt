@@ -44,7 +44,6 @@ class RegisterService(
         val otpType = username.type.otpType
         val otpReceiver = OTPReceiver(request.username, otpType)
         return otpResendService.resend(OTPAction.REGISTER, otpReceiver, request.resendToken) {
-            isUserDuplicate(username)
             val res = otpProxy.requestOTP(request.username, listOf(otpReceiver), OTPAction.REGISTER)
             TempOtpResponse(res.otp, otpReceiver)
         }
@@ -105,7 +104,6 @@ class RegisterService(
             ?: throw OpexError.UserIDNotFoundInToken.exception()
 
         val username = Username.create(email) // Use email as the username
-        isUserDuplicate(username)
 
         val userId = keycloakProxy.createExternalIdpUser(email, username, externalIdpUserRegisterRequest.password)
         keycloakProxy.linkGoogleIdentity(userId, email, googleUserId)
