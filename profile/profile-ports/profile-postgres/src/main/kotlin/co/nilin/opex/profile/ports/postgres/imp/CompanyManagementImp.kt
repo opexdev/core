@@ -3,6 +3,7 @@ package co.nilin.opex.profile.ports.postgres.imp
 import co.nilin.opex.common.OpexError
 import co.nilin.opex.profile.core.data.kyc.KycLevel
 import co.nilin.opex.profile.core.data.profile.Company
+import co.nilin.opex.profile.core.data.profile.CompanyRepresentativeInfo
 import co.nilin.opex.profile.core.data.profile.CompanySearchFilter
 import co.nilin.opex.profile.core.data.profile.CompanyUpdate
 import co.nilin.opex.profile.core.data.profile.LegalAccountAvailability
@@ -158,7 +159,7 @@ class CompanyManagementImp(
         )
             .collectList()
             .awaitFirstOrElse { emptyList() }
-            .map { it.withBoardMembers() }
+            .map { it.withBoardMembersAndRepresentatives() }
     }
 
     private suspend fun CompanyModel.withBoardMembers(): Company {
@@ -167,6 +168,18 @@ class CompanyManagementImp(
             .awaitFirstOrElse { emptyList() }
             .map { it.s3Key }
         return toCompany(boardMemberKeys)
+    }
+
+    private suspend fun CompanyModel.withBoardMembersAndRepresentatives(): Company {
+        val boardMemberKeys = boardMemberDocumentRepository.findByCompanyId(id!!)
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+            .map { it.s3Key }
+        val representativeInfos = companyRepresentativeRepository.findRepresentativesWithNames(id!!)
+            .collectList()
+            .awaitFirstOrElse { emptyList() }
+            .map { CompanyRepresentativeInfo(it.uuid, it.first_name, it.last_name) }
+        return toCompanyWithRepresentatives(boardMemberKeys, representativeInfos)
     }
 
     private suspend fun saveCompanyAndLink(company: Company, representativeUuid: String): CompanyModel {
@@ -240,5 +253,25 @@ class CompanyManagementImp(
         createDate = createDate,
         updateDate = updateDate,
         applicator = applicator
+    )
+
+    private fun CompanyModel.toCompanyWithRepresentatives(
+        boardMemberKeys: List<String>,
+        representatives: List<CompanyRepresentativeInfo>
+    ) = Company(
+        id = id,
+        companyUuid = companyUuid,
+        name = name,
+        registrationNumber = registrationNumber,
+        nationalId = nationalId,
+        representativeNationalCardKey = representativeNationalCardKey,
+        introductionLetterKey = introductionLetterKey,
+        articlesOfAssociationKey = articlesOfAssociationKey,
+        officialNewspaperKey = officialNewspaperKey,
+        boardMemberDocumentKeys = boardMemberKeys,
+        createDate = createDate,
+        updateDate = updateDate,
+        applicator = applicator,
+        representatives = representatives
     )
 }

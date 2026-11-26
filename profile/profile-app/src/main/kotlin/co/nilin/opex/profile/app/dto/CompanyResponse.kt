@@ -27,5 +27,12 @@ data class CompanyAdminResponse(
     val createDate: LocalDateTime?,
     val updateDate: LocalDateTime?,
     val companyUuid: UUID,
-    val applicator: String? = null
+    val applicator: String? = null,
+    val representatives: List<RepresentativeInfo> = emptyList()
+)
+
+data class RepresentativeInfo(
+    val uuid: String,
+    val firstName: String,
+    val lastName: String
 )
