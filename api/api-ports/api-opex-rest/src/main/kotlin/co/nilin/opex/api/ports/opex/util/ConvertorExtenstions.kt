@@ -45,7 +45,8 @@ fun Profile.toProfileResponse(): ProfileResponse {
         applicator = this.applicator,
         kycLevel = this.kycLevel,
         mobileIdentityMatch = this.mobileIdentityMatch,
-        personalIdentityMatch = this.personalIdentityMatch
+        personalIdentityMatch = this.personalIdentityMatch,
+        personType = personType
     )
 }
 
